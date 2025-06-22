@@ -7,7 +7,7 @@ import teams from '@/data/teams.json';
 import circuits from '@/data/circuits.json';
 
 // Replace with your actual Mapbox token
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoiYmFlY2hvb2tpbmciLCJhIjoiY21iajAwaTd1MGJrZjJqb2g3M3RsZ2hhaiJ9.B1BuVoKpl3Xt1HSZq6ugeA';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
 export default function MapContainer() {
   const mapContainer = useRef<HTMLDivElement>(null);

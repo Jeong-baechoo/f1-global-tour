@@ -8,7 +8,7 @@ import circuitsData from '@/data/circuits.json';
 import nurburgringTrack from '@/data/nurburgring-track.json';
 import austriaTrack from '@/data/austria-track.json';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiYmFlY2hvb2tpbmciLCJhIjoiY21iajAwaTd1MGJrZjJqb2g3M3RsZ2hhaiJ9.B1BuVoKpl3Xt1HSZq6ugeA';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
 interface MarkerData {
   type: string;
