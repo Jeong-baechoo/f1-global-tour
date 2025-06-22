@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
   --background: #ffffff;
@@ -23,4 +24,46 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Mapbox custom styles */
+.mapboxgl-popup {
+  max-width: 400px;
+}
+
+.mapboxgl-popup-content {
+  @apply rounded-lg shadow-xl p-0 overflow-hidden;
+}
+
+.mapboxgl-popup-close-button {
+  @apply text-white hover:text-gray-200 text-2xl pr-2 pt-1;
+}
+
+/* Custom marker styles */
+.team-marker {
+  @apply cursor-pointer transition-all duration-300 hover:scale-110;
+}
+
+.circuit-marker {
+  @apply cursor-pointer transition-all duration-300 hover:scale-110;
+}
+
+/* Animation for active race */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.active-race {
+  animation: pulse 2s ease-in-out infinite;
 }
