@@ -464,7 +464,7 @@ export default function InteractivePanel({
       >
         {/* Drag Handle Area */}
         <div
-          className="sticky top-0 z-10 bg-[#1A1A1A]/60 backdrop-blur-sm rounded-t-2xl cursor-grab active:cursor-grabbing"
+          className="sticky top-0 z-10 bg-transparent rounded-t-2xl cursor-grab active:cursor-grabbing"
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
