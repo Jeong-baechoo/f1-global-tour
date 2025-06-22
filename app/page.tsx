@@ -7,7 +7,7 @@ import circuitsData from '@/data/circuits.json';
 
 // Dynamic import to avoid SSR issues with Mapbox
 const Map = dynamic(
-  () => import('@/components/Map'),
+  () => import('@/components/mapbox/Map'),
   { 
     ssr: false,
     loading: () => (
