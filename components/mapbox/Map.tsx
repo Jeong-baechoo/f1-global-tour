@@ -49,13 +49,22 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
   // 시네마틱 모드 토글 핸들러
   const handleCinematicModeToggle = useCallback((): boolean => {
-    console.log('Toggling cinematic mode...');
-    if (!map.current || !currentCircuitId) return false;
+    console.log('Toggling cinematic mode...', {
+      hasMap: !!map.current,
+      currentCircuitId,
+      zoom: map.current?.getZoom()
+    });
+    if (!map.current) return false;
     
     const mapWithHandlers = map.current as mapboxgl.Map & {
       _circuitRotationHandlers?: CircuitRotationHandlers;
     };
     const handlers = mapWithHandlers._circuitRotationHandlers;
+    
+    console.log('Checking handlers:', {
+      hasHandlers: !!handlers,
+      hasRotation: !!handlers?.rotation
+    });
     
     if (handlers?.rotation) {
       const isEnabled = handlers.rotation.toggleCinematicMode();
@@ -69,7 +78,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       return isEnabled;
     }
     return false;
-  }, [currentCircuitId, onCinematicModeChange]);
+  }, [onCinematicModeChange]);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -135,9 +144,13 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           // 글로브 스피너 일시 중단
           globeSpinner.current?.startInteracting();
           setIsCircuitView(true);
-          setCurrentCircuitId(circuitId);
+          console.log('Flying to circuit:', circuitId);
+          // circuitId를 직접 사용하여 클로저로 캡처
+          const capturedCircuitId = circuitId;
+          setCurrentCircuitId(capturedCircuitId);
           flyToCircuitWithTrack(map.current, circuit, undefined, (enabled) => {
             // 시네마틱 모드 토글 콜백 처리
+            console.log('Cinematic mode toggled from flyToCircuitWithTrack:', enabled);
             if (onCinematicModeChange) {
               onCinematicModeChange(enabled);
             }

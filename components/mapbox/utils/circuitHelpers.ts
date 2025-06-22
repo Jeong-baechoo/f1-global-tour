@@ -187,8 +187,19 @@ export const flyToCircuitWithTrack = async (
           const zoomEndHandler = () => rotation.startRotation();
           const moveHandler = () => rotation.stopRotation();
           const touchHandler = () => rotation.stopRotation();
+          
+          const handlersObj = {
+            dragStart: dragStartHandler,
+            dragEnd: dragEndHandler,
+            zoomStart: zoomStartHandler,
+            zoomEnd: zoomEndHandler,
+            moveHandler,
+            touchHandler
+          };
+          
+          rotation.setHandlers(handlersObj);
 
-          // Listen to all user interactions
+          // 이벤트 핸들러 등록
           map.on('dragstart', dragStartHandler);
           map.on('dragend', dragEndHandler);
           map.on('zoomstart', zoomStartHandler);
@@ -202,9 +213,21 @@ export const flyToCircuitWithTrack = async (
             dragEnd: dragEndHandler,
             zoomStart: zoomStartHandler,
             zoomEnd: zoomEndHandler,
-            cleanup: rotation.cleanup,
+            cleanup: () => {
+              // 이벤트 핸들러 제거
+              map.off('dragstart', dragStartHandler);
+              map.off('dragend', dragEndHandler);
+              map.off('zoomstart', zoomStartHandler);
+              map.off('zoomend', zoomEndHandler);
+              map.off('movestart', moveHandler);
+              map.off('touchstart', touchHandler);
+              rotation.cleanup();
+            },
             rotation: rotation,
-            onCinematicModeToggle
+            onCinematicModeToggle,
+            map: map,
+            moveHandler,
+            touchHandler
           };
         }
       });

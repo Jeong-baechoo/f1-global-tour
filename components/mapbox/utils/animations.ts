@@ -159,24 +159,30 @@ export const createCircuitRotation = (
   map: mapboxgl.Map,
   initialBearing: number
 ) => {
+  let handlers: any = null;
   let bearing = initialBearing;
   let isRotating = false;
   let rotationAnimationId: number | null = null;
+  let rotationInterval: NodeJS.Timeout | null = null;
   let isActive = true;
   let userInteracting = false;
   let idleTimer: NodeJS.Timeout | null = null;
   let cinematicModeEnabled = false; // 시네마틱 모드 상태
+  let ignoreEvents = false; // 이벤트 무시 플래그
 
   const rotateCamera = () => {
-    if (map.getZoom() > 13 && isRotating && isActive && !userInteracting && cinematicModeEnabled) {
+    if (cinematicModeEnabled && map.getZoom() > 13) {
       bearing += ANIMATION_CONFIG.rotationSpeed;
       map.setBearing(bearing);
-      rotationAnimationId = requestAnimationFrame(rotateCamera);
     }
   };
 
   const stopRotation = () => {
     isRotating = false;
+    if (rotationInterval) {
+      clearInterval(rotationInterval);
+      rotationInterval = null;
+    }
     if (rotationAnimationId) {
       cancelAnimationFrame(rotationAnimationId);
       rotationAnimationId = null;
@@ -184,20 +190,20 @@ export const createCircuitRotation = (
   };
 
   const pauseCinematicMode = () => {
-    userInteracting = true;
-    stopRotation();
-    clearIdleTimer();
-    // 사용자 입력 시 자동 활성화 타이머 시작
-    if (cinematicModeEnabled) {
+    if (cinematicModeEnabled && !ignoreEvents) {
+      console.log('Pausing cinematic mode');
+      stopRotation();
+      clearIdleTimer();
       startIdleTimer();
     }
   };
 
   const resumeCinematicMode = () => {
-    userInteracting = false;
-    if (cinematicModeEnabled && map.getZoom() > 13 && isActive) {
-      isRotating = true;
-      rotateCamera();
+    if (cinematicModeEnabled && map.getZoom() > 13) {
+      stopRotation(); // 기존 것 정리
+      rotationInterval = setInterval(() => {
+        rotateCamera();
+      }, 16);
     }
   };
 
@@ -219,8 +225,21 @@ export const createCircuitRotation = (
 
   const enableCinematicMode = () => {
     cinematicModeEnabled = true;
-    userInteracting = false;
-    resumeCinematicMode();
+    ignoreEvents = true; // 초기화 중 이벤트 무시
+    stopRotation(); // 기존 애니메이션 정리
+    
+    // 1초 후에 회전 시작
+    setTimeout(() => {
+      if (cinematicModeEnabled && map.getZoom() > 13) {
+        ignoreEvents = false; // 이벤트 처리 시작
+        rotationInterval = setInterval(() => {
+          rotateCamera();
+        }, 16); // 약 60fps
+        
+        // 이벤트 핸들러는 이미 등록되어 있음
+      }
+    }, 1000);
+    
     startIdleTimer();
   };
 
@@ -228,6 +247,16 @@ export const createCircuitRotation = (
     cinematicModeEnabled = false;
     stopRotation();
     clearIdleTimer();
+    
+    // 이벤트 핸들러 제거
+    if (handlers) {
+      map.off('dragstart', handlers.dragStart);
+      map.off('dragend', handlers.dragEnd);
+      map.off('zoomstart', handlers.zoomStart);
+      map.off('zoomend', handlers.zoomEnd);
+      map.off('movestart', handlers.moveHandler);
+      map.off('touchstart', handlers.touchHandler);
+    }
   };
 
   const toggleCinematicMode = () => {
@@ -254,6 +283,7 @@ export const createCircuitRotation = (
     disableCinematicMode,
     toggleCinematicMode,
     isCinematicModeEnabled: () => cinematicModeEnabled,
-    cleanup 
+    cleanup,
+    setHandlers: (h: any) => { handlers = h; }
   };
 };
