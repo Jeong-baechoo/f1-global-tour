@@ -17,7 +17,7 @@ export const getCircuitColor = (circuitId: string): string => {
     'hungary': '#16a34a',      // 헝가리 - 초록
     'netherlands': '#ea580c',  // 네덜란드 - 오렌지
     'emilia-romagna': '#0ea5e9', // 이탈리아 이몰라 - 하늘색
-    
+
     // 아시아/중동
     'bahrain': '#dc2626',      // 바레인 - 빨강
     'saudi-arabia': '#16a34a', // 사우디 - 초록
@@ -26,7 +26,7 @@ export const getCircuitColor = (circuitId: string): string => {
     'japan': '#dc2626',        // 일본 - 빨강
     'qatar': '#881337',        // 카타르 - 마룬
     'abu-dhabi': '#16a34a',    // UAE - 초록
-    
+
     // 아메리카
     'canada': '#dc2626',       // 캐나다 - 빨강
     'usa': '#1e40af',          // 미국 - 파랑
@@ -34,7 +34,7 @@ export const getCircuitColor = (circuitId: string): string => {
     'las-vegas': '#a855f7',    // 라스베가스 - 보라
     'mexico': '#16a34a',       // 멕시코 - 초록
     'brazil': '#facc15',       // 브라질 - 노랑
-    
+
     // 오세아니아
     'australia': '#facc15',    // 호주 - 노랑
   };
@@ -84,16 +84,16 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
       curve: 1
     },
   };
-  
+
   const defaultConfig: CameraConfig = {
     zoom: 14,
     pitch: 45,
     bearing: 0,
-    speed: 0.6,
-    curve: 1,
+    speed: 1.2,  // 기본 속도를 더 느리게 (0.6 -> 0.3)
+    curve: 1.2,  // 더 부드러운 곡선
     essential: true
   };
-  
+
   return { ...defaultConfig, ...(configs[circuitId] || {}) };
 };
 
@@ -112,7 +112,7 @@ export const flyToCircuitWithTrack = async (
   onRotationStart?: () => void
 ) => {
   const cameraConfig = getCircuitCameraConfig(circuit.id);
-  
+
   map.flyTo({
     center: [circuit.location.lng, circuit.location.lat],
     ...cameraConfig
@@ -121,7 +121,7 @@ export const flyToCircuitWithTrack = async (
   map.once('moveend', async () => {
     // 트랙 데이터 로드 시도
     const trackData = await getTrackCoordinates(circuit.id);
-    
+
     if (trackData && map.getZoom() > 10) {
       drawTrack(map, {
         trackId: `${circuit.id}-track`,
@@ -133,7 +133,7 @@ export const flyToCircuitWithTrack = async (
           if (onRotationStart) {
             onRotationStart();
           }
-          
+
           const { stopRotation, startRotation } = createCircuitRotation(
             map,
             cameraConfig.bearing || 0,

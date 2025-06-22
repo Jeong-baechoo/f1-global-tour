@@ -117,7 +117,7 @@ export default function Home() {
       return nextRace || sortedCircuits[0]; // If no future races, show first race of next season
     };
 
-    // Show next race panel after 3 seconds to ensure map is loaded
+    // Show next race panel after 1 second to ensure map is loaded
     const timer = setTimeout(() => {
       const nextRace = findNextRace();
       setPanelModule('next-race');
@@ -134,8 +134,8 @@ export default function Home() {
         if (nextRace.id === 'austria') {
           mapRef.flyToCircuit('austria', true);
         }
-      }, 500);
-    }, 3000);
+      }, 200);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [mapRef]);
