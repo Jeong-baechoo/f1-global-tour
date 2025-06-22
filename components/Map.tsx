@@ -8,6 +8,10 @@ import circuitsData from '@/data/circuits.json';
 import nurburgringTrack from '@/data/nurburgring-track.json';
 import austriaTrack from '@/data/austria-track.json';
 
+// Mapbox 토큰 확인
+if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
+  console.error('Mapbox access token is missing!');
+}
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
 interface MarkerData {
@@ -400,6 +404,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
       });
 
       // satellite 스타일에서도 불필요한 레이어 제거 (있는 경우)
+      // 주의: 레이어 제거 후 마커 추가하도록 순서 조정
       const style = map.current!.getStyle();
       if (style && style.layers) {
         const layersToRemove = [
@@ -417,10 +422,24 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
 
         style.layers.forEach(layer => {
           if (layersToRemove.some(pattern => layer.id.includes(pattern))) {
-            map.current!.removeLayer(layer.id);
+            try {
+              map.current!.removeLayer(layer.id);
+            } catch (e) {
+              // 레이어가 이미 제거된 경우 무시
+            }
           }
         });
       }
+      
+      // 마커 추가를 약간 지연시켜 스타일 로드 완료 확실히 하기
+      setTimeout(() => {
+        addMarkers();
+      }, 100);
+    });
+
+    // 마커 추가 함수를 별도로 분리
+    const addMarkers = () => {
+      if (!map.current) return;
 
       // 레드불 레이싱 데이터를 teams.json에서 가져오기
       const redBullTeam = teamsData.teams.find(team => team.id === 'red-bull');
@@ -774,12 +793,12 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
         markers.current.push(nurburgringMarker);
       }
 
-      // 초기 회전 시작
-      setTimeout(() => {
-        spinGlobe();
-      }, 2000); // 2초 후 시작
+    };
 
-    });
+    // 초기 회전 시작
+    setTimeout(() => {
+      spinGlobe();
+    }, 2000); // 2초 후 시작
 
     // cleanup 함수
     return () => {

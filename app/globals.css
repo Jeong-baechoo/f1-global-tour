@@ -108,6 +108,12 @@ body {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
+  z-index: 10 !important;
+}
+
+/* 마커가 다른 요소에 가려지지 않도록 */
+.mapboxgl-canvas-container.mapboxgl-interactive {
+  z-index: 1;
 }
 
 /* 애니메이션 성능 최적화 */
