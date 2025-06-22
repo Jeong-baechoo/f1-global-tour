@@ -14,6 +14,25 @@ import { addAllCircuits, findNextRace } from './markers/addAllCircuits';
 import { flyToCircuitWithTrack } from './utils/circuitHelpers';
 import CinematicModeButton from './CinematicModeButton';
 
+// Circuit rotation handlers type
+interface CircuitRotationHandlers {
+  dragStart: () => void;
+  dragEnd: () => void;
+  zoomStart: () => void;
+  zoomEnd: () => void;
+  cleanup: () => void;
+  rotation?: {
+    stopRotation: () => void;
+    startRotation: () => void;
+    enableCinematicMode: () => void;
+    disableCinematicMode: () => void;
+    toggleCinematicMode: () => boolean;
+    isCinematicModeEnabled: () => boolean;
+    cleanup: () => void;
+  };
+  onCinematicModeToggle?: (enabled: boolean) => void;
+}
+
 // Mapbox 토큰 확인
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
   console.error('Mapbox access token is missing!');
@@ -34,7 +53,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     if (!map.current || !currentCircuitId) return false;
     
     const mapWithHandlers = map.current as mapboxgl.Map & {
-      _circuitRotationHandlers?: any;
+      _circuitRotationHandlers?: CircuitRotationHandlers;
     };
     const handlers = mapWithHandlers._circuitRotationHandlers;
     
