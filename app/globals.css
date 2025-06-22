@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
@@ -16,12 +18,6 @@
   --aston-green: #006F62;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -126,23 +122,19 @@ body {
   will-change: transform;
 }
 
-/* Animation for active race */
-@keyframes pulse {
+/* Animation for active race - box-shadow로 변경 */
+@keyframes pulse-shadow {
   0% {
-    transform: scale(1) translateZ(0);
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 24, 1, 0.7);
   }
-  50% {
-    transform: scale(1.2) translateZ(0);
-    opacity: 0.8;
+  70% {
+    box-shadow: 0 0 0 20px rgba(255, 24, 1, 0);
   }
   100% {
-    transform: scale(1) translateZ(0);
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 24, 1, 0);
   }
 }
 
-.active-race {
-  animation: pulse 2s ease-in-out infinite;
-  will-change: transform, opacity;
+.active-race > div {
+  animation: pulse-shadow 2s ease-in-out infinite;
 }

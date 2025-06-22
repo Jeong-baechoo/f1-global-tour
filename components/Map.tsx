@@ -74,7 +74,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
     // spinGlobe 함수 정의
     const spinGlobe = () => {
       if (!map.current) return;
-      
+
       const zoom = map.current.getZoom();
       if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
         let distancePerSecond = 360 / secondsPerRevolution;
@@ -82,12 +82,12 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
           const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
           distancePerSecond *= zoomDif;
         }
-        
+
         const center = map.current.getCenter();
         center.lng -= distancePerSecond / 60; // 60fps 기준
 
         map.current.setCenter(center);
-        
+
         spinAnimationId = requestAnimationFrame(spinGlobe);
       }
     };
@@ -273,13 +273,13 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
     // 오스트리아 트랙 그리기 함수
     const drawAustriaTrack = (delay: number = 0) => {
       const trackCoordinates = austriaTrack.features[0].geometry.coordinates;
-      
+
       drawTrack('austria-track', trackCoordinates, '#FF1801', delay, () => {
         // 서킷 주변 회전 애니메이션
         let bearing = -20;
         let isRotating = false;
         let rotationAnimationId: number | null = null;
-        
+
         const rotateCamera = () => {
           if (map.current!.getZoom() > 13 && isRotating) {
             bearing += 0.2;
@@ -287,7 +287,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
             rotationAnimationId = requestAnimationFrame(rotateCamera);
           }
         };
-        
+
         // 사용자 인터랙션 감지하여 회전 중지
         const stopRotation = () => {
           isRotating = false;
@@ -296,7 +296,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
             rotationAnimationId = null;
           }
         };
-        
+
         const startRotation = () => {
           if (!isRotating && map.current!.getZoom() > 13) {
             setTimeout(() => {
@@ -307,11 +307,11 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
             }, 500);
           }
         };
-        
+
         // 회전 시작
         isRotating = true;
         rotateCamera();
-        
+
         // 이벤트 리스너 추가
         map.current!.on('dragstart', stopRotation);
         map.current!.on('dragend', startRotation);
@@ -559,7 +559,6 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
         austGPEl.style.width = '60px';
         austGPEl.style.height = '60px';
         austGPEl.style.cursor = 'pointer';
-        austGPEl.style.position = 'relative';
 
         const austGPMarker = document.createElement('div');
         austGPMarker.style.width = '60px';
@@ -601,7 +600,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
             zoom: 15,
             pitch: 60,
             bearing: -20,
-            speed: 0.6,
+            speed: 1.2,
             curve: 1,
             essential: true
           });
@@ -611,8 +610,9 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
           });
         });
 
+        // 오스트리아 Red Bull Ring 마커 추가
         const austGPMark = new mapboxgl.Marker(austGPEl)
-          .setLngLat([redbullRing.location.lng, redbullRing.location.lat])
+          .setLngLat([14.7647, 47.2197])
           .addTo(map.current!);
 
         markers.current.push(austGPMark);
@@ -705,7 +705,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
             let bearing = 45;
             let isRotating = false;
             let localAnimationId: number | null = null;
-            
+
             const rotateCamera = () => {
               if (map.current!.getZoom() > 13 && isRotating) {
                 bearing += 0.3;  // 회전 속도 감소
@@ -719,7 +719,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
                 }
               }
             };
-            
+
             // 사용자 인터랙션 감지하여 회전 중지
             const stopRotation = () => {
               isRotating = false;
@@ -728,7 +728,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
                 localAnimationId = null;
               }
             };
-            
+
             const startRotation = () => {
               if (!isRotating && map.current!.getZoom() > 13) {
                 setTimeout(() => {
@@ -739,11 +739,11 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
                 }, 500);
               }
             };
-            
+
             // 회전 시작
             isRotating = true;
             rotateCamera();
-            
+
             // 이벤트 리스너 추가
             map.current!.on('dragstart', stopRotation);
             map.current!.on('dragend', startRotation);
@@ -788,7 +788,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
         cancelAnimationFrame(animationId.current);
         animationId.current = null;
       }
-      
+
       if (spinAnimationId) {
         cancelAnimationFrame(spinAnimationId);
         spinAnimationId = null;
