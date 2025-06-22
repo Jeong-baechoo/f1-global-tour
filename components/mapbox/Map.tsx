@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import teamsData from '@/data/teams.json';
@@ -27,6 +27,30 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [currentCircuitId, setCurrentCircuitId] = useState<string | null>(null);
+
+  // 시네마틱 모드 토글 핸들러
+  const handleCinematicModeToggle = useCallback((): boolean => {
+    console.log('Toggling cinematic mode...');
+    if (!map.current || !currentCircuitId) return false;
+    
+    const mapWithHandlers = map.current as mapboxgl.Map & {
+      _circuitRotationHandlers?: any;
+    };
+    const handlers = mapWithHandlers._circuitRotationHandlers;
+    
+    if (handlers?.rotation) {
+      const isEnabled = handlers.rotation.toggleCinematicMode();
+      if (handlers.onCinematicModeToggle) {
+        handlers.onCinematicModeToggle(isEnabled);
+      }
+      // 상위 컴포넌트로 상태 전달
+      if (onCinematicModeChange) {
+        onCinematicModeChange(isEnabled);
+      }
+      return isEnabled;
+    }
+    return false;
+  }, [currentCircuitId, onCinematicModeChange]);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -125,7 +149,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
         }
       },
       toggleCinematicMode: () => {
-        handleCinematicModeToggle();
+        return handleCinematicModeToggle();
       }
     };
 
@@ -249,29 +273,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
       // 이벤트 리스너는 맵 제거 시 자동으로 정리됨
     };
-  }, [onMapReady, onMarkerClick]);
-
-  // 시네마틱 모드 토글 핸들러
-  const handleCinematicModeToggle = () => {
-    console.log('Toggling cinematic mode...');
-    if (!map.current || !currentCircuitId) return;
-    
-    const mapWithHandlers = map.current as any;
-    const handlers = mapWithHandlers._circuitRotationHandlers;
-    
-    if (handlers?.rotation) {
-      const isEnabled = handlers.rotation.toggleCinematicMode();
-      if (handlers.onCinematicModeToggle) {
-        handlers.onCinematicModeToggle(isEnabled);
-      }
-      // 상위 컴포넌트로 상태 전달
-      if (onCinematicModeChange) {
-        onCinematicModeChange(isEnabled);
-      }
-      return isEnabled;
-    }
-    return false;
-  };
+  }, [onMapReady, onMarkerClick, onCinematicModeChange, handleCinematicModeToggle]);
 
   return (
     <>

@@ -48,7 +48,7 @@ export default function Home() {
   const [mapRef, setMapRef] = useState<{
     flyToCircuit: (circuitId: string, gentle?: boolean) => void;
     flyToTeam: (teamId: string) => void;
-    toggleCinematicMode?: () => void;
+    toggleCinematicMode?: () => boolean;
   } | null>(null);
   const [isCinematicMode, setIsCinematicMode] = useState(false);
 
@@ -198,7 +198,7 @@ export default function Home() {
           // 시네마틱 모드 토글
           if (mapRef?.toggleCinematicMode) {
             const isEnabled = mapRef.toggleCinematicMode();
-            setIsCinematicMode(isEnabled || false);
+            setIsCinematicMode(isEnabled);
           }
         }}
       />
