@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import teamsData from '@/data/teams.json';
@@ -12,6 +12,7 @@ import { createGlobeSpinner } from './utils/animations';
 import { createRedBullMarker } from './markers/RedBullMarker';
 import { addAllCircuits, findNextRace } from './markers/addAllCircuits';
 import { flyToCircuitWithTrack } from './utils/circuitHelpers';
+import CinematicModeButton from './CinematicModeButton';
 
 // Mapbox 토큰 확인
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
@@ -19,11 +20,13 @@ if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
 }
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
-export default function Map({ onMarkerClick, onMapReady }: MapProps) {
+export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
+  const [isCircuitView, setIsCircuitView] = useState(false);
+  const [currentCircuitId, setCurrentCircuitId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -46,7 +49,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
     // 글로브 회전 애니메이션 설정
     globeSpinner.current = createGlobeSpinner(map.current);
 
-    // 이벤트 리스너 등록
+    // 이벤트 리스너 등록 - 실제 사용자 조작만 감지
     map.current.on('dragstart', globeSpinner.current.startInteracting);
     map.current.on('dragend', globeSpinner.current.stopInteracting);
     map.current.on('pitchstart', globeSpinner.current.startInteracting);
@@ -55,6 +58,10 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
     map.current.on('rotateend', globeSpinner.current.stopInteracting);
     map.current.on('zoomstart', globeSpinner.current.startInteracting);
     map.current.on('zoomend', globeSpinner.current.stopInteracting);
+    
+    // 터치 이벤트만 추가 (마우스 휠은 제거)
+    map.current.on('touchstart', globeSpinner.current.startInteracting);
+    map.current.on('touchend', globeSpinner.current.stopInteracting);
 
     // flyTo API 정의
     const mapAPI: MapAPI = {
@@ -69,15 +76,29 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
           const mobile = window.innerWidth < 640;
           map.current.flyTo({
             center: [circuit.location.lng, circuit.location.lat],
-            zoom: mobile ? 2 : 5, // 모바일: 2, 데스크톱: 5
+            zoom: mobile ? 2 : 6, // 모바일: 2, 데스크톱: 6
             pitch: 30,
             speed: 0.8,
             curve: 1,
             essential: true
           });
+          
+          // flyTo 완료 시 글로브 스피너 재개
+          map.current.once('moveend', () => {
+            globeSpinner.current?.stopInteracting();
+          });
         } else {
           // 일반 flyTo는 트랙 그리기 포함
-          flyToCircuitWithTrack(map.current, circuit);
+          // 글로브 스피너 일시 중단
+          globeSpinner.current?.startInteracting();
+          setIsCircuitView(true);
+          setCurrentCircuitId(circuitId);
+          flyToCircuitWithTrack(map.current, circuit, undefined, (enabled) => {
+            // 시네마틱 모드 토글 콜백 처리
+            if (onCinematicModeChange) {
+              onCinematicModeChange(enabled);
+            }
+          });
         }
       },
       flyToTeam: (teamId: string) => {
@@ -86,15 +107,25 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
         const team = teamsData.teams.find(t => t.id === teamId);
         if (team) {
           const mobile = window.innerWidth < 640;
+          // 글로브 스피너 일시 중단
+          globeSpinner.current?.startInteracting();
           map.current.flyTo({
             center: [team.headquarters.lng, team.headquarters.lat],
-            zoom: mobile ? 15 : 17, // 모바일: 15, 데스크톱: 17
+            zoom: mobile ? 15 : 18, // 모바일: 15, 데스크톱: 18
             pitch: 45,
             speed: 0.6,
             curve: 1,
             essential: true
           });
+          
+          // flyTo 완료 시 글로브 스피너 재개
+          map.current.once('moveend', () => {
+            globeSpinner.current?.stopInteracting();
+          });
         }
+      },
+      toggleCinematicMode: () => {
+        handleCinematicModeToggle();
       }
     };
 
@@ -108,6 +139,45 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
       // 대기 효과 및 스카이 레이어 추가
       map.current!.setFog(FOG_CONFIG);
       map.current!.addLayer(SKY_LAYER_CONFIG);
+
+      // 3D 터레인 추가
+      map.current!.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 14
+      });
+
+      // 터레인 활성화 (초기값)
+      map.current!.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': 1.8
+      });
+
+      // 줌 레벨에 따른 터레인 exaggeration 동적 조정
+      const updateTerrainExaggeration = () => {
+        const zoom = map.current!.getZoom();
+        let exaggeration: number;
+        
+        if (zoom < 5) {
+          // 글로브 뷰: 지형적 특징 강조
+          exaggeration = 2.0;
+        } else if (zoom < 10) {
+          // 중간 거리: 점진적 감소
+          exaggeration = 2.0 - ((zoom - 5) * 0.1);
+        } else {
+          // 가까운 거리: 자연스러운 표현
+          exaggeration = 1.5;
+        }
+        
+        map.current!.setTerrain({
+          'source': 'mapbox-dem',
+          'exaggeration': exaggeration
+        });
+      };
+
+      // 줌 이벤트에 터레인 업데이트 연결
+      map.current!.on('zoom', updateTerrainExaggeration);
 
       // 불필요한 레이어 제거
       const style = map.current!.getStyle();
@@ -165,9 +235,51 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
       });
       markers.current = [];
 
+      // 줌 레벨 변경 감지 핸들러 등록
+      const handleZoomChange = () => {
+        const zoom = map.current!.getZoom();
+        // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
+        if (zoom <= 10) {
+          setIsCircuitView(false);
+          setCurrentCircuitId(null);
+        }
+      };
+
+      map.current!.on('zoom', handleZoomChange);
+
       // 이벤트 리스너는 맵 제거 시 자동으로 정리됨
     };
   }, [onMapReady, onMarkerClick]);
 
-  return <div ref={mapContainer} className="w-full h-full" />;
+  // 시네마틱 모드 토글 핸들러
+  const handleCinematicModeToggle = () => {
+    console.log('Toggling cinematic mode...');
+    if (!map.current || !currentCircuitId) return;
+    
+    const mapWithHandlers = map.current as any;
+    const handlers = mapWithHandlers._circuitRotationHandlers;
+    
+    if (handlers?.rotation) {
+      const isEnabled = handlers.rotation.toggleCinematicMode();
+      if (handlers.onCinematicModeToggle) {
+        handlers.onCinematicModeToggle(isEnabled);
+      }
+      // 상위 컴포넌트로 상태 전달
+      if (onCinematicModeChange) {
+        onCinematicModeChange(isEnabled);
+      }
+      return isEnabled;
+    }
+    return false;
+  };
+
+  return (
+    <>
+      <div ref={mapContainer} className="w-full h-full" />
+      <CinematicModeButton 
+        isCircuitView={isCircuitView} 
+        onToggle={handleCinematicModeToggle} 
+      />
+    </>
+  );
 }

@@ -18,11 +18,13 @@ export interface MarkerData {
 export interface MapAPI {
   flyToCircuit: (circuitId: string, gentle?: boolean) => void;
   flyToTeam: (teamId: string) => void;
+  toggleCinematicMode?: () => boolean;
 }
 
 export interface MapProps {
   onMarkerClick?: (item: MarkerData) => void;
   onMapReady?: (mapAPI: MapAPI) => void;
+  onCinematicModeChange?: (enabled: boolean) => void;
 }
 
 export interface TrackDrawOptions {

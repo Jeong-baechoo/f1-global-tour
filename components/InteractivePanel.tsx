@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { X, ChevronRight, MapPin, Calendar } from 'lucide-react';
+import { X, ChevronRight, MapPin, Calendar, Camera, CameraOff } from 'lucide-react';
 // import Image from 'next/image'; // Uncomment when images are available
 
 interface InteractivePanelProps {
@@ -24,6 +24,8 @@ interface InteractivePanelProps {
     raceDate?: string;
   } | null;
   onExploreCircuit?: () => void;
+  isCinematicMode?: boolean;
+  onToggleCinematicMode?: () => void;
 }
 
 export default function InteractivePanel({
@@ -31,7 +33,9 @@ export default function InteractivePanel({
   onClose,
   module,
   data,
-  onExploreCircuit
+  onExploreCircuit,
+  isCinematicMode = false,
+  onToggleCinematicMode
 }: InteractivePanelProps) {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -291,6 +295,30 @@ export default function InteractivePanel({
                 </div>
               </div>
             </div>
+
+            {/* 시네마틱 모드 버튼 - 데스크탑 패널에만 표시 */}
+            {!isMobile && onToggleCinematicMode && (
+              <button
+                onClick={onToggleCinematicMode}
+                className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wider border ${
+                  isCinematicMode
+                    ? 'bg-[#FF1801] text-white border-[#FF1801] hover:bg-[#FF1801]/90'
+                    : 'bg-[#1A1A1A] text-white border-[#FF1801]/20 hover:bg-[#2A2A2A]'
+                }`}
+              >
+                {isCinematicMode ? (
+                  <>
+                    <CameraOff className="w-5 h-5" />
+                    시네마틱 투어 정지
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-5 h-5" />
+                    시네마틱 투어 시작
+                  </>
+                )}
+              </button>
+            )}
 
             <div className="flex gap-3">
               <button className="flex-1 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">

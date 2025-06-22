@@ -48,7 +48,9 @@ export default function Home() {
   const [mapRef, setMapRef] = useState<{
     flyToCircuit: (circuitId: string, gentle?: boolean) => void;
     flyToTeam: (teamId: string) => void;
+    toggleCinematicMode?: () => void;
   } | null>(null);
+  const [isCinematicMode, setIsCinematicMode] = useState(false);
 
   const handleMarkerClick = (item: {
     type: string;
@@ -144,7 +146,11 @@ export default function Home() {
   return (
     <main className="relative w-full h-screen overflow-hidden">
       {/* 전체 화면 지도 */}
-      <Map onMarkerClick={handleMarkerClick} onMapReady={setMapRef} />
+      <Map 
+        onMarkerClick={handleMarkerClick} 
+        onMapReady={setMapRef} 
+        onCinematicModeChange={setIsCinematicMode}
+      />
 
       {/* F1 로고 - 모바일 */}
       <div className="absolute top-2 left-4 z-10 sm:hidden">
@@ -187,6 +193,14 @@ export default function Home() {
         module={panelModule}
         data={panelData}
         onExploreCircuit={handleExploreCircuit}
+        isCinematicMode={isCinematicMode}
+        onToggleCinematicMode={() => {
+          // 시네마틱 모드 토글
+          if (mapRef?.toggleCinematicMode) {
+            const isEnabled = mapRef.toggleCinematicMode();
+            setIsCinematicMode(isEnabled || false);
+          }
+        }}
       />
     </main>
   );

@@ -4,6 +4,29 @@ import { createCircuitRotation } from './animations';
 import { getTrackCoordinates } from './trackDataLoader';
 import { isMobile } from './device';
 
+// 타입 정의
+interface CircuitRotationHandlers {
+  dragStart: () => void;
+  dragEnd: () => void;
+  zoomStart: () => void;
+  zoomEnd: () => void;
+  cleanup: () => void;
+  rotation?: {
+    stopRotation: () => void;
+    startRotation: () => void;
+    enableCinematicMode: () => void;
+    disableCinematicMode: () => void;
+    toggleCinematicMode: () => boolean;
+    isCinematicModeEnabled: () => boolean;
+    cleanup: () => void;
+  };
+  onCinematicModeToggle?: (enabled: boolean) => void;
+}
+
+interface MapWithHandlers extends mapboxgl.Map {
+  _circuitRotationHandlers?: CircuitRotationHandlers;
+}
+
 // 서킷별 색상 정의
 export const getCircuitColor = (circuitId: string): string => {
   const colors: { [key: string]: string } = {
@@ -57,30 +80,30 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
   const mobile = isMobile();
   const configs: { [key: string]: Partial<CameraConfig> } = {
     'austria': {
-      zoom: mobile ? 14 : 15,  // 모바일: 14, 데스크톱: 15
-      pitch: 60,
+      zoom: mobile ? 14 : 16,  // 모바일: 14, 데스크톱: 16
+      pitch: 70,  // 터레인 효과 극대화
       bearing: -20,
       speed: 1.2,
       curve: 1
     },
     'nurburgring': {
-      zoom: mobile ? 13.5 : 14.5,  // 모바일: 13.5, 데스크톱: 14.5
-      pitch: 45,
+      zoom: mobile ? 13.5 : 15.5,  // 모바일: 13.5, 데스크톱: 15.5
+      pitch: 65,  // 터레인이 잘 보이도록 상향
       bearing: 45,
       speed: 0.4,
       curve: 0.8,
       duration: 6000
     },
     'monaco': {
-      zoom: mobile ? 13 : 14,  // 모바일: 13, 데스크톱: 14
-      pitch: 50,
+      zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
+      pitch: 70,  // 해안 지형 강조
       bearing: 30,
       speed: 0.6,
       curve: 1.2
     },
     'silverstone': {
-      zoom: mobile ? 13 : 14,  // 모바일: 13, 데스크톱: 14
-      pitch: 55,
+      zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
+      pitch: 65,
       bearing: 0,
       speed: 0.8,
       curve: 1
@@ -88,11 +111,11 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
   };
 
   const defaultConfig: CameraConfig = {
-    zoom: mobile ? 13 : 14,  // 모바일: 13, 데스크톱: 14
-    pitch: 45,
+    zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
+    pitch: 70,  // 기본 pitch 값 상향
     bearing: 0,
-    speed: 1.2,  // 기본 속도를 더 느리게 (0.6 -> 0.3)
-    curve: 1.2,  // 더 부드러운 곡선
+    speed: 1.2,
+    curve: 1.2,
     essential: true
   };
 
@@ -111,8 +134,24 @@ interface Circuit {
 export const flyToCircuitWithTrack = async (
   map: mapboxgl.Map,
   circuit: Circuit,
-  onRotationStart?: () => void
+  onRotationStart?: () => void,
+  onCinematicModeToggle?: (enabled: boolean) => void
 ) => {
+  const mapWithHandlers = map as MapWithHandlers;
+  
+  // Clean up any existing circuit rotation handlers
+  if (mapWithHandlers._circuitRotationHandlers) {
+    const handlers = mapWithHandlers._circuitRotationHandlers;
+    map.off('dragstart', handlers.dragStart);
+    map.off('dragend', handlers.dragEnd);
+    map.off('zoomstart', handlers.zoomStart);
+    map.off('zoomend', handlers.zoomEnd);
+    if (handlers.cleanup) {
+      handlers.cleanup();
+    }
+    delete mapWithHandlers._circuitRotationHandlers;
+  }
+
   const cameraConfig = getCircuitCameraConfig(circuit.id);
 
   map.flyTo({
@@ -136,16 +175,37 @@ export const flyToCircuitWithTrack = async (
             onRotationStart();
           }
 
-          const { stopRotation, startRotation } = createCircuitRotation(
+          const rotation = createCircuitRotation(
             map,
-            cameraConfig.bearing || 0,
-            false
+            cameraConfig.bearing || 0
           );
 
-          map.on('dragstart', stopRotation);
-          map.on('dragend', startRotation);
-          map.on('zoomstart', stopRotation);
-          map.on('zoomend', startRotation);
+          // Store event handlers for cleanup
+          const dragStartHandler = () => rotation.stopRotation();
+          const dragEndHandler = () => rotation.startRotation();
+          const zoomStartHandler = () => rotation.stopRotation();
+          const zoomEndHandler = () => rotation.startRotation();
+          const moveHandler = () => rotation.stopRotation();
+          const touchHandler = () => rotation.stopRotation();
+
+          // Listen to all user interactions
+          map.on('dragstart', dragStartHandler);
+          map.on('dragend', dragEndHandler);
+          map.on('zoomstart', zoomStartHandler);
+          map.on('zoomend', zoomEndHandler);
+          map.on('movestart', moveHandler);
+          map.on('touchstart', touchHandler);
+
+          // Store handlers and rotation object for potential cleanup later
+          mapWithHandlers._circuitRotationHandlers = {
+            dragStart: dragStartHandler,
+            dragEnd: dragEndHandler,
+            zoomStart: zoomStartHandler,
+            zoomEnd: zoomEndHandler,
+            cleanup: rotation.cleanup,
+            rotation: rotation,
+            onCinematicModeToggle
+          };
         }
       });
     }
