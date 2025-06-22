@@ -29,13 +29,14 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
     if (!mapContainer.current || map.current) return;
 
     // 맵 초기화
+    const isMobile = window.innerWidth < 640;
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      ...MAP_CONFIG
+      ...MAP_CONFIG,
+      zoom: isMobile ? MAP_CONFIG.zoom : MAP_CONFIG.zoom // 초기 줌은 동일하게 유지
     });
 
     // 내비게이션 컨트롤 추가 - 모바일에서는 더 작게
-    const isMobile = window.innerWidth < 640;
     map.current.addControl(new mapboxgl.NavigationControl({
       showCompass: !isMobile, // 모바일에서는 컴패스 숨김
       showZoom: true,
@@ -65,9 +66,10 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
 
         if (gentle) {
           // gentle flyTo는 간단한 이동만
+          const mobile = window.innerWidth < 640;
           map.current.flyTo({
             center: [circuit.location.lng, circuit.location.lat],
-            zoom: 5,
+            zoom: mobile ? 3 : 5, // 모바일: 3, 데스크톱: 5
             pitch: 30,
             speed: 0.8,
             curve: 1,
@@ -83,9 +85,10 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
 
         const team = teamsData.teams.find(t => t.id === teamId);
         if (team) {
+          const mobile = window.innerWidth < 640;
           map.current.flyTo({
             center: [team.headquarters.lng, team.headquarters.lat],
-            zoom: 17,
+            zoom: mobile ? 15 : 17, // 모바일: 15, 데스크톱: 17
             pitch: 45,
             speed: 0.6,
             curve: 1,

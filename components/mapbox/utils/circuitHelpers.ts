@@ -2,6 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { drawTrack } from './tracks';
 import { createCircuitRotation } from './animations';
 import { getTrackCoordinates } from './trackDataLoader';
+import { isMobile } from './device';
 
 // 서킷별 색상 정의
 export const getCircuitColor = (circuitId: string): string => {
@@ -53,16 +54,17 @@ interface CameraConfig {
 
 // 서킷별 카메라 설정
 export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
+  const mobile = isMobile();
   const configs: { [key: string]: Partial<CameraConfig> } = {
     'austria': {
-      zoom: 15,
+      zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
       pitch: 60,
       bearing: -20,
       speed: 1.2,
       curve: 1
     },
     'nurburgring': {
-      zoom: 14.5,
+      zoom: mobile ? 12.5 : 14.5,  // 모바일: 12.5, 데스크톱: 14.5
       pitch: 45,
       bearing: 45,
       speed: 0.4,
@@ -70,14 +72,14 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
       duration: 6000
     },
     'monaco': {
-      zoom: 14,
+      zoom: mobile ? 12 : 14,  // 모바일: 12, 데스크톱: 14
       pitch: 50,
       bearing: 30,
       speed: 0.6,
       curve: 1.2
     },
     'silverstone': {
-      zoom: 14,
+      zoom: mobile ? 12 : 14,  // 모바일: 12, 데스크톱: 14
       pitch: 55,
       bearing: 0,
       speed: 0.8,
@@ -86,7 +88,7 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
   };
 
   const defaultConfig: CameraConfig = {
-    zoom: 14,
+    zoom: mobile ? 12 : 14,  // 모바일: 12, 데스크톱: 14
     pitch: 45,
     bearing: 0,
     speed: 1.2,  // 기본 속도를 더 느리게 (0.6 -> 0.3)
