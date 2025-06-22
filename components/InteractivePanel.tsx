@@ -178,7 +178,7 @@ export default function InteractivePanel({
               </div>
             )}
 
-            <div className="bg-[#1A1A1A]/70 rounded border border-[#FF1801]/20 p-4 sm:p-6">
+            <div className="bg-[#1A1A1A]/60 backdrop-blur-sm rounded border border-[#FF1801]/20 p-4 sm:p-6">
               <div className="text-center mb-4">
                 <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">RACE STARTS IN</div>
                 <div className="flex justify-center gap-2 sm:gap-4">
@@ -268,17 +268,17 @@ export default function InteractivePanel({
             )} */}
 
             <div className="grid grid-cols-2 gap-3">
-              <div className={isMobile ? "bg-[#0F0F0F] p-3 rounded border border-[#FF1801]/20" : "bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20"}>
+              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
                 <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Corners</div>
                 <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.corners || '10'}</div>
               </div>
-              <div className={isMobile ? "bg-[#0F0F0F] p-3 rounded border border-[#FF1801]/20" : "bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20"}>
+              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
                 <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Circuit Length</div>
                 <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.length || '4.318'} <span className="text-sm text-[#C0C0C0]">km</span></div>
               </div>
             </div>
 
-            <div className="bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20">
+            <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Race Weekend Schedule (KST)</h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center py-2 border-b border-[#1A1A1A]">
@@ -392,7 +392,7 @@ export default function InteractivePanel({
               )}
             </div>
 
-            <div className="bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20">
+            <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
               <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">Latest Team News</h3>
               <div className="space-y-2">
                 <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
@@ -450,7 +450,7 @@ export default function InteractivePanel({
       {/* Mobile Panel - Interactive Bottom Sheet */}
       <div
         ref={sheetRef}
-        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/98 backdrop-blur border-t border-[#FF1801]/20 z-50 rounded-t-2xl shadow-2xl transition-all ${
+        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/60 backdrop-blur-sm border-t border-[#FF1801]/20 z-50 rounded-t-2xl shadow-2xl transition-all ${
           isOpen ? '' : 'translate-y-full'
         } ${isDragging ? '' : 'transition-all duration-300 ease-out'}`}
         style={{
@@ -464,7 +464,7 @@ export default function InteractivePanel({
       >
         {/* Drag Handle Area */}
         <div
-          className="sticky top-0 z-10 bg-[#1A1A1A]/98 backdrop-blur-xl rounded-t-2xl cursor-grab active:cursor-grabbing"
+          className="sticky top-0 z-10 bg-[#1A1A1A]/60 backdrop-blur-sm rounded-t-2xl cursor-grab active:cursor-grabbing"
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
@@ -546,7 +546,7 @@ export default function InteractivePanel({
 
         {/* Footer - Half/Full 상태에서만 표시 */}
         {(sheetState === 'half' || sheetState === 'full') && (
-          <div className="sticky bottom-0 bg-[#1A1A1A]/98 backdrop-blur border-t border-[#FF1801]/20 p-3">
+          <div className="sticky bottom-0 bg-[#1A1A1A]/60 backdrop-blur-sm border-t border-[#FF1801]/20 p-3">
             <div className="flex items-center gap-2 justify-center">
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF1801] animate-pulse"></div>
               <span className="text-[10px] text-[#C0C0C0] uppercase tracking-widest">Live Telemetry</span>
