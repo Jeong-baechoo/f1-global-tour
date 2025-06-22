@@ -174,7 +174,7 @@ export default function InteractivePanel({
               </div>
             )}
 
-            <div className="bg-[#0F0F0F] rounded border border-[#FF1801]/20 p-4 sm:p-6">
+            <div className="bg-[#1A1A1A]/70 rounded border border-[#FF1801]/20 p-4 sm:p-6">
               <div className="text-center mb-4">
                 <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">RACE STARTS IN</div>
                 <div className="flex justify-center gap-2 sm:gap-4">
@@ -401,11 +401,11 @@ export default function InteractivePanel({
     <>
       {/* Desktop Panel - Slide from right */}
       <div
-        className={`hidden sm:flex fixed right-0 top-0 h-full w-[400px] bg-[#1A1A1A]/95 backdrop-blur-xl border-l border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`hidden sm:block fixed right-0 top-0 h-full w-[400px] bg-[#1A1A1A]/60 backdrop-blur-sm border-l border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="relative h-full flex flex-col">
+        <div className="relative h-full w-full flex flex-col">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-[#C0C0C0] hover:text-[#FF1801] transition-colors z-10"
@@ -415,13 +415,6 @@ export default function InteractivePanel({
 
           <div className="flex-1 overflow-y-auto p-6 pt-16">
             {renderContent()}
-          </div>
-
-          <div className="border-t border-[#FF1801]/20 p-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FF1801] animate-pulse"></div>
-              <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">Live Telemetry Active</span>
-            </div>
           </div>
         </div>
       </div>

@@ -146,14 +146,26 @@ export default function Home() {
       {/* 전체 화면 지도 */}
       <Map onMarkerClick={handleMarkerClick} onMapReady={setMapRef} />
 
-      {/* F1 로고 */}
-      <div className="absolute top-2 sm:top-0.5 left-4 sm:left-14 z-10">
+      {/* F1 로고 - 모바일 */}
+      <div className="absolute top-2 left-4 z-10 sm:hidden">
         <Image
           src="/f1_logo.png"
           alt="F1 Logo"
           width={80}
           height={20}
-          className="drop-shadow-lg sm:w-[120px] sm:h-[30px]"
+          className="drop-shadow-lg"
+          priority
+        />
+      </div>
+
+      {/* F1 로고 - 데스크탑 */}
+      <div className="hidden sm:block absolute top-0.5 left-14 z-10">
+        <Image
+          src="/f1_logo.png"
+          alt="F1 Logo"
+          width={120}
+          height={30}
+          className="drop-shadow-lg"
           priority
         />
       </div>
