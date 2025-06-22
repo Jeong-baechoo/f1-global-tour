@@ -12,7 +12,7 @@ export const ANIMATION_CONFIG = {
   maxSpinZoom: 5,
   slowSpinZoom: 3,
   trackAnimationDuration: 3000,
-  rotationSpeed: 0.1
+  rotationSpeed: 0.07
 };
 
 export const FOG_CONFIG = {

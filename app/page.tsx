@@ -2,13 +2,14 @@
 
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import InteractivePanel from '@/components/InteractivePanel';
 import circuitsData from '@/data/circuits.json';
 
 // Dynamic import to avoid SSR issues with Mapbox
 const Map = dynamic(
   () => import('@/components/mapbox/Map'),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="w-full h-screen flex items-center justify-center bg-[#1A1A1A]">
@@ -85,7 +86,7 @@ export default function Home() {
       corners: 10,
       laps: 71
     });
-    
+
     if (mapRef) {
       mapRef.flyToCircuit('austria');
     }
@@ -93,11 +94,11 @@ export default function Home() {
 
   useEffect(() => {
     if (!mapRef) return;
-    
+
     // Find the next race based on current date
     const findNextRace = () => {
       const today = new Date();
-      
+
       // Sort circuits by race date
       const sortedCircuits = circuitsData.circuits
         .filter((circuit) => circuit.raceDate2025 !== null)
@@ -107,13 +108,13 @@ export default function Home() {
           const dateB = new Date(b.raceDate2025!).getTime();
           return dateA - dateB;
         });
-      
+
       // Find the next race
       const nextRace = sortedCircuits.find((circuit) => {
         if (!circuit.raceDate2025) return false;
         return new Date(circuit.raceDate2025) > today;
       });
-      
+
       return nextRace || sortedCircuits[0]; // If no future races, show first race of next season
     };
 
@@ -128,7 +129,7 @@ export default function Home() {
         raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
       });
       setPanelOpen(true);
-      
+
       // Add a small delay for flyTo to ensure map is ready
       setTimeout(() => {
         if (nextRace.id === 'austria') {
@@ -144,7 +145,19 @@ export default function Home() {
     <main className="relative w-full h-screen overflow-hidden">
       {/* 전체 화면 지도 */}
       <Map onMarkerClick={handleMarkerClick} onMapReady={setMapRef} />
-      
+
+      {/* F1 로고 */}
+      <div className="absolute top-0.5 left-14 z-10">
+        <Image
+          src="/f1_logo.png"
+          alt="F1 Logo"
+          width={120}
+          height={30}
+          className="drop-shadow-lg"
+          priority
+        />
+      </div>
+
       {/* 하단 타임라인 바 */}
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0F0F0F] to-transparent pointer-events-none">
         <div className="absolute bottom-4 left-4 right-4 h-12 bg-[#1A1A1A]/90 backdrop-blur-md rounded border border-[#FF1801]/20 pointer-events-auto flex items-center px-4">

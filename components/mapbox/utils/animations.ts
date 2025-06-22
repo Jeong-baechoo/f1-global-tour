@@ -130,9 +130,8 @@ export const createCircuitRotation = (
     }
   };
 
-  // 회전 시작
-  isRotating = true;
-  rotateCamera();
+  // 초기 회전은 startRotation을 통해 시작하도록 변경
+  startRotation();
 
   return { stopRotation, startRotation };
 };
