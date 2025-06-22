@@ -69,7 +69,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
           const mobile = window.innerWidth < 640;
           map.current.flyTo({
             center: [circuit.location.lng, circuit.location.lat],
-            zoom: mobile ? 1 : 5, // 모바일: 1, 데스크톱: 5
+            zoom: mobile ? 2 : 5, // 모바일: 2, 데스크톱: 5
             pitch: 30,
             speed: 0.8,
             curve: 1,
