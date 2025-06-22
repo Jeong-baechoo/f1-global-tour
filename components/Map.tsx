@@ -424,7 +424,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
           if (layersToRemove.some(pattern => layer.id.includes(pattern))) {
             try {
               map.current!.removeLayer(layer.id);
-            } catch (e) {
+            } catch {
               // 레이어가 이미 제거된 경우 무시
             }
           }
