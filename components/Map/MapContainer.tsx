@@ -7,7 +7,7 @@ import teams from '@/data/teams.json';
 import circuits from '@/data/circuits.json';
 
 // Replace with your actual Mapbox token
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoiYmFlY2hvb2tpbmciLCJhIjoiY21iajAwaTd1MGJrZjJqb2g3M3RsZ2hhaiJ9.B1BuVoKpl3Xt1HSZq6ugeA';
 
 export default function MapContainer() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -44,7 +44,7 @@ export default function MapContainer() {
     });
 
     // Add team markers
-    teams.forEach((team: Team) => {
+    teams.teams.forEach((team) => {
       const el = document.createElement('div');
       el.className = 'team-marker';
       el.style.width = '40px';
@@ -56,7 +56,7 @@ export default function MapContainer() {
       el.style.border = `3px solid ${team.colors.secondary}`;
       el.style.padding = '4px';
 
-      const marker = new mapboxgl.Marker(el)
+      new mapboxgl.Marker(el)
         .setLngLat([team.headquarters.lng, team.headquarters.lat])
         .addTo(map.current!);
 
@@ -67,7 +67,7 @@ export default function MapContainer() {
     });
 
     // Add circuit markers
-    circuits.forEach((circuit: Circuit) => {
+    circuits.circuits.forEach((circuit) => {
       const el = document.createElement('div');
       el.className = 'circuit-marker';
       el.style.width = '36px';
@@ -76,13 +76,15 @@ export default function MapContainer() {
       el.style.backgroundSize = 'contain';
       
       // Check if race is upcoming
-      const raceDate = new Date(circuit.raceDate);
-      const today = new Date();
-      if (raceDate > today) {
-        el.classList.add('active-race');
+      if (circuit.raceDate2025) {
+        const raceDate = new Date(circuit.raceDate2025);
+        const today = new Date();
+        if (raceDate > today) {
+          el.classList.add('active-race');
+        }
       }
 
-      const marker = new mapboxgl.Marker(el)
+      new mapboxgl.Marker(el)
         .setLngLat([circuit.location.lng, circuit.location.lat])
         .addTo(map.current!);
 
@@ -108,20 +110,21 @@ export default function MapContainer() {
     });
   };
 
-  const flyFromTeamToCircuit = (teamId: string, circuitId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    const circuit = circuits.find(c => c.id === circuitId);
-    
-    if (!team || !circuit) return;
-
-    // First fly to team HQ
-    flyToLocation(team.headquarters.lng, team.headquarters.lat, 10);
-    
-    // Then fly to circuit after a delay
-    setTimeout(() => {
-      flyToLocation(circuit.location.lng, circuit.location.lat, 12);
-    }, 4000);
-  };
+  // Commented out for future use
+  // const flyFromTeamToCircuit = (teamId: string, circuitId: string) => {
+  //   const team = teams.teams.find(t => t.id === teamId);
+  //   const circuit = circuits.circuits.find(c => c.id === circuitId);
+  //   
+  //   if (!team || !circuit) return;
+  //
+  //   // First fly to team HQ
+  //   flyToLocation(team.headquarters.lng, team.headquarters.lat, 10);
+  //   
+  //   // Then fly to circuit after a delay
+  //   setTimeout(() => {
+  //     flyToLocation(circuit.location.lng, circuit.location.lat, 12);
+  //   }, 4000);
+  // };
 
   return (
     <div className="relative w-full h-screen">
@@ -159,13 +162,13 @@ export default function MapContainer() {
               <h2 className="text-2xl font-bold mb-2">{selectedCircuit.name}</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-2">{selectedCircuit.country}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                Track Length: {selectedCircuit.trackLength} km
+                Track Length: {selectedCircuit.length} km
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                 Lap Record: {selectedCircuit.lapRecord.time} ({selectedCircuit.lapRecord.driver}, {selectedCircuit.lapRecord.year})
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                2024 Race Date: {new Date(selectedCircuit.raceDate).toLocaleDateString()}
+                2025 Race Date: {selectedCircuit.raceDate2025 ? new Date(selectedCircuit.raceDate2025).toLocaleDateString() : 'TBD'}
               </p>
               <button
                 onClick={() => setSelectedCircuit(null)}

@@ -21,18 +21,28 @@ export interface Circuit {
   id: string;
   name: string;
   officialName: string;
+  grandPrix: string;
   country: string;
   city: string;
   location: {
     lat: number;
     lng: number;
+    city: string;
+    country: string;
   };
-  trackLength: number; // in kilometers
+  length: number; // in kilometers
+  laps: number;
   lapRecord: {
     time: string;
     driver: string;
     year: number;
   };
-  raceDate2024: string; // ISO date string
-  round: number;
+  raceDate2025: string | null; // ISO date string
+  round: number | null;
+  sprint?: boolean;
+  elevation?: {
+    highest: number;
+    lowest: number;
+    difference: number;
+  };
 }

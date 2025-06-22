@@ -2,8 +2,18 @@
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #1A1A1A;
+  --foreground: #FFFFFF;
+  --f1-red: #FF1801;
+  --f1-dark: #0F0F0F;
+  --f1-charcoal: #1A1A1A;
+  --f1-silver: #C0C0C0;
+  --ferrari-red: #DC0000;
+  --mercedes-teal: #00D2BE;
+  --redbull-blue: #0600EF;
+  --redbull-yellow: #FFC300;
+  --mclaren-orange: #FF8700;
+  --aston-green: #006F62;
 }
 
 @theme inline {
@@ -15,15 +25,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1A1A1A;
+    --foreground: #FFFFFF;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Mapbox custom styles */
@@ -33,37 +46,103 @@ body {
 
 .mapboxgl-popup-content {
   @apply rounded-lg shadow-xl p-0 overflow-hidden;
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 24, 1, 0.2);
 }
 
 .mapboxgl-popup-close-button {
   @apply text-white hover:text-gray-200 text-2xl pr-2 pt-1;
+  color: var(--f1-silver);
+  transition: color 0.2s ease;
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: var(--f1-red);
 }
 
 /* Custom marker styles */
 .team-marker {
   @apply cursor-pointer transition-all duration-300 hover:scale-110;
+  filter: drop-shadow(0 0 8px rgba(255, 24, 1, 0.3));
+}
+
+.team-marker:hover {
+  filter: drop-shadow(0 0 12px rgba(255, 24, 1, 0.6));
 }
 
 .circuit-marker {
   @apply cursor-pointer transition-all duration-300 hover:scale-110;
+  filter: drop-shadow(0 0 6px rgba(192, 192, 192, 0.4));
+}
+
+.circuit-marker:hover {
+  filter: drop-shadow(0 0 10px rgba(255, 24, 1, 0.5));
+}
+
+/* GPU 가속 최적화 */
+.mapboxgl-canvas {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+/* Mapbox 컨트롤 스타일링 */
+.mapboxgl-ctrl-group {
+  background: rgba(26, 26, 26, 0.9) !important;
+  border: 1px solid rgba(255, 24, 1, 0.3) !important;
+}
+
+.mapboxgl-ctrl-group button {
+  background-color: transparent !important;
+  color: #C0C0C0 !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: rgba(255, 24, 1, 0.2) !important;
+  color: #FFFFFF !important;
+}
+
+.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='29' height='29' viewBox='0 0 29 29' xmlns='http://www.w3.org/2000/svg' fill='%23C0C0C0'%3E%3Cpath d='M10.5 14l4-8 4 8h-8z'/%3E%3Cpath d='M10.5 16l4 8 4-8h-8z' fill='%23FF1801'/%3E%3C/svg%3E") !important;
+}
+
+.mapboxgl-marker {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 애니메이션 성능 최적화 */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 레이어 합성 최적화 */
+.mapboxgl-layer {
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Animation for active race */
 @keyframes pulse {
   0% {
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
     opacity: 1;
   }
   50% {
-    transform: scale(1.2);
+    transform: scale(1.2) translateZ(0);
     opacity: 0.8;
   }
   100% {
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
     opacity: 1;
   }
 }
 
 .active-race {
   animation: pulse 2s ease-in-out infinite;
+  will-change: transform, opacity;
 }

@@ -1,482 +1,590 @@
-[
-  {
-    "id": "bahrain",
-    "name": "Bahrain International Circuit",
-    "officialName": "Bahrain International Circuit",
-    "country": "Bahrain",
-    "city": "Sakhir",
-    "location": {
-      "lat": 26.0325,
-      "lng": 50.5106
+{
+  "circuits": [
+    {
+      "id": "bahrain",
+      "name": "Bahrain International Circuit",
+      "officialName": "Bahrain International Circuit",
+      "grandPrix": "Bahrain Grand Prix",
+      "country": "Bahrain",
+      "city": "Sakhir",
+      "location": {
+        "lat": 26.0325,
+        "lng": 50.5106,
+        "city": "Sakhir",
+        "country": "Bahrain"
+      },
+      "length": 5.412,
+      "laps": 57,
+      "lapRecord": {
+        "time": "1:31.447",
+        "driver": "Pedro de la Rosa",
+        "year": 2005
+      },
+      "raceDate2025": "2025-04-13",
+      "round": 4
     },
-    "trackLength": 5.412,
-    "lapRecord": {
-      "time": "1:31.447",
-      "driver": "Pedro de la Rosa",
-      "year": 2005
+    {
+      "id": "saudi-arabia",
+      "name": "Jeddah Corniche Circuit",
+      "officialName": "Jeddah Corniche Circuit",
+      "grandPrix": "Saudi Arabian Grand Prix",
+      "country": "Saudi Arabia",
+      "city": "Jeddah",
+      "location": {
+        "lat": 21.6319,
+        "lng": 39.1044,
+        "city": "Jeddah",
+        "country": "Saudi Arabia"
+      },
+      "length": 6.174,
+      "laps": 50,
+      "lapRecord": {
+        "time": "1:30.734",
+        "driver": "Lewis Hamilton",
+        "year": 2021
+      },
+      "raceDate2025": "2025-04-20",
+      "round": 5
     },
-    "raceDate2024": "2024-03-02",
-    "round": 1
-  },
-  {
-    "id": "saudi-arabia",
-    "name": "Jeddah Corniche Circuit",
-    "officialName": "Jeddah Corniche Circuit",
-    "country": "Saudi Arabia",
-    "city": "Jeddah",
-    "location": {
-      "lat": 21.6319,
-      "lng": 39.1044
+    {
+      "id": "australia",
+      "name": "Albert Park Circuit",
+      "officialName": "Albert Park Grand Prix Circuit",
+      "grandPrix": "Australian Grand Prix",
+      "country": "Australia",
+      "city": "Melbourne",
+      "location": {
+        "lat": -37.8497,
+        "lng": 144.9680,
+        "city": "Melbourne",
+        "country": "Australia"
+      },
+      "length": 5.278,
+      "laps": 58,
+      "lapRecord": {
+        "time": "1:20.260",
+        "driver": "Charles Leclerc",
+        "year": 2022
+      },
+      "raceDate2025": "2025-03-16",
+      "round": 1
     },
-    "trackLength": 6.174,
-    "lapRecord": {
-      "time": "1:30.734",
-      "driver": "Lewis Hamilton",
-      "year": 2021
+    {
+      "id": "japan",
+      "name": "Suzuka Circuit",
+      "officialName": "Suzuka International Racing Course",
+      "grandPrix": "Japanese Grand Prix",
+      "country": "Japan",
+      "city": "Suzuka",
+      "location": {
+        "lat": 34.8431,
+        "lng": 136.5407,
+        "city": "Suzuka",
+        "country": "Japan"
+      },
+      "length": 5.807,
+      "laps": 53,
+      "lapRecord": {
+        "time": "1:30.983",
+        "driver": "Lewis Hamilton",
+        "year": 2019
+      },
+      "raceDate2025": "2025-04-06",
+      "round": 3
     },
-    "raceDate2024": "2024-03-09",
-    "round": 2
-  },
-  {
-    "id": "australia",
-    "name": "Albert Park Circuit",
-    "officialName": "Albert Park Grand Prix Circuit",
-    "country": "Australia",
-    "city": "Melbourne",
-    "location": {
-      "lat": -37.8497,
-      "lng": 144.9680
+    {
+      "id": "china",
+      "name": "Shanghai International Circuit",
+      "officialName": "Shanghai International Circuit",
+      "grandPrix": "Chinese Grand Prix",
+      "country": "China",
+      "city": "Shanghai",
+      "location": {
+        "lat": 31.3389,
+        "lng": 121.2208,
+        "city": "Shanghai",
+        "country": "China"
+      },
+      "length": 5.451,
+      "laps": 56,
+      "lapRecord": {
+        "time": "1:32.238",
+        "driver": "Michael Schumacher",
+        "year": 2004
+      },
+      "raceDate2025": "2025-03-23",
+      "round": 2,
+      "sprint": true
     },
-    "trackLength": 5.278,
-    "lapRecord": {
-      "time": "1:19.813",
-      "driver": "Charles Leclerc",
-      "year": 2024
+    {
+      "id": "miami",
+      "name": "Miami International Autodrome",
+      "officialName": "Miami International Autodrome",
+      "grandPrix": "Miami Grand Prix",
+      "country": "United States",
+      "city": "Miami",
+      "location": {
+        "lat": 25.9581,
+        "lng": -80.2389,
+        "city": "Miami",
+        "country": "United States"
+      },
+      "length": 5.412,
+      "laps": 57,
+      "lapRecord": {
+        "time": "1:29.708",
+        "driver": "Max Verstappen",
+        "year": 2023
+      },
+      "raceDate2025": "2025-05-04",
+      "round": 6,
+      "sprint": true
     },
-    "raceDate2024": "2024-03-24",
-    "round": 3
-  },
-  {
-    "id": "japan",
-    "name": "Suzuka Circuit",
-    "officialName": "Suzuka International Racing Course",
-    "country": "Japan",
-    "city": "Suzuka",
-    "location": {
-      "lat": 34.8431,
-      "lng": 136.5408
+    {
+      "id": "imola",
+      "name": "Autodromo Enzo e Dino Ferrari",
+      "officialName": "Autodromo Enzo e Dino Ferrari",
+      "grandPrix": "Emilia Romagna Grand Prix",
+      "country": "Italy",
+      "city": "Imola",
+      "location": {
+        "lat": 44.3439,
+        "lng": 11.7167,
+        "city": "Imola",
+        "country": "Italy"
+      },
+      "length": 4.909,
+      "laps": 63,
+      "lapRecord": {
+        "time": "1:15.484",
+        "driver": "Lewis Hamilton",
+        "year": 2020
+      },
+      "raceDate2025": "2025-05-18",
+      "round": 7
     },
-    "trackLength": 5.807,
-    "lapRecord": {
-      "time": "1:30.983",
-      "driver": "Lewis Hamilton",
-      "year": 2019
+    {
+      "id": "monaco",
+      "name": "Circuit de Monaco",
+      "officialName": "Circuit de Monaco",
+      "grandPrix": "Monaco Grand Prix",
+      "country": "Monaco",
+      "city": "Monte Carlo",
+      "location": {
+        "lat": 43.7347,
+        "lng": 7.4206,
+        "city": "Monte Carlo",
+        "country": "Monaco"
+      },
+      "length": 3.337,
+      "laps": 78,
+      "lapRecord": {
+        "time": "1:12.909",
+        "driver": "Lewis Hamilton",
+        "year": 2021
+      },
+      "raceDate2025": "2025-05-25",
+      "round": 8
     },
-    "raceDate2024": "2024-04-07",
-    "round": 4
-  },
-  {
-    "id": "china",
-    "name": "Shanghai International Circuit",
-    "officialName": "Shanghai International Circuit",
-    "country": "China",
-    "city": "Shanghai",
-    "location": {
-      "lat": 31.3389,
-      "lng": 121.2208
+    {
+      "id": "canada",
+      "name": "Circuit Gilles Villeneuve",
+      "officialName": "Circuit Gilles Villeneuve",
+      "grandPrix": "Canadian Grand Prix",
+      "country": "Canada",
+      "city": "Montreal",
+      "location": {
+        "lat": 45.5000,
+        "lng": -73.5228,
+        "city": "Montreal",
+        "country": "Canada"
+      },
+      "length": 4.361,
+      "laps": 70,
+      "lapRecord": {
+        "time": "1:13.078",
+        "driver": "Valtteri Bottas",
+        "year": 2019
+      },
+      "raceDate2025": "2025-06-15",
+      "round": 9
     },
-    "trackLength": 5.451,
-    "lapRecord": {
-      "time": "1:32.238",
-      "driver": "Michael Schumacher",
-      "year": 2004
+    {
+      "id": "spain",
+      "name": "Circuit de Barcelona-Catalunya",
+      "officialName": "Circuit de Barcelona-Catalunya",
+      "grandPrix": "Spanish Grand Prix",
+      "country": "Spain",
+      "city": "Barcelona",
+      "location": {
+        "lat": 41.5700,
+        "lng": 2.2611,
+        "city": "Barcelona",
+        "country": "Spain"
+      },
+      "length": 4.657,
+      "laps": 66,
+      "lapRecord": {
+        "time": "1:16.330",
+        "driver": "Max Verstappen",
+        "year": 2023
+      },
+      "raceDate2025": "2025-06-01",
+      "round": 10
     },
-    "raceDate2024": "2024-04-21",
-    "round": 5
-  },
-  {
-    "id": "miami",
-    "name": "Miami International Autodrome",
-    "officialName": "Miami International Autodrome",
-    "country": "United States",
-    "city": "Miami",
-    "location": {
-      "lat": 25.9581,
-      "lng": -80.2389
+    {
+      "id": "austria",
+      "name": "Red Bull Ring",
+      "officialName": "Red Bull Ring",
+      "grandPrix": "Austrian Grand Prix",
+      "country": "Austria",
+      "city": "Spielberg",
+      "location": {
+        "lat": 47.2197,
+        "lng": 14.7647,
+        "city": "Spielberg",
+        "country": "Austria"
+      },
+      "length": 4.318,
+      "laps": 71,
+      "lapRecord": {
+        "time": "1:05.619",
+        "driver": "Carlos Sainz",
+        "year": 2020
+      },
+      "raceDate2025": "2025-06-29",
+      "round": 11
     },
-    "trackLength": 5.412,
-    "lapRecord": {
-      "time": "1:29.708",
-      "driver": "Max Verstappen",
-      "year": 2023
+    {
+      "id": "britain",
+      "name": "Silverstone Circuit",
+      "officialName": "Silverstone Circuit",
+      "grandPrix": "British Grand Prix",
+      "country": "United Kingdom",
+      "city": "Silverstone",
+      "location": {
+        "lat": 52.0786,
+        "lng": -1.0169,
+        "city": "Silverstone",
+        "country": "United Kingdom"
+      },
+      "length": 5.891,
+      "laps": 52,
+      "lapRecord": {
+        "time": "1:27.097",
+        "driver": "Max Verstappen",
+        "year": 2020
+      },
+      "raceDate2025": "2025-07-06",
+      "round": 12
     },
-    "raceDate2024": "2024-05-05",
-    "round": 6
-  },
-  {
-    "id": "imola",
-    "name": "Imola Circuit",
-    "officialName": "Autodromo Enzo e Dino Ferrari",
-    "country": "Italy",
-    "city": "Imola",
-    "location": {
-      "lat": 44.3439,
-      "lng": 11.7167
+    {
+      "id": "hungary",
+      "name": "Hungaroring",
+      "officialName": "Hungaroring",
+      "grandPrix": "Hungarian Grand Prix",
+      "country": "Hungary",
+      "city": "Budapest",
+      "location": {
+        "lat": 47.5789,
+        "lng": 19.2486,
+        "city": "Budapest",
+        "country": "Hungary"
+      },
+      "length": 4.381,
+      "laps": 70,
+      "lapRecord": {
+        "time": "1:16.627",
+        "driver": "Lewis Hamilton",
+        "year": 2020
+      },
+      "raceDate2025": "2025-08-03",
+      "round": 13
     },
-    "trackLength": 4.909,
-    "lapRecord": {
-      "time": "1:15.484",
-      "driver": "Lewis Hamilton",
-      "year": 2020
+    {
+      "id": "belgium",
+      "name": "Circuit de Spa-Francorchamps",
+      "officialName": "Circuit de Spa-Francorchamps",
+      "grandPrix": "Belgian Grand Prix",
+      "country": "Belgium",
+      "city": "Spa",
+      "location": {
+        "lat": 50.4372,
+        "lng": 5.9714,
+        "city": "Spa",
+        "country": "Belgium"
+      },
+      "length": 7.004,
+      "laps": 44,
+      "lapRecord": {
+        "time": "1:46.286",
+        "driver": "Valtteri Bottas",
+        "year": 2018
+      },
+      "raceDate2025": "2025-07-27",
+      "round": 14,
+      "sprint": true
     },
-    "raceDate2024": "2024-05-19",
-    "round": 7
-  },
-  {
-    "id": "monaco",
-    "name": "Circuit de Monaco",
-    "officialName": "Circuit de Monaco",
-    "country": "Monaco",
-    "city": "Monte Carlo",
-    "location": {
-      "lat": 43.7347,
-      "lng": 7.4206
+    {
+      "id": "netherlands",
+      "name": "Circuit Zandvoort",
+      "officialName": "Circuit Zandvoort",
+      "grandPrix": "Dutch Grand Prix",
+      "country": "Netherlands",
+      "city": "Zandvoort",
+      "location": {
+        "lat": 52.3889,
+        "lng": 4.5408,
+        "city": "Zandvoort",
+        "country": "Netherlands"
+      },
+      "length": 4.259,
+      "laps": 72,
+      "lapRecord": {
+        "time": "1:11.097",
+        "driver": "Lewis Hamilton",
+        "year": 2021
+      },
+      "raceDate2025": "2025-08-31",
+      "round": 15
     },
-    "trackLength": 3.337,
-    "lapRecord": {
-      "time": "1:12.909",
-      "driver": "Lewis Hamilton",
-      "year": 2021
+    {
+      "id": "italy",
+      "name": "Autodromo Nazionale Monza",
+      "officialName": "Autodromo Nazionale Monza",
+      "grandPrix": "Italian Grand Prix",
+      "country": "Italy",
+      "city": "Monza",
+      "location": {
+        "lat": 45.6156,
+        "lng": 9.2811,
+        "city": "Monza",
+        "country": "Italy"
+      },
+      "length": 5.793,
+      "laps": 53,
+      "lapRecord": {
+        "time": "1:21.046",
+        "driver": "Rubens Barrichello",
+        "year": 2004
+      },
+      "raceDate2025": "2025-09-07",
+      "round": 16
     },
-    "raceDate2024": "2024-05-26",
-    "round": 8
-  },
-  {
-    "id": "canada",
-    "name": "Circuit Gilles Villeneuve",
-    "officialName": "Circuit Gilles Villeneuve",
-    "country": "Canada",
-    "city": "Montreal",
-    "location": {
-      "lat": 45.5000,
-      "lng": -73.5228
+    {
+      "id": "azerbaijan",
+      "name": "Baku City Circuit",
+      "officialName": "Baku City Circuit",
+      "grandPrix": "Azerbaijan Grand Prix",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "location": {
+        "lat": 40.3725,
+        "lng": 49.8533,
+        "city": "Baku",
+        "country": "Azerbaijan"
+      },
+      "length": 6.003,
+      "laps": 51,
+      "lapRecord": {
+        "time": "1:43.009",
+        "driver": "Charles Leclerc",
+        "year": 2019
+      },
+      "raceDate2025": "2025-09-21",
+      "round": 17
     },
-    "trackLength": 4.361,
-    "lapRecord": {
-      "time": "1:13.078",
-      "driver": "Valtteri Bottas",
-      "year": 2019
+    {
+      "id": "singapore",
+      "name": "Marina Bay Street Circuit",
+      "officialName": "Marina Bay Street Circuit",
+      "grandPrix": "Singapore Grand Prix",
+      "country": "Singapore",
+      "city": "Singapore",
+      "location": {
+        "lat": 1.2914,
+        "lng": 103.8644,
+        "city": "Singapore",
+        "country": "Singapore"
+      },
+      "length": 4.940,
+      "laps": 62,
+      "lapRecord": {
+        "time": "1:35.867",
+        "driver": "Lewis Hamilton",
+        "year": 2023
+      },
+      "raceDate2025": "2025-10-05",
+      "round": 18
     },
-    "raceDate2024": "2024-06-09",
-    "round": 9
-  },
-  {
-    "id": "spain",
-    "name": "Circuit de Barcelona-Catalunya",
-    "officialName": "Circuit de Barcelona-Catalunya",
-    "country": "Spain",
-    "city": "Barcelona",
-    "location": {
-      "lat": 41.5700,
-      "lng": 2.2611
+    {
+      "id": "usa",
+      "name": "Circuit of the Americas",
+      "officialName": "Circuit of the Americas",
+      "grandPrix": "United States Grand Prix",
+      "country": "United States",
+      "city": "Austin",
+      "location": {
+        "lat": 30.1328,
+        "lng": -97.6411,
+        "city": "Austin",
+        "country": "United States"
+      },
+      "length": 5.513,
+      "laps": 56,
+      "lapRecord": {
+        "time": "1:36.169",
+        "driver": "Charles Leclerc",
+        "year": 2019
+      },
+      "raceDate2025": "2025-10-19",
+      "round": 19,
+      "sprint": true
     },
-    "trackLength": 4.657,
-    "lapRecord": {
-      "time": "1:16.330",
-      "driver": "Max Verstappen",
-      "year": 2023
+    {
+      "id": "mexico",
+      "name": "Autódromo Hermanos Rodríguez",
+      "officialName": "Autódromo Hermanos Rodríguez",
+      "grandPrix": "Mexican Grand Prix",
+      "country": "Mexico",
+      "city": "Mexico City",
+      "location": {
+        "lat": 19.4042,
+        "lng": -99.0907,
+        "city": "Mexico City",
+        "country": "Mexico"
+      },
+      "length": 4.304,
+      "laps": 71,
+      "lapRecord": {
+        "time": "1:17.774",
+        "driver": "Valtteri Bottas",
+        "year": 2021
+      },
+      "raceDate2025": "2025-10-26",
+      "round": 20
     },
-    "raceDate2024": "2024-06-23",
-    "round": 10
-  },
-  {
-    "id": "austria",
-    "name": "Red Bull Ring",
-    "officialName": "Red Bull Ring",
-    "country": "Austria",
-    "city": "Spielberg",
-    "location": {
-      "lat": 47.2197,
-      "lng": 14.7647
+    {
+      "id": "brazil",
+      "name": "Interlagos",
+      "officialName": "Autódromo José Carlos Pace",
+      "grandPrix": "Brazilian Grand Prix",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "location": {
+        "lat": -23.7036,
+        "lng": -46.6997,
+        "city": "São Paulo",
+        "country": "Brazil"
+      },
+      "length": 4.309,
+      "laps": 71,
+      "lapRecord": {
+        "time": "1:10.540",
+        "driver": "Valtteri Bottas",
+        "year": 2018
+      },
+      "raceDate2025": "2025-11-09",
+      "round": 21,
+      "sprint": true
     },
-    "trackLength": 4.318,
-    "lapRecord": {
-      "time": "1:05.619",
-      "driver": "Carlos Sainz",
-      "year": 2020
+    {
+      "id": "las-vegas",
+      "name": "Las Vegas Street Circuit",
+      "officialName": "Las Vegas Street Circuit",
+      "grandPrix": "Las Vegas Grand Prix",
+      "country": "United States",
+      "city": "Las Vegas",
+      "location": {
+        "lat": 36.1146,
+        "lng": -115.1728,
+        "city": "Las Vegas",
+        "country": "United States"
+      },
+      "length": 6.201,
+      "laps": 50,
+      "lapRecord": {
+        "time": "1:35.490",
+        "driver": "Oscar Piastri",
+        "year": 2023
+      },
+      "raceDate2025": "2025-11-22",
+      "round": 22
     },
-    "raceDate2024": "2024-06-30",
-    "round": 11
-  },
-  {
-    "id": "britain",
-    "name": "Silverstone Circuit",
-    "officialName": "Silverstone Circuit",
-    "country": "United Kingdom",
-    "city": "Silverstone",
-    "location": {
-      "lat": 52.0786,
-      "lng": -1.0169
+    {
+      "id": "qatar",
+      "name": "Losail International Circuit",
+      "officialName": "Losail International Circuit",
+      "grandPrix": "Qatar Grand Prix",
+      "country": "Qatar",
+      "city": "Lusail",
+      "location": {
+        "lat": 25.4900,
+        "lng": 51.4542,
+        "city": "Lusail",
+        "country": "Qatar"
+      },
+      "length": 5.380,
+      "laps": 57,
+      "lapRecord": {
+        "time": "1:24.319",
+        "driver": "Max Verstappen",
+        "year": 2023
+      },
+      "raceDate2025": "2025-11-30",
+      "round": 23,
+      "sprint": true
     },
-    "trackLength": 5.891,
-    "lapRecord": {
-      "time": "1:27.097",
-      "driver": "Max Verstappen",
-      "year": 2020
+    {
+      "id": "abu-dhabi",
+      "name": "Yas Marina Circuit",
+      "officialName": "Yas Marina Circuit",
+      "grandPrix": "Abu Dhabi Grand Prix",
+      "country": "United Arab Emirates",
+      "city": "Abu Dhabi",
+      "location": {
+        "lat": 24.4672,
+        "lng": 54.6031,
+        "city": "Abu Dhabi",
+        "country": "United Arab Emirates"
+      },
+      "length": 5.281,
+      "laps": 58,
+      "lapRecord": {
+        "time": "1:26.103",
+        "driver": "Max Verstappen",
+        "year": 2021
+      },
+      "raceDate2025": "2025-12-07",
+      "round": 24
     },
-    "raceDate2024": "2024-07-07",
-    "round": 12
-  },
-  {
-    "id": "hungary",
-    "name": "Hungaroring",
-    "officialName": "Hungaroring",
-    "country": "Hungary",
-    "city": "Budapest",
-    "location": {
-      "lat": 47.5789,
-      "lng": 19.2486
-    },
-    "trackLength": 4.381,
-    "lapRecord": {
-      "time": "1:16.627",
-      "driver": "Lewis Hamilton",
-      "year": 2020
-    },
-    "raceDate2024": "2024-07-21",
-    "round": 13
-  },
-  {
-    "id": "belgium",
-    "name": "Circuit de Spa-Francorchamps",
-    "officialName": "Circuit de Spa-Francorchamps",
-    "country": "Belgium",
-    "city": "Spa",
-    "location": {
-      "lat": 50.4372,
-      "lng": 5.9714
-    },
-    "trackLength": 7.004,
-    "lapRecord": {
-      "time": "1:46.286",
-      "driver": "Valtteri Bottas",
-      "year": 2018
-    },
-    "raceDate2024": "2024-07-28",
-    "round": 14
-  },
-  {
-    "id": "netherlands",
-    "name": "Circuit Zandvoort",
-    "officialName": "Circuit Zandvoort",
-    "country": "Netherlands",
-    "city": "Zandvoort",
-    "location": {
-      "lat": 52.3889,
-      "lng": 4.5408
-    },
-    "trackLength": 4.259,
-    "lapRecord": {
-      "time": "1:11.097",
-      "driver": "Lewis Hamilton",
-      "year": 2021
-    },
-    "raceDate2024": "2024-08-25",
-    "round": 15
-  },
-  {
-    "id": "italy",
-    "name": "Autodromo Nazionale Monza",
-    "officialName": "Autodromo Nazionale Monza",
-    "country": "Italy",
-    "city": "Monza",
-    "location": {
-      "lat": 45.6156,
-      "lng": 9.2811
-    },
-    "trackLength": 5.793,
-    "lapRecord": {
-      "time": "1:21.046",
-      "driver": "Rubens Barrichello",
-      "year": 2004
-    },
-    "raceDate2024": "2024-09-01",
-    "round": 16
-  },
-  {
-    "id": "azerbaijan",
-    "name": "Baku City Circuit",
-    "officialName": "Baku City Circuit",
-    "country": "Azerbaijan",
-    "city": "Baku",
-    "location": {
-      "lat": 40.3725,
-      "lng": 49.8533
-    },
-    "trackLength": 6.003,
-    "lapRecord": {
-      "time": "1:43.009",
-      "driver": "Charles Leclerc",
-      "year": 2019
-    },
-    "raceDate2024": "2024-09-15",
-    "round": 17
-  },
-  {
-    "id": "singapore",
-    "name": "Marina Bay Street Circuit",
-    "officialName": "Marina Bay Street Circuit",
-    "country": "Singapore",
-    "city": "Singapore",
-    "location": {
-      "lat": 1.2914,
-      "lng": 103.8644
-    },
-    "trackLength": 4.940,
-    "lapRecord": {
-      "time": "1:35.867",
-      "driver": "Lewis Hamilton",
-      "year": 2023
-    },
-    "raceDate2024": "2024-09-22",
-    "round": 18
-  },
-  {
-    "id": "usa",
-    "name": "Circuit of the Americas",
-    "officialName": "Circuit of the Americas",
-    "country": "United States",
-    "city": "Austin",
-    "location": {
-      "lat": 30.1328,
-      "lng": -97.6411
-    },
-    "trackLength": 5.513,
-    "lapRecord": {
-      "time": "1:36.169",
-      "driver": "Charles Leclerc",
-      "year": 2019
-    },
-    "raceDate2024": "2024-10-20",
-    "round": 19
-  },
-  {
-    "id": "mexico",
-    "name": "Autódromo Hermanos Rodríguez",
-    "officialName": "Autódromo Hermanos Rodríguez",
-    "country": "Mexico",
-    "city": "Mexico City",
-    "location": {
-      "lat": 19.4042,
-      "lng": -99.0907
-    },
-    "trackLength": 4.304,
-    "lapRecord": {
-      "time": "1:17.774",
-      "driver": "Valtteri Bottas",
-      "year": 2021
-    },
-    "raceDate2024": "2024-10-27",
-    "round": 20
-  },
-  {
-    "id": "brazil",
-    "name": "Autódromo José Carlos Pace",
-    "officialName": "Autódromo José Carlos Pace",
-    "country": "Brazil",
-    "city": "São Paulo",
-    "location": {
-      "lat": -23.7036,
-      "lng": -46.6997
-    },
-    "trackLength": 4.309,
-    "lapRecord": {
-      "time": "1:10.540",
-      "driver": "Valtteri Bottas",
-      "year": 2018
-    },
-    "raceDate2024": "2024-11-03",
-    "round": 21
-  },
-  {
-    "id": "las-vegas",
-    "name": "Las Vegas Street Circuit",
-    "officialName": "Las Vegas Street Circuit",
-    "country": "United States",
-    "city": "Las Vegas",
-    "location": {
-      "lat": 36.1147,
-      "lng": -115.1728
-    },
-    "trackLength": 6.120,
-    "lapRecord": {
-      "time": "1:35.490",
-      "driver": "Oscar Piastri",
-      "year": 2023
-    },
-    "raceDate2024": "2024-11-23",
-    "round": 22
-  },
-  {
-    "id": "qatar",
-    "name": "Lusail International Circuit",
-    "officialName": "Lusail International Circuit",
-    "country": "Qatar",
-    "city": "Lusail",
-    "location": {
-      "lat": 25.4900,
-      "lng": 51.4542
-    },
-    "trackLength": 5.419,
-    "lapRecord": {
-      "time": "1:24.319",
-      "driver": "Max Verstappen",
-      "year": 2023
-    },
-    "raceDate2024": "2024-12-01",
-    "round": 23
-  },
-  {
-    "id": "abu-dhabi",
-    "name": "Yas Marina Circuit",
-    "officialName": "Yas Marina Circuit",
-    "country": "United Arab Emirates",
-    "city": "Abu Dhabi",
-    "location": {
-      "lat": 24.4672,
-      "lng": 54.6031
-    },
-    "trackLength": 5.281,
-    "lapRecord": {
-      "time": "1:26.103",
-      "driver": "Max Verstappen",
-      "year": 2021
-    },
-    "raceDate2024": "2024-12-08",
-    "round": 24
-  },
-  {
-    "id": "nurburgring",
-    "name": "Nürburgring",
-    "officialName": "Nürburgring Grand Prix Circuit",
-    "country": "Germany",
-    "city": "Nürburg",
-    "location": {
-      "lat": 50.3325934,
-      "lng": 6.9414539
-    },
-    "trackLength": 5.148,
-    "lapRecord": {
-      "time": "1:28.139",
-      "driver": "Michael Schumacher",
-      "year": 2004
-    },
-    "elevation": {
-      "highest": 620,
-      "lowest": 320,
-      "difference": 300
-    },
-    "raceDate2024": null,
-    "round": null
-  }
-]
+    {
+      "id": "nurburgring",
+      "name": "Nürburgring",
+      "officialName": "Nürburgring Grand Prix Circuit",
+      "grandPrix": "German Grand Prix",
+      "country": "Germany",
+      "city": "Nürburg",
+      "location": {
+        "lat": 50.3325934,
+        "lng": 6.9414539,
+        "city": "Nürburg",
+        "country": "Germany"
+      },
+      "length": 5.148,
+      "laps": 60,
+      "lapRecord": {
+        "time": "1:28.139",
+        "driver": "Michael Schumacher",
+        "year": 2004
+      },
+      "elevation": {
+        "highest": 620,
+        "lowest": 320,
+        "difference": 300
+      },
+      "raceDate2025": null,
+      "round": null
+    }
+  ]
+}
