@@ -26,12 +26,12 @@ interface InteractivePanelProps {
   onExploreCircuit?: () => void;
 }
 
-export default function InteractivePanel({ 
-  isOpen, 
-  onClose, 
-  module, 
+export default function InteractivePanel({
+  isOpen,
+  onClose,
+  module,
   data,
-  onExploreCircuit 
+  onExploreCircuit
 }: InteractivePanelProps) {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -39,7 +39,7 @@ export default function InteractivePanel({
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
-  
+
   // 각 상태별 높이 정의
   const SHEET_HEIGHTS = {
     closed: 0,
@@ -47,7 +47,7 @@ export default function InteractivePanel({
     half: 45, // 45vh - 중간 상태
     full: 85  // 85vh - 전체 상태
   };
-  
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 640);
@@ -73,21 +73,21 @@ export default function InteractivePanel({
 
   const handleDragMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
-    
+
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = startY - clientY;
-    
+
     // 현재 높이 계산
     const windowHeight = window.innerHeight;
     let currentHeight = 0;
-    
+
     if (sheetState === 'peek') currentHeight = SHEET_HEIGHTS.peek;
     else if (sheetState === 'half') currentHeight = (SHEET_HEIGHTS.half / 100) * windowHeight;
     else if (sheetState === 'full') currentHeight = (SHEET_HEIGHTS.full / 100) * windowHeight;
-    
+
     const newHeight = currentHeight + deltaY;
     const heightPercent = (newHeight / windowHeight) * 100;
-    
+
     // 높이 제한
     if (newHeight >= SHEET_HEIGHTS.peek && heightPercent <= SHEET_HEIGHTS.full) {
       sheetRef.current.style.height = `${newHeight}px`;
@@ -97,13 +97,13 @@ export default function InteractivePanel({
   const handleDragEnd = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
     setIsDragging(false);
-    
+
     const clientY = 'touches' in e ? e.changedTouches[0].clientY : e.clientY;
     const deltaY = startY - clientY;
     const windowHeight = window.innerHeight;
     const currentHeightPx = sheetRef.current.offsetHeight;
     const currentHeightVh = (currentHeightPx / windowHeight) * 100;
-    
+
     // 드래그 방향과 현재 높이에 따라 상태 결정
     if (deltaY > 50) { // 위로 드래그
       if (sheetState === 'peek') setSheetState('half');
@@ -206,11 +206,11 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-3">
                   <Calendar className="w-4 h-4 text-[#C0C0C0]" />
                   <div className="text-sm text-white">
-                    {data?.raceDate ? new Date(data.raceDate).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                    {data?.raceDate ? new Date(data.raceDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
                     }) : 'June 29, 2025'}
                   </div>
                 </div>
@@ -253,8 +253,8 @@ export default function InteractivePanel({
             {/* Circuit image placeholder - uncomment when images are available
             {data?.image && (
               <div className="relative h-48 bg-[#0F0F0F] rounded overflow-hidden border border-[#FF1801]/20">
-                <Image 
-                  src={data.image} 
+                <Image
+                  src={data.image}
                   alt={data.name || ''}
                   width={400}
                   height={192}
@@ -327,8 +327,8 @@ export default function InteractivePanel({
             {/* Team HQ image placeholder - uncomment when images are available
             {data?.hqImage && (
               <div className="relative h-48 bg-[#0F0F0F] rounded overflow-hidden border border-[#FF1801]/20">
-                <Image 
-                  src={data.hqImage} 
+                <Image
+                  src={data.hqImage}
                   alt={`${data.name || ''} HQ`}
                   width={400}
                   height={192}
@@ -341,7 +341,7 @@ export default function InteractivePanel({
               <div>
                 <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">Headquarters</h3>
                 <p className="text-white">
-                  {(typeof data?.location === 'object' ? data.location.city : null) || data?.headquarters?.city || 'Brackley'}, 
+                  {(typeof data?.location === 'object' ? data.location.city : null) || data?.headquarters?.city || 'Brackley'},
                   {' '}
                   {(typeof data?.location === 'object' ? data.location.country : null) || data?.headquarters?.country || 'United Kingdom'}
                 </p>
@@ -379,9 +379,9 @@ export default function InteractivePanel({
               </div>
             </div>
 
-            <button 
+            <button
               className="w-full text-white font-bold py-3 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase tracking-wider border"
-              style={{ 
+              style={{
                 backgroundColor: data?.color ? `${data.color}20` : '#FF180120',
                 borderColor: data?.color || '#FF1801'
               }}
@@ -400,7 +400,7 @@ export default function InteractivePanel({
   return (
     <>
       {/* Desktop Panel - Slide from right */}
-      <div 
+      <div
         className={`hidden sm:flex fixed right-0 top-0 h-full w-[400px] bg-[#1A1A1A]/95 backdrop-blur-xl border-l border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -427,9 +427,9 @@ export default function InteractivePanel({
       </div>
 
       {/* Mobile Panel - Interactive Bottom Sheet */}
-      <div 
+      <div
         ref={sheetRef}
-        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/98 backdrop-blur-xl border-t border-[#FF1801]/20 z-50 rounded-t-2xl shadow-2xl transition-all ${
+        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/98 backdrop-blur border-t border-[#FF1801]/20 z-50 rounded-t-2xl shadow-2xl transition-all ${
           isOpen ? '' : 'translate-y-full'
         } ${isDragging ? '' : 'transition-all duration-300 ease-out'}`}
         style={{
@@ -442,7 +442,7 @@ export default function InteractivePanel({
         }}
       >
         {/* Drag Handle Area */}
-        <div 
+        <div
           className="sticky top-0 z-10 bg-[#1A1A1A]/98 backdrop-blur-xl rounded-t-2xl cursor-grab active:cursor-grabbing"
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
@@ -464,13 +464,13 @@ export default function InteractivePanel({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-white font-semibold text-base">
-                    {module === 'circuit-detail' ? (data?.name || 'Circuit') : 
+                    {module === 'circuit-detail' ? (data?.name || 'Circuit') :
                      module === 'team-hq' ? (data?.name || 'Team HQ') :
                      'Next Race'}
                   </h3>
                   {module === 'circuit-detail' && (
                     <p className="text-xs text-[#C0C0C0] mt-0.5">
-                      {typeof data?.location === 'string' ? data.location : 
+                      {typeof data?.location === 'string' ? data.location :
                        `${data?.location?.city || ''}, ${data?.location?.country || ''}`}
                     </p>
                   )}
@@ -495,8 +495,8 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
                   <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
-                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' : 
-                     module === 'team-hq' ? 'TEAM HQ' : 
+                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' :
+                     module === 'team-hq' ? 'TEAM HQ' :
                      'NEXT RACE'}
                   </span>
                 </div>
