@@ -34,11 +34,12 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
       ...MAP_CONFIG
     });
 
-    // 내비게이션 컨트롤 추가
+    // 내비게이션 컨트롤 추가 - 모바일에서는 더 작게
+    const isMobile = window.innerWidth < 640;
     map.current.addControl(new mapboxgl.NavigationControl({
-      showCompass: true,
+      showCompass: !isMobile, // 모바일에서는 컴패스 숨김
       showZoom: true,
-      visualizePitch: true
+      visualizePitch: !isMobile // 모바일에서는 피치 컨트롤 숨김
     }), 'top-right');
 
     // 글로브 회전 애니메이션 설정
@@ -68,7 +69,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
             center: [circuit.location.lng, circuit.location.lat],
             zoom: 5,
             pitch: 30,
-            speed: 0.4,
+            speed: 0.8,
             curve: 1,
             essential: true
           });
@@ -142,7 +143,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
 
       // 다음 레이스 찾기
       const nextRace = findNextRace();
-      
+
       // 모든 서킷 마커 추가
       addAllCircuits({
         map: map.current,
@@ -155,7 +156,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
     // cleanup 함수
     return () => {
       globeSpinner.current?.cleanup();
-      
+
       markers.current.forEach(marker => {
         marker.remove();
       });

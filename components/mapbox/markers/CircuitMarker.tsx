@@ -1,6 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../types';
 import { MARKER_STYLES } from '../constants';
+import { isMobile } from '../utils/device';
 
 interface Circuit {
   id: string;
@@ -39,14 +40,17 @@ export const createCircuitMarker = ({
   onMarkerClick,
   onMarkerCreated 
 }: CircuitMarkerProps): mapboxgl.Marker => {
+  const mobile = isMobile();
+  const markerSize = isNextRace ? MARKER_STYLES.nextRaceMarker : MARKER_STYLES.circuitMarker;
+  
   const el = document.createElement('div');
-  el.style.width = MARKER_STYLES.circuitMarker.width;
-  el.style.height = MARKER_STYLES.circuitMarker.height;
+  el.style.width = mobile ? markerSize.mobileWidth : markerSize.width;
+  el.style.height = mobile ? markerSize.mobileHeight : markerSize.height;
   el.style.cursor = 'pointer';
 
   const marker = document.createElement('div');
-  marker.style.width = MARKER_STYLES.circuitMarker.width;
-  marker.style.height = MARKER_STYLES.circuitMarker.height;
+  marker.style.width = mobile ? markerSize.mobileWidth : markerSize.width;
+  marker.style.height = mobile ? markerSize.mobileHeight : markerSize.height;
   
   if (isNextRace) {
     // Next Race 스타일
@@ -59,7 +63,7 @@ export const createCircuitMarker = ({
     marker.style.boxShadow = '0 4px 15px rgba(255, 24, 1, 0.6)';
     marker.style.transition = 'all 0.3s ease';
     marker.innerHTML = `
-      <div style="font-size: 12px; font-weight: bold; color: white; text-align: center;">
+      <div style="font-size: ${mobile ? '10px' : '12px'}; font-weight: bold; color: white; text-align: center;">
         NEXT<br>RACE
       </div>
     `;
@@ -75,7 +79,7 @@ export const createCircuitMarker = ({
     marker.style.boxShadow = '0 4px 15px rgba(220, 38, 38, 0.4)';
     marker.style.transition = 'all 0.3s ease';
     marker.innerHTML = `
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+      <svg width="${mobile ? '22' : '30'}" height="${mobile ? '22' : '30'}" viewBox="0 0 24 24" fill="none">
         <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>

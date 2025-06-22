@@ -63,20 +63,31 @@ export const MARKER_STYLES = {
     boxHeight: '80px',
     borderRadius: '4px',
     border: '3px solid #1e3a8a',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    // Mobile sizes
+    mobileWidth: '60px',
+    mobileHeight: '71px',
+    mobileBoxWidth: '60px',
+    mobileBoxHeight: '60px'
   },
   nextRaceMarker: {
     width: '60px',
     height: '60px',
     backgroundColor: '#FF1801',
     borderRadius: '50%',
-    border: '3px solid #FFFFFF'
+    border: '3px solid #FFFFFF',
+    // Mobile sizes
+    mobileWidth: '45px',
+    mobileHeight: '45px'
   },
   circuitMarker: {
     width: '60px',
     height: '60px',
     backgroundColor: '#1e293b',
     borderRadius: '50%',
-    border: '3px solid #dc2626'
+    border: '3px solid #dc2626',
+    // Mobile sizes
+    mobileWidth: '45px',
+    mobileHeight: '45px'
   }
 };

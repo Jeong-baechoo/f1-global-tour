@@ -1,6 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../types';
 import { MARKER_STYLES } from '../constants';
+import { isMobile } from '../utils/device';
 
 interface Team {
   id: string;
@@ -26,6 +27,9 @@ interface RedBullMarkerProps {
 }
 
 export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerProps): mapboxgl.Marker => {
+  const mobile = isMobile();
+  const markerStyle = MARKER_STYLES.redBullMarker;
+  
   const redBullHQ = {
     name: team.fullName,
     coordinates: [team.headquarters.lng, team.headquarters.lat],
@@ -37,14 +41,14 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
   const el = document.createElement('div');
   el.className = 'marker';
   el.style.position = 'relative';
-  el.style.width = MARKER_STYLES.redBullMarker.width;
-  el.style.height = MARKER_STYLES.redBullMarker.height;
+  el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
+  el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
   el.style.cursor = 'pointer';
 
   // 메인 박스
   const box = document.createElement('div');
-  box.style.width = MARKER_STYLES.redBullMarker.boxWidth;
-  box.style.height = MARKER_STYLES.redBullMarker.boxHeight;
+  box.style.width = mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth;
+  box.style.height = mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight;
   box.style.backgroundImage = 'url(https://upload.wikimedia.org/wikipedia/de/thumb/c/c4/Red_Bull_Racing_logo.svg/200px-Red_Bull_Racing_logo.svg.png)';
   box.style.backgroundSize = 'contain';
   box.style.backgroundPosition = 'center';
@@ -58,26 +62,26 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
   // 아래 삼각형 (외부 테두리)
   const triangleOuter = document.createElement('div');
   triangleOuter.style.position = 'absolute';
-  triangleOuter.style.bottom = '-12px';
+  triangleOuter.style.bottom = mobile ? '-9px' : '-12px';
   triangleOuter.style.left = '50%';
   triangleOuter.style.transform = 'translateX(-50%)';
   triangleOuter.style.width = '0';
   triangleOuter.style.height = '0';
-  triangleOuter.style.borderLeft = '12px solid transparent';
-  triangleOuter.style.borderRight = '12px solid transparent';
-  triangleOuter.style.borderTop = '12px solid #1e3a8a';
+  triangleOuter.style.borderLeft = `${mobile ? '9px' : '12px'} solid transparent`;
+  triangleOuter.style.borderRight = `${mobile ? '9px' : '12px'} solid transparent`;
+  triangleOuter.style.borderTop = `${mobile ? '9px' : '12px'} solid #1e3a8a`;
 
   // 아래 삼각형 (내부 흰색)
   const triangleInner = document.createElement('div');
   triangleInner.style.position = 'absolute';
-  triangleInner.style.bottom = '-9px';
+  triangleInner.style.bottom = mobile ? '-7px' : '-9px';
   triangleInner.style.left = '50%';
   triangleInner.style.transform = 'translateX(-50%)';
   triangleInner.style.width = '0';
   triangleInner.style.height = '0';
-  triangleInner.style.borderLeft = '9px solid transparent';
-  triangleInner.style.borderRight = '9px solid transparent';
-  triangleInner.style.borderTop = '9px solid white';
+  triangleInner.style.borderLeft = `${mobile ? '7px' : '9px'} solid transparent`;
+  triangleInner.style.borderRight = `${mobile ? '7px' : '9px'} solid transparent`;
+  triangleInner.style.borderTop = `${mobile ? '7px' : '9px'} solid white`;
 
   el.appendChild(box);
   el.appendChild(triangleOuter);

@@ -11,6 +11,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "F1 Global Tour | Race Engineer Console",
   description: "Experience Formula 1's global presence through an immersive race engineer console interface",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({

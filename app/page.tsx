@@ -147,23 +147,23 @@ export default function Home() {
       <Map onMarkerClick={handleMarkerClick} onMapReady={setMapRef} />
 
       {/* F1 로고 */}
-      <div className="absolute top-0.5 left-14 z-10">
+      <div className="absolute top-2 sm:top-0.5 left-4 sm:left-14 z-10">
         <Image
           src="/f1_logo.png"
           alt="F1 Logo"
-          width={120}
-          height={30}
-          className="drop-shadow-lg"
+          width={80}
+          height={20}
+          className="drop-shadow-lg sm:w-[120px] sm:h-[30px]"
           priority
         />
       </div>
 
       {/* 하단 타임라인 바 */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0F0F0F] to-transparent pointer-events-none">
-        <div className="absolute bottom-4 left-4 right-4 h-12 bg-[#1A1A1A]/90 backdrop-blur-md rounded border border-[#FF1801]/20 pointer-events-auto flex items-center px-4">
+      <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-t from-[#0F0F0F] to-transparent pointer-events-none">
+        <div className="absolute bottom-2 sm:bottom-4 left-2 right-2 sm:left-4 sm:right-4 h-10 sm:h-12 bg-[#1A1A1A]/90 backdrop-blur-md rounded border border-[#FF1801]/20 pointer-events-auto flex items-center px-3 sm:px-4">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#FF1801] animate-pulse"></div>
-            <span className="text-[#C0C0C0] text-xs uppercase tracking-wider">Live Telemetry</span>
+            <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#FF1801] animate-pulse"></div>
+            <span className="text-[#C0C0C0] text-[10px] sm:text-xs uppercase tracking-wider">Live Telemetry</span>
           </div>
         </div>
       </div>

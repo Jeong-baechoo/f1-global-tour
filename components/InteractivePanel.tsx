@@ -69,23 +69,23 @@ export default function InteractivePanel({
               </h1>
             </div>
 
-            <div className="bg-[#0F0F0F] rounded border border-[#FF1801]/20 p-6">
+            <div className="bg-[#0F0F0F] rounded border border-[#FF1801]/20 p-4 sm:p-6">
               <div className="text-center mb-4">
                 <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">RACE STARTS IN</div>
-                <div className="flex justify-center gap-4">
+                <div className="flex justify-center gap-2 sm:gap-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#FF1801]">{countdown.days}</div>
-                    <div className="text-xs text-[#C0C0C0] uppercase">Days</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{countdown.days}</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Days</div>
                   </div>
-                  <div className="text-3xl text-[#FF1801]">:</div>
+                  <div className="text-2xl sm:text-3xl text-[#FF1801]">:</div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#FF1801]">{String(countdown.hours).padStart(2, '0')}</div>
-                    <div className="text-xs text-[#C0C0C0] uppercase">Hours</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{String(countdown.hours).padStart(2, '0')}</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Hours</div>
                   </div>
-                  <div className="text-3xl text-[#FF1801]">:</div>
+                  <div className="text-2xl sm:text-3xl text-[#FF1801]">:</div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#FF1801]">{String(countdown.minutes).padStart(2, '0')}</div>
-                    <div className="text-xs text-[#C0C0C0] uppercase">Minutes</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{String(countdown.minutes).padStart(2, '0')}</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Minutes</div>
                   </div>
                 </div>
               </div>
@@ -270,30 +270,74 @@ export default function InteractivePanel({
   };
 
   return (
-    <div 
-      className={`fixed right-0 top-0 h-full w-[400px] bg-[#1A1A1A]/95 backdrop-blur-xl border-l border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}
-    >
-      <div className="relative h-full flex flex-col">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[#C0C0C0] hover:text-[#FF1801] transition-colors z-10"
-        >
-          <X className="w-6 h-6" />
-        </button>
+    <>
+      {/* Desktop Panel - Slide from right */}
+      <div 
+        className={`hidden sm:flex fixed right-0 top-0 h-full w-[400px] bg-[#1A1A1A]/95 backdrop-blur-xl border-l border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="relative h-full flex flex-col">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-[#C0C0C0] hover:text-[#FF1801] transition-colors z-10"
+          >
+            <X className="w-6 h-6" />
+          </button>
 
-        <div className="flex-1 overflow-y-auto p-6 pt-16">
-          {renderContent()}
-        </div>
+          <div className="flex-1 overflow-y-auto p-6 pt-16">
+            {renderContent()}
+          </div>
 
-        <div className="border-t border-[#FF1801]/20 p-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#FF1801] animate-pulse"></div>
-            <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">Live Telemetry Active</span>
+          <div className="border-t border-[#FF1801]/20 p-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#FF1801] animate-pulse"></div>
+              <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">Live Telemetry Active</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Mobile Panel - Bottom sheet */}
+      <div 
+        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/95 backdrop-blur-xl border-t border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 rounded-t-2xl ${
+          isOpen ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="flex flex-col max-h-[85vh]">
+          {/* Drag handle */}
+          <div className="flex justify-center py-3">
+            <div className="w-12 h-1 bg-[#FF1801]/30 rounded-full" />
+          </div>
+
+          {/* Mobile header */}
+          <div className="flex items-center justify-between px-4 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
+              <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">F1 Console</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2 -mr-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Mobile content */}
+          <div className="flex-1 overflow-y-auto px-4 pb-safe">
+            {renderContent()}
+          </div>
+
+          {/* Mobile footer */}
+          <div className="border-t border-[#FF1801]/20 p-3 mx-4">
+            <div className="flex items-center gap-2 justify-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#FF1801] animate-pulse"></div>
+              <span className="text-[10px] text-[#C0C0C0] uppercase tracking-widest">Live Telemetry</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
