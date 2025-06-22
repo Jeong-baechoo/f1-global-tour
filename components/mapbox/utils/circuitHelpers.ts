@@ -224,10 +224,7 @@ export const flyToCircuitWithTrack = async (
               rotation.cleanup();
             },
             rotation: rotation,
-            onCinematicModeToggle,
-            map: map,
-            moveHandler,
-            touchHandler
+            onCinematicModeToggle
           };
         }
       });

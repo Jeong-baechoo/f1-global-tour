@@ -155,17 +155,24 @@ export const createGlobeSpinner = (map: mapboxgl.Map) => {
 };
 
 // 서킷 회전 애니메이션 (시네마틱 투어 모드)
+interface CircuitRotationHandlers {
+  dragStart: () => void;
+  dragEnd: () => void;
+  zoomStart: () => void;
+  zoomEnd: () => void;
+  moveHandler: () => void;
+  touchHandler: () => void;
+}
+
 export const createCircuitRotation = (
   map: mapboxgl.Map,
   initialBearing: number
 ) => {
-  let handlers: any = null;
+  let handlers: CircuitRotationHandlers | null = null;
   let bearing = initialBearing;
-  let isRotating = false;
   let rotationAnimationId: number | null = null;
   let rotationInterval: NodeJS.Timeout | null = null;
-  let isActive = true;
-  let userInteracting = false;
+  const userInteracting = false;
   let idleTimer: NodeJS.Timeout | null = null;
   let cinematicModeEnabled = false; // 시네마틱 모드 상태
   let ignoreEvents = false; // 이벤트 무시 플래그
@@ -178,7 +185,6 @@ export const createCircuitRotation = (
   };
 
   const stopRotation = () => {
-    isRotating = false;
     if (rotationInterval) {
       clearInterval(rotationInterval);
       rotationInterval = null;
@@ -269,7 +275,6 @@ export const createCircuitRotation = (
   };
 
   const cleanup = () => {
-    isActive = false;
     disableCinematicMode();
   };
 
@@ -284,6 +289,6 @@ export const createCircuitRotation = (
     toggleCinematicMode,
     isCinematicModeEnabled: () => cinematicModeEnabled,
     cleanup,
-    setHandlers: (h: any) => { handlers = h; }
+    setHandlers: (h: CircuitRotationHandlers) => { handlers = h; }
   };
 };

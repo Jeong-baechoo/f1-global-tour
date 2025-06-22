@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
 
-import { MapProps, MapAPI } from './types';
-import { MAP_CONFIG, FOG_CONFIG, SKY_LAYER_CONFIG, LAYERS_TO_REMOVE } from './constants';
-import { createGlobeSpinner } from './utils/animations';
-import { createRedBullMarker } from './markers/RedBullMarker';
-import { addAllCircuits, findNextRace } from './markers/addAllCircuits';
-import { flyToCircuitWithTrack } from './utils/circuitHelpers';
+import {MapAPI, MapProps} from './types';
+import {FOG_CONFIG, LAYERS_TO_REMOVE, MAP_CONFIG, SKY_LAYER_CONFIG} from './constants';
+import {createGlobeSpinner} from './utils/animations';
+import {createRedBullMarker} from './markers/RedBullMarker';
+import {addAllCircuits, findNextRace} from './markers/addAllCircuits';
+import {flyToCircuitWithTrack} from './utils/circuitHelpers';
 import CinematicModeButton from './CinematicModeButton';
 
 // Circuit rotation handlers type
@@ -55,17 +55,17 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       zoom: map.current?.getZoom()
     });
     if (!map.current) return false;
-    
+
     const mapWithHandlers = map.current as mapboxgl.Map & {
       _circuitRotationHandlers?: CircuitRotationHandlers;
     };
     const handlers = mapWithHandlers._circuitRotationHandlers;
-    
+
     console.log('Checking handlers:', {
       hasHandlers: !!handlers,
       hasRotation: !!handlers?.rotation
     });
-    
+
     if (handlers?.rotation) {
       const isEnabled = handlers.rotation.toggleCinematicMode();
       if (handlers.onCinematicModeToggle) {
@@ -78,7 +78,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       return isEnabled;
     }
     return false;
-  }, [onCinematicModeChange]);
+  }, [currentCircuitId, onCinematicModeChange]);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -110,7 +110,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     map.current.on('rotateend', globeSpinner.current.stopInteracting);
     map.current.on('zoomstart', globeSpinner.current.startInteracting);
     map.current.on('zoomend', globeSpinner.current.stopInteracting);
-    
+
     // 터치 이벤트만 추가 (마우스 휠은 제거)
     map.current.on('touchstart', globeSpinner.current.startInteracting);
     map.current.on('touchend', globeSpinner.current.stopInteracting);
@@ -134,7 +134,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
             curve: 1,
             essential: true
           });
-          
+
           // flyTo 완료 시 글로브 스피너 재개
           map.current.once('moveend', () => {
             globeSpinner.current?.stopInteracting();
@@ -146,8 +146,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           setIsCircuitView(true);
           console.log('Flying to circuit:', circuitId);
           // circuitId를 직접 사용하여 클로저로 캡처
-          const capturedCircuitId = circuitId;
-          setCurrentCircuitId(capturedCircuitId);
+          setCurrentCircuitId(circuitId);
           flyToCircuitWithTrack(map.current, circuit, undefined, (enabled) => {
             // 시네마틱 모드 토글 콜백 처리
             console.log('Cinematic mode toggled from flyToCircuitWithTrack:', enabled);
@@ -173,7 +172,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
             curve: 1,
             essential: true
           });
-          
+
           // flyTo 완료 시 글로브 스피너 재개
           map.current.once('moveend', () => {
             globeSpinner.current?.stopInteracting();
@@ -214,7 +213,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       const updateTerrainExaggeration = () => {
         const zoom = map.current!.getZoom();
         let exaggeration: number;
-        
+
         if (zoom < 5) {
           // 글로브 뷰: 지형적 특징 강조
           exaggeration = 2.0;
@@ -225,7 +224,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           // 가까운 거리: 자연스러운 표현
           exaggeration = 1.5;
         }
-        
+
         map.current!.setTerrain({
           'source': 'mapbox-dem',
           'exaggeration': exaggeration
@@ -310,9 +309,9 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   return (
     <>
       <div ref={mapContainer} className="w-full h-full" />
-      <CinematicModeButton 
-        isCircuitView={isCircuitView} 
-        onToggle={handleCinematicModeToggle} 
+      <CinematicModeButton
+        isCircuitView={isCircuitView}
+        onToggle={handleCinematicModeToggle}
       />
     </>
   );
