@@ -156,12 +156,23 @@ export default function InteractivePanel({
       case 'next-race':
         return (
           <div className="space-y-6">
-            <div className="border-b border-[#FF1801]/20 pb-4">
-              <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">NEXT RACE</h2>
-              <h1 className="text-2xl font-bold text-white tracking-wide">
-                {data?.grandPrix || 'AUSTRIAN GRAND PRIX'}
-              </h1>
-            </div>
+            {/* 모바일에서 half/full 상태일 때는 헤더에 이미 NEXT RACE가 표시되므로 생략 */}
+            {(!isMobile || sheetState === 'peek') && (
+              <div className="border-b border-[#FF1801]/20 pb-4">
+                <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">NEXT RACE</h2>
+                <h1 className="text-2xl font-bold text-white tracking-wide">
+                  {data?.grandPrix || 'AUSTRIAN GRAND PRIX'}
+                </h1>
+              </div>
+            )}
+            {/* 모바일 half/full 상태에서는 그랑프리 이름만 표시 */}
+            {isMobile && (sheetState === 'half' || sheetState === 'full') && (
+              <div className="border-b border-[#FF1801]/20 pb-4">
+                <h1 className="text-2xl font-bold text-white tracking-wide">
+                  {data?.grandPrix || 'AUSTRIAN GRAND PRIX'}
+                </h1>
+              </div>
+            )}
 
             <div className="bg-[#0F0F0F] rounded border border-[#FF1801]/20 p-4 sm:p-6">
               <div className="text-center mb-4">
@@ -219,13 +230,25 @@ export default function InteractivePanel({
       case 'circuit-detail':
         return (
           <div className={isMobile ? "space-y-4" : "space-y-6"}>
-            <div className={isMobile ? "border-b border-[#FF1801]/20 pb-3" : "border-b border-[#FF1801]/20 pb-4"}>
-              <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">CIRCUIT DETAIL</h2>
-              <h1 className={isMobile ? "text-xl font-bold text-white tracking-wide" : "text-2xl font-bold text-white tracking-wide"}>
-                {data?.name || 'Red Bull Ring'}
-              </h1>
-              <p className="text-sm text-[#C0C0C0] mt-1">{typeof data?.location === 'string' ? data.location : `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`}</p>
-            </div>
+            {/* 모바일에서 half/full 상태일 때는 헤더에 이미 CIRCUIT DETAIL이 표시되므로 생략 */}
+            {(!isMobile || sheetState === 'peek') && (
+              <div className={isMobile ? "border-b border-[#FF1801]/20 pb-3" : "border-b border-[#FF1801]/20 pb-4"}>
+                <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">CIRCUIT DETAIL</h2>
+                <h1 className={isMobile ? "text-xl font-bold text-white tracking-wide" : "text-2xl font-bold text-white tracking-wide"}>
+                  {data?.name || 'Red Bull Ring'}
+                </h1>
+                <p className="text-sm text-[#C0C0C0] mt-1">{typeof data?.location === 'string' ? data.location : `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`}</p>
+              </div>
+            )}
+            {/* 모바일 half/full 상태에서는 서킷 이름만 표시 */}
+            {isMobile && (sheetState === 'half' || sheetState === 'full') && (
+              <div className="border-b border-[#FF1801]/20 pb-3">
+                <h1 className="text-xl font-bold text-white tracking-wide">
+                  {data?.name || 'Red Bull Ring'}
+                </h1>
+                <p className="text-sm text-[#C0C0C0] mt-1">{typeof data?.location === 'string' ? data.location : `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`}</p>
+              </div>
+            )}
 
             {/* Circuit image placeholder - uncomment when images are available
             {data?.image && (
@@ -283,12 +306,23 @@ export default function InteractivePanel({
       case 'team-hq':
         return (
           <div className="space-y-6">
-            <div className="border-b border-[#FF1801]/20 pb-4">
-              <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">TEAM HQ</h2>
-              <h1 className="text-2xl font-bold tracking-wide" style={{ color: data?.color || '#FFFFFF' }}>
-                {data?.name || 'Mercedes-AMG Petronas F1 Team'}
-              </h1>
-            </div>
+            {/* 모바일에서 half/full 상태일 때는 헤더에 이미 TEAM HQ가 표시되므로 생략 */}
+            {(!isMobile || sheetState === 'peek') && (
+              <div className="border-b border-[#FF1801]/20 pb-4">
+                <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">TEAM HQ</h2>
+                <h1 className="text-2xl font-bold tracking-wide" style={{ color: data?.color || '#FFFFFF' }}>
+                  {data?.name || 'Mercedes-AMG Petronas F1 Team'}
+                </h1>
+              </div>
+            )}
+            {/* 모바일 half/full 상태에서는 팀 이름만 표시 */}
+            {isMobile && (sheetState === 'half' || sheetState === 'full') && (
+              <div className="border-b border-[#FF1801]/20 pb-4">
+                <h1 className="text-xl font-bold tracking-wide" style={{ color: data?.color || '#FFFFFF' }}>
+                  {data?.name || 'Mercedes-AMG Petronas F1 Team'}
+                </h1>
+              </div>
+            )}
 
             {/* Team HQ image placeholder - uncomment when images are available
             {data?.hqImage && (
