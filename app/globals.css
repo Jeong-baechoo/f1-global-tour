@@ -6,6 +6,23 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
+
+/* Interactive bottom sheet styles */
+.bottom-sheet {
+  touch-action: none;
+}
+
+.bottom-sheet-dragging {
+  transition: none !important;
+}
+
+/* Prevent text selection during drag */
+.cursor-grab {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {

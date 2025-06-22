@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X, ChevronRight, MapPin, Calendar } from 'lucide-react';
 // import Image from 'next/image'; // Uncomment when images are available
 
@@ -34,6 +34,100 @@ export default function InteractivePanel({
   onExploreCircuit 
 }: InteractivePanelProps) {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+  const [sheetState, setSheetState] = useState<'closed' | 'peek' | 'half' | 'full'>('peek'); // 시트 상태
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  
+  // 각 상태별 높이 정의
+  const SHEET_HEIGHTS = {
+    closed: 0,
+    peek: 80, // 80px - 핸들과 제목만 보임
+    half: 45, // 45vh - 중간 상태
+    full: 85  // 85vh - 전체 상태
+  };
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 시트 상태 업데이트 시 높이 조정
+  useEffect(() => {
+    if (isOpen && isMobile) {
+      setSheetState('peek');
+    }
+  }, [isOpen, isMobile]);
+
+  // Touch/Mouse handlers for dragging
+  const handleDragStart = (e: React.TouchEvent | React.MouseEvent) => {
+    setIsDragging(true);
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setStartY(clientY);
+  };
+
+  const handleDragMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging || !sheetRef.current) return;
+    
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const deltaY = startY - clientY;
+    
+    // 현재 높이 계산
+    const windowHeight = window.innerHeight;
+    let currentHeight = 0;
+    
+    if (sheetState === 'peek') currentHeight = SHEET_HEIGHTS.peek;
+    else if (sheetState === 'half') currentHeight = (SHEET_HEIGHTS.half / 100) * windowHeight;
+    else if (sheetState === 'full') currentHeight = (SHEET_HEIGHTS.full / 100) * windowHeight;
+    
+    const newHeight = currentHeight + deltaY;
+    const heightPercent = (newHeight / windowHeight) * 100;
+    
+    // 높이 제한
+    if (newHeight >= SHEET_HEIGHTS.peek && heightPercent <= SHEET_HEIGHTS.full) {
+      sheetRef.current.style.height = `${newHeight}px`;
+    }
+  };
+
+  const handleDragEnd = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging || !sheetRef.current) return;
+    setIsDragging(false);
+    
+    const clientY = 'touches' in e ? e.changedTouches[0].clientY : e.clientY;
+    const deltaY = startY - clientY;
+    const windowHeight = window.innerHeight;
+    const currentHeightPx = sheetRef.current.offsetHeight;
+    const currentHeightVh = (currentHeightPx / windowHeight) * 100;
+    
+    // 드래그 방향과 현재 높이에 따라 상태 결정
+    if (deltaY > 50) { // 위로 드래그
+      if (sheetState === 'peek') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('full');
+    } else if (deltaY < -50) { // 아래로 드래그
+      if (sheetState === 'full') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('peek');
+      else if (sheetState === 'peek' && deltaY < -100) {
+        onClose();
+        return;
+      }
+    } else {
+      // 가장 가까운 snap point로 이동
+      if (currentHeightVh < 20) setSheetState('peek');
+      else if (currentHeightVh < 65) setSheetState('half');
+      else setSheetState('full');
+    }
+  };
+
+  // 클릭으로 상태 전환
+  const handleHeaderClick = () => {
+    if (sheetState === 'peek') setSheetState('half');
+    else if (sheetState === 'half') setSheetState('full');
+  };
 
   useEffect(() => {
     if (module === 'next-race' && data?.raceDate) {
@@ -124,10 +218,10 @@ export default function InteractivePanel({
 
       case 'circuit-detail':
         return (
-          <div className="space-y-6">
-            <div className="border-b border-[#FF1801]/20 pb-4">
+          <div className={isMobile ? "space-y-4" : "space-y-6"}>
+            <div className={isMobile ? "border-b border-[#FF1801]/20 pb-3" : "border-b border-[#FF1801]/20 pb-4"}>
               <h2 className="text-xs text-[#C0C0C0] tracking-widest mb-2">CIRCUIT DETAIL</h2>
-              <h1 className="text-2xl font-bold text-white tracking-wide">
+              <h1 className={isMobile ? "text-xl font-bold text-white tracking-wide" : "text-2xl font-bold text-white tracking-wide"}>
                 {data?.name || 'Red Bull Ring'}
               </h1>
               <p className="text-sm text-[#C0C0C0] mt-1">{typeof data?.location === 'string' ? data.location : `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`}</p>
@@ -146,14 +240,14 @@ export default function InteractivePanel({
               </div>
             )} */}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20">
+            <div className="grid grid-cols-2 gap-3">
+              <div className={isMobile ? "bg-[#0F0F0F] p-3 rounded border border-[#FF1801]/20" : "bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20"}>
                 <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Corners</div>
-                <div className="text-2xl font-bold text-white mt-1">{data?.corners || '10'}</div>
+                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.corners || '10'}</div>
               </div>
-              <div className="bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20">
+              <div className={isMobile ? "bg-[#0F0F0F] p-3 rounded border border-[#FF1801]/20" : "bg-[#0F0F0F] p-4 rounded border border-[#FF1801]/20"}>
                 <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Circuit Length</div>
-                <div className="text-2xl font-bold text-white mt-1">{data?.length || '4.318'} <span className="text-sm text-[#C0C0C0]">km</span></div>
+                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.length || '4.318'} <span className="text-sm text-[#C0C0C0]">km</span></div>
               </div>
             </div>
 
@@ -298,45 +392,112 @@ export default function InteractivePanel({
         </div>
       </div>
 
-      {/* Mobile Panel - Bottom sheet */}
+      {/* Mobile Panel - Interactive Bottom Sheet */}
       <div 
-        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/95 backdrop-blur-xl border-t border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 rounded-t-2xl ${
-          isOpen ? 'translate-y-0' : 'translate-y-full'
-        }`}
+        ref={sheetRef}
+        className={`sm:hidden fixed inset-x-0 bottom-0 bg-[#1A1A1A]/98 backdrop-blur-xl border-t border-[#FF1801]/20 z-50 rounded-t-2xl shadow-2xl transition-all ${
+          isOpen ? '' : 'translate-y-full'
+        } ${isDragging ? '' : 'transition-all duration-300 ease-out'}`}
+        style={{
+          height: isOpen ? (
+            sheetState === 'peek' ? `${SHEET_HEIGHTS.peek}px` :
+            sheetState === 'half' ? `${SHEET_HEIGHTS.half}vh` :
+            sheetState === 'full' ? `${SHEET_HEIGHTS.full}vh` : '0'
+          ) : '0',
+          transform: isOpen ? 'translateY(0)' : 'translateY(100%)'
+        }}
       >
-        <div className="flex flex-col max-h-[85vh]">
-          {/* Drag handle */}
-          <div className="flex justify-center py-3">
+        {/* Drag Handle Area */}
+        <div 
+          className="sticky top-0 z-10 bg-[#1A1A1A]/98 backdrop-blur-xl rounded-t-2xl cursor-grab active:cursor-grabbing"
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+          onMouseDown={handleDragStart}
+          onMouseMove={isDragging ? handleDragMove : undefined}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onClick={handleHeaderClick}
+        >
+          {/* Handle Bar */}
+          <div className="flex justify-center pt-2 pb-1">
             <div className="w-12 h-1 bg-[#FF1801]/30 rounded-full" />
           </div>
 
-          {/* Mobile header */}
-          <div className="flex items-center justify-between px-4 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
-              <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">F1 Console</span>
+          {/* Peek State - 제목만 표시 */}
+          {sheetState === 'peek' && (
+            <div className="px-4 pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-semibold text-base">
+                    {module === 'circuit-detail' ? (data?.name || 'Circuit') : 
+                     module === 'team-hq' ? (data?.name || 'Team HQ') :
+                     'Next Race'}
+                  </h3>
+                  {module === 'circuit-detail' && (
+                    <p className="text-xs text-[#C0C0C0] mt-0.5">
+                      {typeof data?.location === 'string' ? data.location : 
+                       `${data?.location?.city || ''}, ${data?.location?.country || ''}`}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                  className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2 -mr-2"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-            <button
-              onClick={onClose}
-              className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2 -mr-2"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          )}
 
-          {/* Mobile content */}
+          {/* Half/Full State - 헤더 */}
+          {(sheetState === 'half' || sheetState === 'full') && (
+            <div className="px-4 pb-3 border-b border-[#FF1801]/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
+                  <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
+                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' : 
+                     module === 'team-hq' ? 'TEAM HQ' : 
+                     'NEXT RACE'}
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                  className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2 -mr-2"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Content Area - 스크롤 가능 */}
+        {(sheetState === 'half' || sheetState === 'full') && (
           <div className="flex-1 overflow-y-auto px-4 pb-safe">
-            {renderContent()}
+            <div className="py-4">
+              {renderContent()}
+            </div>
           </div>
+        )}
 
-          {/* Mobile footer */}
-          <div className="border-t border-[#FF1801]/20 p-3 mx-4">
+        {/* Footer - Half/Full 상태에서만 표시 */}
+        {(sheetState === 'half' || sheetState === 'full') && (
+          <div className="sticky bottom-0 bg-[#1A1A1A]/98 backdrop-blur border-t border-[#FF1801]/20 p-3">
             <div className="flex items-center gap-2 justify-center">
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF1801] animate-pulse"></div>
               <span className="text-[10px] text-[#C0C0C0] uppercase tracking-widest">Live Telemetry</span>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
