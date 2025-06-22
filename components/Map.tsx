@@ -286,7 +286,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
 
         const rotateCamera = () => {
           if (map.current!.getZoom() > 13 && isRotating) {
-            bearing += 0.2;
+            bearing += 0.1;
             map.current!.setBearing(bearing);
             rotationAnimationId = requestAnimationFrame(rotateCamera);
           }
@@ -430,7 +430,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
           }
         });
       }
-      
+
       // 마커 추가를 약간 지연시켜 스타일 로드 완료 확실히 하기
       setTimeout(() => {
         addMarkers();
@@ -727,7 +727,7 @@ export default function Map({ onMarkerClick, onMapReady }: MapProps) {
 
             const rotateCamera = () => {
               if (map.current!.getZoom() > 13 && isRotating) {
-                bearing += 0.3;  // 회전 속도 감소
+                bearing += 0.1;  // 회전 속도 감소
                 map.current!.setBearing(bearing);
                 localAnimationId = requestAnimationFrame(rotateCamera);
                 animationId.current = localAnimationId;
