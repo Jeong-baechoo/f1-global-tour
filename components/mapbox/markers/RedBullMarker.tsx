@@ -127,19 +127,8 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
     });
   });
 
-  // 팝업 생성
-  const popup = new mapboxgl.Popup({ offset: 25 })
-    .setHTML(`
-      <div style="padding: 10px;">
-        <h3 style="margin: 0 0 5px 0; color: #1e3a8a;">${redBullHQ.name}</h3>
-        <p style="margin: 0 0 5px 0; font-size: 14px;">${redBullHQ.description}</p>
-        <p style="margin: 0; font-size: 12px; color: #666;">${redBullHQ.address}</p>
-      </div>
-    `);
-
-  // 마커 추가
+  // 마커 추가 (팝업 없이)
   return new mapboxgl.Marker(el, { offset: [0, -25] })
     .setLngLat(redBullHQ.coordinates as [number, number])
-    .setPopup(popup)
     .addTo(map);
 };

@@ -127,22 +127,9 @@ export const createCircuitMarker = ({
     }
   });
 
-  // 팝업 생성
-  const popup = new mapboxgl.Popup({ offset: 25 })
-    .setHTML(`
-      <div style="padding: 10px;">
-        <h3 style="margin: 0 0 5px 0; color: ${isNextRace ? '#FF1801' : '#dc2626'};">${circuit.name}</h3>
-        <p style="margin: 0 0 5px 0; font-size: 14px;">${circuit.officialName}</p>
-        <p style="margin: 0 0 3px 0; font-size: 12px;"><strong>Country:</strong> ${circuit.country}</p>
-        <p style="margin: 0 0 3px 0; font-size: 12px;"><strong>Track Length:</strong> ${circuit.length} km</p>
-        ${circuit.lapRecord ? `<p style="margin: 0 0 3px 0; font-size: 12px;"><strong>Lap Record:</strong> ${circuit.lapRecord.time} (${circuit.lapRecord.driver}, ${circuit.lapRecord.year})</p>` : ''}
-      </div>
-    `);
-
-  // 마커 생성
+  // 마커 생성 (팝업 없이)
   const mapMarker = new mapboxgl.Marker(el)
     .setLngLat([circuit.location.lng, circuit.location.lat])
-    .setPopup(popup)
     .addTo(map);
 
   if (onMarkerCreated) {
