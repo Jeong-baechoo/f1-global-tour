@@ -303,7 +303,7 @@ export default function InteractivePanel({
                 className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wider border ${
                   isCinematicMode
                     ? 'bg-[#FF1801] text-white border-[#FF1801] hover:bg-[#FF1801]/90'
-                    : 'bg-[#1A1A1A] text-white border-[#FF1801]/20 hover:bg-[#2A2A2A]'
+                    : 'bg-[#1A1A1A]/60 backdrop-blur-sm text-white border-[#FF1801]/20 hover:bg-[#1A1A1A]/80'
                 }`}
               >
                 {isCinematicMode ? (
@@ -321,10 +321,10 @@ export default function InteractivePanel({
             )}
 
             <div className="flex gap-3">
-              <button className="flex-1 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
+              <button className="flex-1 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
                 Official Tickets
               </button>
-              <button className="flex-1 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
+              <button className="flex-1 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
                 Local Info
               </button>
             </div>
