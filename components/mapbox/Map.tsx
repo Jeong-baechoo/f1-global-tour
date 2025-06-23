@@ -12,6 +12,7 @@ import {createGlobeSpinner} from './utils/animations';
 import {createRedBullMarker} from './markers/RedBullMarker';
 import {addAllCircuits, findNextRace} from './markers/addAllCircuits';
 import {flyToCircuitWithTrack} from './utils/circuitHelpers';
+import { MarkerVisibilityManager, setupMarkerVisibility, cleanupMarkerVisibility } from '@/lib/mapbox/markerVisibility';
 import CinematicModeButton from './CinematicModeButton';
 
 // Circuit rotation handlers type
@@ -43,6 +44,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const markerVisibilityManager = useRef<MarkerVisibilityManager | null>(null);
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [currentCircuitId, setCurrentCircuitId] = useState<string | null>(null);
@@ -279,28 +281,44 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
         nextRaceId: nextRace.id,
         markers: markers.current
       });
+
+      // 마커 가시성 관리 설정 - DOM이 완전히 준비된 후에 설정
+      // requestAnimationFrame을 사용하여 다음 프레임에서 실행
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (map.current && markers.current.length > 0) {
+            markerVisibilityManager.current = setupMarkerVisibility(map.current, markers.current);
+          }
+        }, 500); // 충분한 시간을 줌
+      });
     };
+
+    // 줌 레벨 변경 감지 핸들러 등록
+    const handleZoomChange = () => {
+      const zoom = map.current!.getZoom();
+      // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
+      if (zoom <= 10) {
+        setIsCircuitView(false);
+        setCurrentCircuitId(null);
+      }
+    };
+
+    map.current!.on('zoom', handleZoomChange);
 
     // cleanup 함수
     return () => {
       globeSpinner.current?.cleanup();
 
+      // 마커 가시성 관리 정리
+      if (markerVisibilityManager.current && map.current) {
+        cleanupMarkerVisibility(map.current, markerVisibilityManager.current);
+        markerVisibilityManager.current = null;
+      }
+
       markers.current.forEach(marker => {
         marker.remove();
       });
       markers.current = [];
-
-      // 줌 레벨 변경 감지 핸들러 등록
-      const handleZoomChange = () => {
-        const zoom = map.current!.getZoom();
-        // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
-        if (zoom <= 10) {
-          setIsCircuitView(false);
-          setCurrentCircuitId(null);
-        }
-      };
-
-      map.current!.on('zoom', handleZoomChange);
 
       // 이벤트 리스너는 맵 제거 시 자동으로 정리됨
     };

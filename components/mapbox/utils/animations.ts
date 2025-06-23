@@ -18,7 +18,7 @@ export const interpolateCoordinates = (coords: number[][]): number[][] => {
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // 거리에 따라 보간 점 개수 결정 (더 많은 보간점으로 부드러운 애니메이션)
-    const numInterpolations = Math.ceil(distance * 10000);
+    const numInterpolations = Math.ceil(distance * 20000); // 10000에서 20000으로 증가
 
     // 보간 점 추가
     for (let j = 1; j < numInterpolations; j++) {

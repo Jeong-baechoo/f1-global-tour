@@ -77,13 +77,29 @@ export const drawTrack = (
       const elapsed = performance.now() - startTime;
       const progress = Math.min(elapsed / ANIMATION_CONFIG.trackAnimationDuration, 1);
 
-      // 부드러운 진행
+      // 더 부드러운 easing - ease-in-out-cubic
       const easeProgress = progress < 0.5
-        ? 2 * progress * progress
-        : -1 + (4 - 2 * progress) * progress;
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
+      // 마지막 부분에서 더 세밀한 인덱스 계산
       const currentIndex = Math.floor(easeProgress * totalPoints);
       const animatedCoordinates = smoothCoordinates.slice(0, currentIndex + 1);
+      
+      // 90% 이상 진행되었을 때 더 세밀한 업데이트
+      if (progress > 0.9 && currentIndex < totalPoints - 1) {
+        const subProgress = (easeProgress * totalPoints) - currentIndex;
+        if (subProgress > 0 && smoothCoordinates[currentIndex + 1]) {
+          // 현재 점과 다음 점 사이를 보간
+          const currentPoint = smoothCoordinates[currentIndex];
+          const nextPoint = smoothCoordinates[currentIndex + 1];
+          const interpolatedPoint = [
+            currentPoint[0] + (nextPoint[0] - currentPoint[0]) * subProgress,
+            currentPoint[1] + (nextPoint[1] - currentPoint[1]) * subProgress
+          ];
+          animatedCoordinates.push(interpolatedPoint);
+        }
+      }
 
       // 트랙이 완성되면 닫힌 루프로 만들기
       if (currentIndex >= totalPoints - 1 && animatedCoordinates.length > 0) {
