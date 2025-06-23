@@ -81,14 +81,14 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
   const configs: { [key: string]: Partial<CameraConfig> } = {
     'austria': {
       zoom: mobile ? 14 : 16,  // 모바일: 14, 데스크톱: 16
-      pitch: 70,  // 터레인 효과 극대화
+      pitch: 60,  // 터레인 효과 극대화 (70에서 60으로 감소)
       bearing: -20,
       speed: 1.2,
       curve: 1
     },
     'nurburgring': {
       zoom: mobile ? 13.5 : 15.5,  // 모바일: 13.5, 데스크톱: 15.5
-      pitch: 65,  // 터레인이 잘 보이도록 상향
+      pitch: 55,  // 터레인이 잘 보이도록 상향 (65에서 55로 감소)
       bearing: 45,
       speed: 0.4,
       curve: 0.8,
@@ -96,14 +96,14 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
     },
     'monaco': {
       zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
-      pitch: 70,  // 해안 지형 강조
+      pitch: 60,  // 해안 지형 강조 (70에서 60으로 감소)
       bearing: 30,
       speed: 0.6,
       curve: 1.2
     },
     'silverstone': {
       zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
-      pitch: 65,
+      pitch: 55,
       bearing: 0,
       speed: 0.8,
       curve: 1
@@ -112,7 +112,7 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
 
   const defaultConfig: CameraConfig = {
     zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
-    pitch: 70,  // 기본 pitch 값 상향
+    pitch: 60,  // 기본 pitch 값 (70에서 60으로 감소)
     bearing: 0,
     speed: 1.2,
     curve: 1.2,

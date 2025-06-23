@@ -1,36 +1,231 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏎️ F1 Global Tour
 
-## Getting Started
+<div align="center">
+  <img src="https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Mapbox-GL-4169E1?style=for-the-badge&logo=mapbox&logoColor=white" alt="Mapbox" />
+  <img src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+</div>
 
-First, run the development server:
+<div align="center">
+  <h3>🌍 Experience the Global Presence of Formula 1 in 3D</h3>
+  <p>An interactive web application that visualizes F1 teams and circuits on a stunning 3D globe</p>
+</div>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ✨ Features
+
+### 🗺️ Interactive 3D Globe
+- **Auto-rotating Earth** with smooth animations
+- **Satellite imagery** for realistic visualization
+- **GPU-accelerated** rendering for optimal performance
+
+### 🏁 F1 Data Visualization
+- **10 F1 Teams** with headquarters markers
+- **24 Official Circuits** from the 2025 season
+- **Real-time race countdown** for upcoming events
+- **Detailed information panels** for teams and circuits
+
+### 📱 Responsive Design
+- **Mobile-optimized** interactive bottom sheet
+- **Desktop-friendly** side panels
+- **Touch gestures** support on mobile devices
+- **Adaptive UI** based on screen size
+
+### 🎬 Cinematic Mode
+- **Automated circuit tours** with smooth camera movements
+- **Dynamic track drawing** animations
+- **Immersive viewing experience**
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Mapbox account for API token
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/f1-global-tour.git
+   cd f1-global-tour
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your Mapbox access token:
+   ```
+   NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🏗️ Project Structure
+
+```
+f1-global-tour/
+├── app/                    # Next.js app directory
+├── components/            
+│   ├── mapbox/            # Map-related components
+│   │   ├── markers/       # Team & circuit markers
+│   │   └── utils/         # Map utilities
+│   ├── ui/                # Reusable UI components
+│   └── InteractivePanel.tsx
+├── data/                  # F1 teams & circuits data
+│   ├── teams.json
+│   ├── circuits.json
+│   └── tracks/           # Circuit track coordinates
+├── lib/                   # Utility functions
+│   ├── mapbox/           # Map-specific utilities
+│   ├── styles/           # Style utilities
+│   └── utils/            # General utilities
+└── public/               # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎮 Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Navigation Controls
+- **🖱️ Click & Drag** - Rotate the globe
+- **📍 Click Markers** - View team/circuit details
+- **🔍 Scroll** - Zoom in/out
+- **📱 Touch** - Mobile gesture support
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Features
+- **Next Race Countdown** - See time until the next Grand Prix
+- **Circuit Details** - Track layout, corners, and race schedule
+- **Team Information** - Headquarters, drivers, and team colors
+- **Cinematic Tours** - Automated circuit exploration
 
-## Learn More
+## 🛠️ Technology Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **[Next.js 15](https://nextjs.org/)** - React framework with App Router
+- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
+- **[Mapbox GL JS](https://www.mapbox.com/mapbox-gljs)** - 3D map rendering
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first styling
+- **[Lucide Icons](https://lucide.dev/)** - Beautiful icons
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 Key Components
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Map Component
+The core 3D globe with optimized rendering:
+```typescript
+// GPU-accelerated performance optimizations
+- Reduced tile cache size
+- Disabled anti-aliasing
+- Removed unnecessary layers
+- Efficient marker management
+```
 
-## Deploy on Vercel
+### Interactive Panel
+Responsive information display:
+- Desktop: Slide-in side panel
+- Mobile: Draggable bottom sheet with snap points
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Marker System
+Efficient marker creation with factory pattern:
+- Base marker factory for consistency
+- Custom designs for teams and circuits
+- Hover effects and animations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Performance Optimizations
+
+- **Dynamic imports** for code splitting
+- **GPU acceleration** with `translateZ(0)`
+- **Optimized map style** (satellite-v9)
+- **Efficient event management** with custom EventManager
+- **Responsive asset loading** based on device
+
+## 📝 Development Commands
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript compiler
+```
+
+## 📈 Development History
+
+### Recent Updates
+```
+🏎️ v0.3.0 - Performance & Code Quality
+├─ ec04f5b fix: 명시적 타입으로 변경 및 불필요한 변수 제거
+├─ b282cf0 fix: 시네마틱 모드 작동 문제 해결
+├─ 308ae77 fix: 모바일 바텀시트 헤더 배경 투명 처리
+├─ a2f322f style: 버튼 배경색 블러 효과 통일
+└─ 74ccbd5 fix: any 타입을 명시적 타입으로 변경
+
+🎬 v0.2.5 - Cinematic Mode & UI Enhancements
+├─ 02c3987 feat: 시네마틱 투어 모드 구현
+├─ 344dace feat: next race 마커 이미지 추가 및 ui 개선
+├─ baae682 feat: 모바일 인터랙티브 바텀 시트 구현
+└─ 86b1cf0 feat: 모바일 지원 추가
+
+🗺️ v0.2.0 - Circuit Integration
+├─ 94b0f47 feat: f1-circuits geojson 데이터 통합
+├─ 4b7c1bd refactor: map 컴포넌트 구조 개선 및 모듈화
+└─ c4240be feat: f1 2024 시즌 데이터 및 서킷 마커 추가
+
+🚀 v0.1.0 - Initial Release
+├─ f36582d feat: f1 월드 투어 지도 ui 구현
+├─ c2b7ec1 chore: 프로젝트 설정 및 의존성 업데이트
+└─ 286d107 Initial commit from Create Next App
+```
+
+### Version Milestones
+- **v0.3.0** - Enhanced performance, TypeScript improvements, mobile UX refinements
+- **v0.2.5** - Cinematic mode, responsive bottom sheet, mobile optimization
+- **v0.2.0** - Full circuit data integration, component modularization
+- **v0.1.0** - Basic 3D globe with team headquarters
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Formula 1® for the inspiring sport
+- [Mapbox](https://www.mapbox.com/) for the amazing mapping platform
+- [Next.js](https://nextjs.org/) team for the fantastic framework
+- All F1 teams and circuits featured in this project
+
+---
+
+<div align="center">
+  <p>Made with ❤️ by F1 enthusiasts</p>
+  <p>
+    <a href="https://github.com/yourusername/f1-global-tour">GitHub</a> •
+    <a href="https://twitter.com/yourusername">Twitter</a> •
+    <a href="https://f1-global-tour.vercel.app">Live Demo</a>
+  </p>
+</div>
