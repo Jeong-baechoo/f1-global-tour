@@ -34,7 +34,7 @@ interface CircuitRotationHandlers {
   onCinematicModeToggle?: (enabled: boolean) => void;
 }
 
-// Mapbox 토큰 확인
+// Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
   console.error('Mapbox access token is missing!');
 }
@@ -48,25 +48,21 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [currentCircuitId, setCurrentCircuitId] = useState<string | null>(null);
+  const [mapDebugInfo, setMapDebugInfo] = useState({
+    center: [0, 0] as [number, number],
+    zoom: 0,
+    bearing: 0,
+    pitch: 0
+  });
 
   // 시네마틱 모드 토글 핸들러
   const handleCinematicModeToggle = useCallback((): boolean => {
-    console.log('Toggling cinematic mode...', {
-      hasMap: !!map.current,
-      currentCircuitId,
-      zoom: map.current?.getZoom()
-    });
     if (!map.current) return false;
 
     const mapWithHandlers = map.current as mapboxgl.Map & {
       _circuitRotationHandlers?: CircuitRotationHandlers;
     };
     const handlers = mapWithHandlers._circuitRotationHandlers;
-
-    console.log('Checking handlers:', {
-      hasHandlers: !!handlers,
-      hasRotation: !!handlers?.rotation
-    });
 
     if (handlers?.rotation) {
       const isEnabled = handlers.rotation.toggleCinematicMode();
@@ -146,12 +142,10 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           // 글로브 스피너 일시 중단
           globeSpinner.current?.startInteracting();
           setIsCircuitView(true);
-          console.log('Flying to circuit:', circuitId);
           // circuitId를 직접 사용하여 클로저로 캡처
           setCurrentCircuitId(circuitId);
           flyToCircuitWithTrack(map.current, circuit, undefined, (enabled) => {
             // 시네마틱 모드 토글 콜백 처리
-            console.log('Cinematic mode toggled from flyToCircuitWithTrack:', enabled);
             if (onCinematicModeChange) {
               onCinematicModeChange(enabled);
             }
@@ -235,6 +229,28 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
       // 줌 이벤트에 터레인 업데이트 연결
       map.current!.on('zoom', updateTerrainExaggeration);
+
+      // 지도 상태 업데이트 함수
+      const updateMapDebugInfo = () => {
+        if (map.current) {
+          const center = map.current.getCenter();
+          setMapDebugInfo({
+            center: [Number(center.lng.toFixed(4)), Number(center.lat.toFixed(4))],
+            zoom: Number(map.current.getZoom().toFixed(2)),
+            bearing: Number(map.current.getBearing().toFixed(1)),
+            pitch: Number(map.current.getPitch().toFixed(1))
+          });
+        }
+      };
+
+      // 지도 상태 변경 이벤트 리스너
+      map.current!.on('move', updateMapDebugInfo);
+      map.current!.on('zoom', updateMapDebugInfo);
+      map.current!.on('rotate', updateMapDebugInfo);
+      map.current!.on('pitch', updateMapDebugInfo);
+      
+      // 초기 상태 설정
+      updateMapDebugInfo();
 
       // 불필요한 레이어 제거
       const style = map.current!.getStyle();
@@ -327,6 +343,17 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   return (
     <>
       <div ref={mapContainer} className="w-full h-full" />
+      
+      {/* 지도 디버그 정보 */}
+      <div className="absolute top-4 left-4 bg-black/80 text-white p-3 rounded-lg text-xs font-mono z-50">
+        <div className="space-y-1">
+          <div>중심: {mapDebugInfo.center[0]}, {mapDebugInfo.center[1]}</div>
+          <div>줌: {mapDebugInfo.zoom}</div>
+          <div>방향각: {mapDebugInfo.bearing}°</div>
+          <div>틸트: {mapDebugInfo.pitch}°</div>
+        </div>
+      </div>
+      
       <CinematicModeButton
         isCircuitView={isCircuitView}
         onToggle={handleCinematicModeToggle}

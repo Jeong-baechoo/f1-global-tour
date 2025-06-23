@@ -34,11 +34,6 @@ export const addAllCircuits = ({
       onMarkerClick,
       onMarkerCreated: (marker) => {
         markers.push(marker);
-        
-        // 클릭 이벤트에 flyTo 및 트랙 그리기 추가
-        marker.getElement().addEventListener('click', () => {
-          flyToCircuitWithTrack(map, circuit);
-        });
       }
     });
   });
@@ -53,9 +48,6 @@ export const addAllCircuits = ({
       onMarkerClick,
       onMarkerCreated: (marker) => {
         markers.push(marker);
-        marker.getElement().addEventListener('click', () => {
-          flyToCircuitWithTrack(map, nurburgring);
-        });
       }
     });
   }

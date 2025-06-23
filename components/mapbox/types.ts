@@ -13,6 +13,7 @@ export interface MarkerData {
   length?: number;
   laps?: number;
   corners?: number;
+  totalDistance?: number;
 }
 
 export interface MapAPI {

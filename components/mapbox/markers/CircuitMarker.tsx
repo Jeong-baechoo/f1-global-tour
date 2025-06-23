@@ -3,6 +3,37 @@ import { MarkerData } from '../types';
 import { MARKER_STYLES } from '../constants';
 import { createBaseMarker } from './MarkerFactory';
 
+// 실제 F1 서킷 코너 정보
+const CIRCUIT_CORNERS: Record<string, number> = {
+  'bahrain': 15,
+  'saudi-arabia': 27,
+  'australia': 14,  // 2022년 레이아웃 변경으로 16→14 코너
+  'japan': 18,
+  'china': 16,
+  'miami': 19,
+  'imola': 19,
+  'monaco': 19,
+  'canada': 14,
+  'spain': 16,
+  'austria': 10,
+  'silverstone': 18,
+  'britain': 18,
+  'hungary': 14,
+  'spa': 19,
+  'netherlands': 14,
+  'monza': 11,
+  'italy': 11,
+  'azerbaijan': 20,
+  'singapore': 19,  // 2023년 레이아웃 변경으로 23→19 코너
+  'usa': 20,
+  'mexico': 17,
+  'brazil': 15,
+  'vegas': 17,
+  'qatar': 16,
+  'abu-dhabi': 16,
+  'nurburgring': 15  // 정확한 GP 서킷 코너 수
+};
+
 interface Circuit {
   id: string;
   name: string;
@@ -66,7 +97,8 @@ export const createCircuitMarker = ({
     grandPrix: circuit.grandPrix,
     length: circuit.length,
     laps: circuit.laps,
-    corners: circuit.corners || 10,
+    corners: CIRCUIT_CORNERS[circuit.id] || 10,
+    totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
     location: `${circuit.location.city}, ${circuit.location.country}`
   };
 

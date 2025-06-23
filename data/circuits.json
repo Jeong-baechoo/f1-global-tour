@@ -8,8 +8,8 @@
       "country": "Bahrain",
       "city": "Sakhir",
       "location": {
-        "lat": 26.0325,
-        "lng": 50.5106,
+        "lat": 26.0319,
+        "lng": 50.5122,
         "city": "Sakhir",
         "country": "Bahrain"
       },
@@ -31,8 +31,8 @@
       "country": "Saudi Arabia",
       "city": "Jeddah",
       "location": {
-        "lat": 21.6319,
-        "lng": 39.1044,
+        "lat": 21.6374,
+        "lng": 39.1035,
         "city": "Jeddah",
         "country": "Saudi Arabia"
       },
@@ -54,8 +54,8 @@
       "country": "Australia",
       "city": "Melbourne",
       "location": {
-        "lat": -37.8497,
-        "lng": 144.9680,
+        "lat": -37.8498,
+        "lng": 144.9747,
         "city": "Melbourne",
         "country": "Australia"
       },
@@ -77,8 +77,8 @@
       "country": "Japan",
       "city": "Suzuka",
       "location": {
-        "lat": 34.8431,
-        "lng": 136.5407,
+        "lat": 34.8458,
+        "lng": 136.5382,
         "city": "Suzuka",
         "country": "Japan"
       },
@@ -124,8 +124,8 @@
       "country": "United States",
       "city": "Miami",
       "location": {
-        "lat": 25.9581,
-        "lng": -80.2389,
+        "lat": 25.961,
+        "lng": -80.2337,
         "city": "Miami",
         "country": "United States"
       },
@@ -148,8 +148,8 @@
       "country": "Italy",
       "city": "Imola",
       "location": {
-        "lat": 44.3439,
-        "lng": 11.7167,
+        "lat": 44.3469,
+        "lng": 11.719,
         "city": "Imola",
         "country": "Italy"
       },
@@ -171,8 +171,8 @@
       "country": "Monaco",
       "city": "Monte Carlo",
       "location": {
-        "lat": 43.7347,
-        "lng": 7.4206,
+        "lat": 43.7382,
+        "lng": 7.4272,
         "city": "Monte Carlo",
         "country": "Monaco"
       },
@@ -240,8 +240,8 @@
       "country": "Austria",
       "city": "Spielberg",
       "location": {
-        "lat": 47.2197,
-        "lng": 14.7647,
+        "lat": 47.2224,
+        "lng": 14.7651,
         "city": "Spielberg",
         "country": "Austria"
       },
@@ -263,8 +263,8 @@
       "country": "United Kingdom",
       "city": "Silverstone",
       "location": {
-        "lat": 52.0786,
-        "lng": -1.0169,
+        "lat": 52.074,
+        "lng": -1.0191,
         "city": "Silverstone",
         "country": "United Kingdom"
       },
@@ -286,8 +286,8 @@
       "country": "Hungary",
       "city": "Budapest",
       "location": {
-        "lat": 47.5789,
-        "lng": 19.2486,
+        "lat": 47.5836,
+        "lng": 19.2526,
         "city": "Budapest",
         "country": "Hungary"
       },
@@ -309,8 +309,8 @@
       "country": "Belgium",
       "city": "Spa",
       "location": {
-        "lat": 50.4372,
-        "lng": 5.9714,
+        "lat": 50.437,
+        "lng": 5.9726,
         "city": "Spa",
         "country": "Belgium"
       },
@@ -333,8 +333,8 @@
       "country": "Netherlands",
       "city": "Zandvoort",
       "location": {
-        "lat": 52.3889,
-        "lng": 4.5408,
+        "lat": 52.3858,
+        "lng": 4.5461,
         "city": "Zandvoort",
         "country": "Netherlands"
       },
@@ -356,8 +356,8 @@
       "country": "Italy",
       "city": "Monza",
       "location": {
-        "lat": 45.6156,
-        "lng": 9.2811,
+        "lat": 45.6179,
+        "lng": 9.2846,
         "city": "Monza",
         "country": "Italy"
       },
@@ -379,8 +379,8 @@
       "country": "Azerbaijan",
       "city": "Baku",
       "location": {
-        "lat": 40.3725,
-        "lng": 49.8533,
+        "lat": 40.3711,
+        "lng": 49.8422,
         "city": "Baku",
         "country": "Azerbaijan"
       },
@@ -402,8 +402,8 @@
       "country": "Singapore",
       "city": "Singapore",
       "location": {
-        "lat": 1.2914,
-        "lng": 103.8644,
+        "lat": 1.2943,
+        "lng": 103.8593,
         "city": "Singapore",
         "country": "Singapore"
       },
@@ -425,8 +425,8 @@
       "country": "United States",
       "city": "Austin",
       "location": {
-        "lat": 30.1328,
-        "lng": -97.6411,
+        "lat": 30.1359,
+        "lng": -97.6307,
         "city": "Austin",
         "country": "United States"
       },
@@ -449,8 +449,8 @@
       "country": "Mexico",
       "city": "Mexico City",
       "location": {
-        "lat": 19.4042,
-        "lng": -99.0907,
+        "lat": 19.4049,
+        "lng": -99.0866,
         "city": "Mexico City",
         "country": "Mexico"
       },
@@ -466,14 +466,14 @@
     },
     {
       "id": "brazil",
-      "name": "Interlagos",
+      "name": "Autódromo José Carlos Pace",
       "officialName": "Autódromo José Carlos Pace",
       "grandPrix": "Brazilian Grand Prix",
       "country": "Brazil",
       "city": "São Paulo",
       "location": {
-        "lat": -23.7036,
-        "lng": -46.6997,
+        "lat": -23.7039,
+        "lng": -46.6956,
         "city": "São Paulo",
         "country": "Brazil"
       },
@@ -496,8 +496,8 @@
       "country": "United States",
       "city": "Las Vegas",
       "location": {
-        "lat": 36.1146,
-        "lng": -115.1728,
+        "lat": 36.115,
+        "lng": -115.1635,
         "city": "Las Vegas",
         "country": "United States"
       },
@@ -543,8 +543,8 @@
       "country": "United Arab Emirates",
       "city": "Abu Dhabi",
       "location": {
-        "lat": 24.4672,
-        "lng": 54.6031,
+        "lat": 24.4695,
+        "lng": 54.6073,
         "city": "Abu Dhabi",
         "country": "United Arab Emirates"
       },
@@ -566,8 +566,8 @@
       "country": "Germany",
       "city": "Nürburg",
       "location": {
-        "lat": 50.3325934,
-        "lng": 6.9414539,
+        "lat": 50.3352,
+        "lng": 6.9434,
         "city": "Nürburg",
         "country": "Germany"
       },
