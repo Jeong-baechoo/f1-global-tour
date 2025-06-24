@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { X, ChevronRight, MapPin, Calendar, Camera, CameraOff } from 'lucide-react';
+import { ChevronRight, MapPin, Calendar, Camera, CameraOff, Minus } from 'lucide-react';
 import { ModuleHeader } from './ui/ModuleHeader';
 // import Image from 'next/image'; // Uncomment when images are available
 
 interface InteractivePanelProps {
   isOpen: boolean;
   onClose: () => void;
+  onMinimize?: () => void;
+  isMinimized?: boolean;
   module: 'next-race' | 'circuit-detail' | 'team-hq' | null;
   data?: {
     type?: string;
@@ -22,6 +24,7 @@ interface InteractivePanelProps {
     length?: number;
     laps?: number;
     corners?: number;
+    totalDistance?: number;
     raceDate?: string;
   } | null;
   onExploreCircuit?: () => void;
@@ -32,6 +35,8 @@ interface InteractivePanelProps {
 export default function InteractivePanel({
   isOpen,
   onClose,
+  onMinimize,
+  isMinimized = false,
   module,
   data,
   onExploreCircuit,
@@ -253,6 +258,14 @@ export default function InteractivePanel({
                 <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Circuit Length</div>
                 <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.length || '4.318'} <span className="text-sm text-[#C0C0C0]">km</span></div>
               </div>
+              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
+                <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Total Laps</div>
+                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.laps || '71'}</div>
+              </div>
+              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
+                <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Race Distance</div>
+                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.totalDistance || '306.5'} <span className="text-sm text-[#C0C0C0]">km</span></div>
+              </div>
             </div>
 
             <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
@@ -395,21 +408,52 @@ export default function InteractivePanel({
     <>
       {/* Desktop Panel - Slide from right */}
       <div
-        className={`hidden sm:block fixed right-0 top-0 h-full w-[400px] bg-[#1A1A1A]/60 backdrop-blur-sm border-l border-[#FF1801]/20 transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`hidden sm:block fixed right-0 bg-[#1A1A1A]/60 backdrop-blur-sm border-l border-[#FF1801]/20 transform transition-all duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        } ${isMinimized ? 'w-[60px] h-[60px] top-32 rounded-l-lg' : 'w-[400px] h-full top-0'}`}
       >
         <div className="relative h-full w-full flex flex-col">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-[#C0C0C0] hover:text-[#FF1801] transition-colors z-10"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          {/* Minimized state - 최소화된 상태 */}
+          {isMinimized ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <button
+                onClick={onMinimize}
+                className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2"
+                title="패널 열기"
+              >
+                <ChevronRight className="w-6 h-6 transform rotate-180" />
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Header with controls */}
+              <div className="flex items-center justify-between p-4 border-b border-[#FF1801]/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
+                  <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
+                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' :
+                     module === 'team-hq' ? 'TEAM HQ' :
+                     'NEXT RACE'}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  {onMinimize && (
+                    <button
+                      onClick={onMinimize}
+                      className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors"
+                      title="패널 최소화"
+                    >
+                      <Minus className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+              </div>
 
-          <div className="flex-1 overflow-y-auto p-6 pt-16">
-            {renderContent()}
-          </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                {renderContent()}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -462,15 +506,6 @@ export default function InteractivePanel({
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClose();
-                  }}
-                  className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2 -mr-2"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
             </div>
           )}
@@ -487,15 +522,6 @@ export default function InteractivePanel({
                      'NEXT RACE'}
                   </span>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClose();
-                  }}
-                  className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-2 -mr-2"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
             </div>
           )}

@@ -7,7 +7,7 @@ export const CIRCUIT_ID_MAPPING: { [key: string]: string } = {
   'bahrain': 'bh-2002',        // 4. 바레인 GP
   'saudi-arabia': 'sa-2021',   // 5. 사우디 GP - 제다
   'miami': 'us-2022',          // 6. 마이애미 GP
-  'emilia-romagna': 'it-1953', // 7. 이몰라 GP
+  'imola': 'it-1953', // 7. 이몰라 GP
   'monaco': 'mc-1929',         // 8. 모나코 GP
   'spain': 'es-1991',          // 9. 스페인 GP - 바르셀로나
   'canada': 'ca-1978',         // 10. 캐나다 GP - 몬트리올
@@ -33,7 +33,7 @@ export const CIRCUIT_ID_MAPPING: { [key: string]: string } = {
 // 2025 시즌 서킷 ID 목록
 export const F1_2025_CIRCUITS = [
   'australia', 'china', 'japan', 'bahrain', 'saudi-arabia',
-  'miami', 'emilia-romagna', 'monaco', 'spain', 'canada',
+  'miami', 'imola', 'monaco', 'spain', 'canada',
   'austria', 'britain', 'belgium', 'hungary', 'netherlands',
   'italy', 'azerbaijan', 'singapore', 'usa', 'mexico',
   'brazil', 'las-vegas', 'qatar', 'abu-dhabi'
