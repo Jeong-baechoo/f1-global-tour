@@ -47,8 +47,8 @@
       "headquarters": {
         "city": "Brackley",
         "country": "United Kingdom",
-        "lat": 52.0269,
-        "lng": -1.1467
+        "lat": 52.0217,
+        "lng": -1.1471
       },
       "teamPrincipal": "Toto Wolff",
       "foundingYear": 2010,
@@ -65,8 +65,8 @@
       "headquarters": {
         "city": "Woking",
         "country": "United Kingdom",
-        "lat": 51.3458,
-        "lng": -0.5585
+        "lat": 51.3454,
+        "lng": -0.5474
       },
       "teamPrincipal": "Andrea Stella",
       "foundingYear": 1963,
@@ -83,10 +83,10 @@
       "headquarters": {
         "city": "Silverstone",
         "country": "United Kingdom",
-        "lat": 52.0786,
-        "lng": -1.0169
+        "lat": 52.0765,
+        "lng": -1.0288
       },
-      "teamPrincipal": "Mike Krack",
+      "teamPrincipal": "Andy Cowell",
       "foundingYear": 2021,
       "description": "Previously known as Racing Point and Force India, the team was rebranded as Aston Martin in 2021, bringing the luxury British marque back to F1 after 60 years."
     },
@@ -101,10 +101,10 @@
       "headquarters": {
         "city": "Enstone",
         "country": "United Kingdom",
-        "lat": 51.9583,
-        "lng": -1.4417
+        "lat": 48.66216065299585,
+        "lng": 2.3701223969327145
       },
-      "teamPrincipal": "Bruno Famin",
+      "teamPrincipal": "Oliver Oakes",
       "foundingYear": 2021,
       "description": "The works Renault team, rebranded as Alpine in 2021 to promote the French manufacturer's sports car brand, with a rich history including championship wins as Benetton and Renault."
     },
@@ -119,17 +119,17 @@
       "headquarters": {
         "city": "Grove",
         "country": "United Kingdom",
-        "lat": 51.6247,
-        "lng": -1.4233
+        "lat": 51.61869248344223,
+        "lng": -1.4114207879417222
       },
       "teamPrincipal": "James Vowles",
       "foundingYear": 1977,
       "description": "One of the most successful teams in F1 history with 9 constructors' championships, Williams is rebuilding after recent struggles while maintaining their racing heritage."
     },
     {
-      "id": "alphatauri",
-      "name": "AlphaTauri",
-      "fullName": "Scuderia AlphaTauri",
+      "id": "racing-bulls",
+      "name": "Racing Bulls",
+      "fullName": "Visa Cash App RB Formula One Team",
       "colors": {
         "primary": "#2B4562",
         "secondary": "#FFFFFF"
@@ -137,26 +137,26 @@
       "headquarters": {
         "city": "Faenza",
         "country": "Italy",
-        "lat": 44.2845,
-        "lng": 11.8833
+        "lat": 44.30237776250763,
+        "lng": 11.859086012910865
       },
       "teamPrincipal": "Laurent Mekies",
-      "foundingYear": 2020,
+      "foundingYear": 2024,
       "description": "Red Bull's sister team, previously known as Toro Rosso, serves as a development team for young drivers while competing independently with its own design philosophy."
     },
     {
       "id": "alfa-romeo",
       "name": "Alfa Romeo",
-      "fullName": "Alfa Romeo F1 Team Stake",
+      "fullName": "Stake F1 Team Kick Sauber",
       "colors": {
-        "primary": "#900000",
+        "primary": "#57a316",
         "secondary": "#00FF00"
       },
       "headquarters": {
         "city": "Hinwil",
         "country": "Switzerland",
-        "lat": 47.3677,
-        "lng": 8.8467
+        "lat": 47.30805075558828,
+        "lng": 8.817248199241021
       },
       "teamPrincipal": "Alessandro Alunni Bravi",
       "foundingYear": 2019,
@@ -173,10 +173,10 @@
       "headquarters": {
         "city": "Kannapolis",
         "country": "United States",
-        "lat": 35.4852,
-        "lng": -80.6217
+        "lat": 35.44049532264481,
+        "lng": -80.67622817560164
       },
-      "teamPrincipal": "Guenther Steiner",
+      "teamPrincipal": "Ayao Komatsu",
       "foundingYear": 2016,
       "description": "The first American F1 team in decades, Haas operates with a unique business model utilizing technical partnerships while developing their own competitive package."
     }
