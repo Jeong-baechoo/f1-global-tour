@@ -20,17 +20,17 @@ interface Team {
   };
 }
 
-interface RedBullMarkerProps {
+interface SauberMarkerProps {
   map: mapboxgl.Map;
   team: Team;
   onMarkerClick?: (item: MarkerData) => void;
 }
 
-export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerProps): mapboxgl.Marker => {
+export const createSauberMarker = ({ map, team, onMarkerClick }: SauberMarkerProps): mapboxgl.Marker => {
   const mobile = isMobile();
-  const markerStyle = MARKER_STYLES.redBullMarker;
+  const markerStyle = MARKER_STYLES.redBullMarker; // 기본 스타일 재사용
   
-  const redBullHQ = {
+  const sauberHQ = {
     name: team.fullName,
     coordinates: [team.headquarters.lng, team.headquarters.lat],
     description: team.description,
@@ -39,7 +39,7 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
 
   // 커스텀 마커 엘리먼트 생성
   const el = document.createElement('div');
-  el.className = 'marker redbull-marker';
+  el.className = 'marker sauber-marker';
   el.style.position = 'absolute';
   el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
   el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
@@ -52,14 +52,14 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
   const box = document.createElement('div');
   box.style.width = mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth;
   box.style.height = mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight;
-  box.style.backgroundImage = 'url(https://upload.wikimedia.org/wikipedia/de/thumb/c/c4/Red_Bull_Racing_logo.svg/200px-Red_Bull_Racing_logo.svg.png)';
+  box.style.backgroundImage = 'url(/team-logos/2023_Stake_F1_Team_Kick_Sauber_logo.png)';
   box.style.backgroundSize = 'contain';
   box.style.backgroundPosition = 'center';
   box.style.backgroundRepeat = 'no-repeat';
-  box.style.backgroundColor = MARKER_STYLES.redBullMarker.backgroundColor;
+  box.style.backgroundColor = '#57a316'; // Sauber/Alfa Romeo green
   box.style.borderRadius = MARKER_STYLES.redBullMarker.borderRadius;
-  box.style.border = MARKER_STYLES.redBullMarker.border;
-  box.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+  box.style.border = '2px solid #3a6b0f'; // Dark green border
+  box.style.boxShadow = '0 2px 10px rgba(87,163,22,0.4)'; // Sauber green shadow
   box.style.transition = 'all 0.3s ease';
 
   el.appendChild(box);
@@ -70,12 +70,12 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
 
   el.addEventListener('mouseenter', () => {
     box.style.transform = 'scale(1.1) translateZ(0)';
-    box.style.boxShadow = '0 4px 20px rgba(0,0,0,0.4)';
+    box.style.boxShadow = '0 4px 20px rgba(87,163,22,0.6)'; // Enhanced Sauber green shadow
   });
 
   el.addEventListener('mouseleave', () => {
     box.style.transform = 'scale(1) translateZ(0)';
-    box.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+    box.style.boxShadow = '0 2px 10px rgba(87,163,22,0.4)';
   });
 
   // 클릭 이벤트
@@ -83,17 +83,17 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
     if (onMarkerClick) {
       onMarkerClick({
         type: 'team',
-        id: 'red-bull',
+        id: 'alfa-romeo',
         name: team.fullName,
         principal: team.teamPrincipal,
         location: team.headquarters,
         color: team.colors.primary,
-        drivers: ['Max Verstappen', 'Yuki Tsunoda']
+        drivers: ['Nico Hülkenberg', 'Gabriel Bortoleto']
       });
     }
 
     map.flyTo({
-      center: [-0.689, 52.0092],
+      center: sauberHQ.coordinates as [number, number],
       zoom: 15.68,
       pitch: 45,
       bearing: 0,
@@ -109,6 +109,6 @@ export const createRedBullMarker = ({ map, team, onMarkerClick }: RedBullMarkerP
     anchor: 'top-left',
     offset: [0, 0]
   })
-    .setLngLat(redBullHQ.coordinates as [number, number])
+    .setLngLat(sauberHQ.coordinates as [number, number])
     .addTo(map);
 };

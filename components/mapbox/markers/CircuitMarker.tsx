@@ -118,6 +118,12 @@ export const createCircuitMarker = ({
     }
   });
 
+  // 서킷 마커에 CSS 클래스 추가 (줌 레벨에 따른 표시/숨김용)
+  const markerElement = marker.getElement();
+  if (markerElement) {
+    markerElement.classList.add('circuit-marker');
+  }
+
   if (onMarkerCreated) {
     onMarkerCreated(marker);
   }

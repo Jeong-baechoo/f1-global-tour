@@ -52,6 +52,8 @@ export default function Home() {
     toggleCinematicMode?: () => boolean;
   } | null>(null);
   const [isCinematicMode, setIsCinematicMode] = useState(false);
+  const [initialFocusTimer, setInitialFocusTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   const handleMarkerClick = (item: {
     type: string;
@@ -67,6 +69,12 @@ export default function Home() {
     laps?: number;
     corners?: number;
   }) => {
+    // 사용자가 마커를 클릭하면 초기 포커싱 중단
+    if (initialFocusTimer && !hasUserInteracted) {
+      clearTimeout(initialFocusTimer);
+      setInitialFocusTimer(null);
+      setHasUserInteracted(true);
+    }
     if (item.type === 'team') {
       setPanelModule('team-hq');
       setPanelData({
@@ -138,7 +146,7 @@ export default function Home() {
 
     // Show next race panel after 1 second to ensure map is loaded
     const timer = setTimeout(() => {
-      if (!mapRef.current) return;
+      if (!mapRef.current || hasUserInteracted) return;
       
       const nextRace = findNextRace();
       
@@ -152,15 +160,23 @@ export default function Home() {
       setPanelOpen(true);
 
       // Add a small delay for flyTo to ensure map is ready
-      setTimeout(() => {
-        if (nextRace.id && mapRef.current) {
+      const flyToTimer = setTimeout(() => {
+        if (nextRace.id && mapRef.current && !hasUserInteracted) {
           mapRef.current.flyToCircuit(nextRace.id, true);
         }
       }, 500);
+
+      // flyToTimer를 정리할 수 있도록 저장
+      setInitialFocusTimer(flyToTimer);
     }, 2000);
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      if (initialFocusTimer) {
+        clearTimeout(initialFocusTimer);
+      }
+    };
+  }, [hasUserInteracted, initialFocusTimer]);
 
   return (
     <main className="relative w-full h-screen overflow-hidden">
@@ -171,6 +187,13 @@ export default function Home() {
           mapRef.current = api;
         }} 
         onCinematicModeChange={setIsCinematicMode}
+        onUserInteraction={() => {
+          if (initialFocusTimer && !hasUserInteracted) {
+            clearTimeout(initialFocusTimer);
+            setInitialFocusTimer(null);
+            setHasUserInteracted(true);
+          }
+        }}
       />
 
       {/* F1 로고 - 모바일 */}

@@ -10,6 +10,15 @@ import {MapAPI, MapProps} from './types';
 import {FOG_CONFIG, LAYERS_TO_REMOVE, MAP_CONFIG, SKY_LAYER_CONFIG} from './constants';
 import {createGlobeSpinner} from './utils/animations';
 import {createRedBullMarker} from './markers/RedBullMarker';
+import {createFerrariMarker} from './markers/FerrariMarker';
+import {createMercedesMarker} from './markers/MercedesMarker';
+import {createMcLarenMarker} from './markers/McLarenMarker';
+import {createAstonMartinMarker} from './markers/AstonMartinMarker';
+import {createAlpineMarker} from './markers/AlpineMarker';
+import {createHaasMarker} from './markers/HaasMarker';
+import {createRacingBullsMarker} from './markers/RacingBullsMarker';
+import {createWilliamsMarker} from './markers/WilliamsMarker';
+import {createSauberMarker} from './markers/SauberMarker';
 import {addAllCircuits, findNextRace} from './markers/addAllCircuits';
 import {flyToCircuitWithTrack} from './utils/circuitHelpers';
 import CinematicModeButton from './CinematicModeButton';
@@ -39,7 +48,7 @@ if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
 }
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
-export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }: MapProps) {
+export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange, onUserInteraction }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -53,10 +62,10 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   });
   
   // Props를 ref로 저장하여 re-render 시에도 최신 값 유지
-  const propsRef = useRef({ onMarkerClick, onMapReady, onCinematicModeChange });
+  const propsRef = useRef({ onMarkerClick, onMapReady, onCinematicModeChange, onUserInteraction });
   useEffect(() => {
-    propsRef.current = { onMarkerClick, onMapReady, onCinematicModeChange };
-  }, [onMarkerClick, onMapReady, onCinematicModeChange]);
+    propsRef.current = { onMarkerClick, onMapReady, onCinematicModeChange, onUserInteraction };
+  }, [onMarkerClick, onMapReady, onCinematicModeChange, onUserInteraction]);
 
   // 시네마틱 모드 토글 핸들러
   const handleCinematicModeToggle = useCallback((): boolean => {
@@ -102,19 +111,44 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     // 글로브 회전 애니메이션 설정
     globeSpinner.current = createGlobeSpinner(map.current);
 
+    // 사용자 상호작용 감지 함수
+    const handleUserInteraction = () => {
+      if (propsRef.current.onUserInteraction) {
+        propsRef.current.onUserInteraction();
+      }
+    };
+
     // 이벤트 리스너 등록 - 실제 사용자 조작만 감지
-    map.current.on('dragstart', globeSpinner.current.startInteracting);
+    map.current.on('dragstart', () => {
+      globeSpinner.current?.startInteracting();
+      handleUserInteraction();
+    });
     map.current.on('dragend', globeSpinner.current.stopInteracting);
-    map.current.on('pitchstart', globeSpinner.current.startInteracting);
+    map.current.on('pitchstart', () => {
+      globeSpinner.current?.startInteracting();
+      handleUserInteraction();
+    });
     map.current.on('pitchend', globeSpinner.current.stopInteracting);
-    map.current.on('rotatestart', globeSpinner.current.startInteracting);
+    map.current.on('rotatestart', () => {
+      globeSpinner.current?.startInteracting();
+      handleUserInteraction();
+    });
     map.current.on('rotateend', globeSpinner.current.stopInteracting);
-    map.current.on('zoomstart', globeSpinner.current.startInteracting);
+    map.current.on('zoomstart', () => {
+      globeSpinner.current?.startInteracting();
+      handleUserInteraction();
+    });
     map.current.on('zoomend', globeSpinner.current.stopInteracting);
 
     // 터치 이벤트만 추가 (마우스 휠은 제거)
-    map.current.on('touchstart', globeSpinner.current.startInteracting);
+    map.current.on('touchstart', () => {
+      globeSpinner.current?.startInteracting();
+      handleUserInteraction();
+    });
     map.current.on('touchend', globeSpinner.current.stopInteracting);
+
+    // 지도 클릭 시에도 사용자 상호작용으로 처리
+    map.current.on('click', handleUserInteraction);
 
     // flyTo API 정의
     const mapAPI: MapAPI = {
@@ -162,9 +196,16 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           const mobile = window.innerWidth < 640;
           // 글로브 스피너 일시 중단
           globeSpinner.current?.startInteracting();
+          
+          // Red Bull만 특별한 좌표 사용, 나머지는 공통 설정
+          const center = teamId === 'red-bull' 
+            ? [-0.689, 52.0092] as [number, number]
+            : [team.headquarters.lng, team.headquarters.lat] as [number, number];
+            
           map.current.flyTo({
-            center: [team.headquarters.lng, team.headquarters.lat],
-            zoom: mobile ? 15 : 18, // 모바일: 15, 데스크톱: 18
+            center,
+            zoom: mobile ? 15 : 18,
+            bearing: 0,
             pitch: 45,
             speed: 0.6,
             curve: 1,
@@ -289,6 +330,114 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
         markers.current.push(redBullMarker);
       }
 
+      // 페라리 마커
+      const ferrariTeam = teamsData.teams.find(team => team.id === 'ferrari');
+      if (ferrariTeam) {
+        const ferrariMarker = createFerrariMarker({
+          map: map.current,
+          team: ferrariTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(ferrariMarker);
+        console.log('[Map] Ferrari marker added');
+      }
+
+      // 메르세데스 마커
+      const mercedesTeam = teamsData.teams.find(team => team.id === 'mercedes');
+      if (mercedesTeam) {
+        const mercedesMarker = createMercedesMarker({
+          map: map.current,
+          team: mercedesTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(mercedesMarker);
+        console.log('[Map] Mercedes marker added');
+      }
+
+      // 맥라렌 마커
+      const mclarenTeam = teamsData.teams.find(team => team.id === 'mclaren');
+      if (mclarenTeam) {
+        const mclarenMarker = createMcLarenMarker({
+          map: map.current,
+          team: mclarenTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(mclarenMarker);
+        console.log('[Map] McLaren marker added');
+      }
+
+      // 애스턴 마틴 마커
+      const astonMartinTeam = teamsData.teams.find(team => team.id === 'aston-martin');
+      if (astonMartinTeam) {
+        const astonMartinMarker = createAstonMartinMarker({
+          map: map.current,
+          team: astonMartinTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(astonMartinMarker);
+        console.log('[Map] Aston Martin marker added');
+      }
+
+      // 알핀 마커
+      const alpineTeam = teamsData.teams.find(team => team.id === 'alpine');
+      if (alpineTeam) {
+        const alpineMarker = createAlpineMarker({
+          map: map.current,
+          team: alpineTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(alpineMarker);
+        console.log('[Map] Alpine marker added');
+      }
+
+      // 하스 마커
+      const haasTeam = teamsData.teams.find(team => team.id === 'haas');
+      if (haasTeam) {
+        const haasMarker = createHaasMarker({
+          map: map.current,
+          team: haasTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(haasMarker);
+        console.log('[Map] Haas marker added');
+      }
+
+      // 레이싱 불스 마커
+      const racingBullsTeam = teamsData.teams.find(team => team.id === 'racing-bulls');
+      if (racingBullsTeam) {
+        const racingBullsMarker = createRacingBullsMarker({
+          map: map.current,
+          team: racingBullsTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(racingBullsMarker);
+        console.log('[Map] Racing Bulls marker added');
+      }
+
+      // 윌리엄스 마커
+      const williamsTeam = teamsData.teams.find(team => team.id === 'williams');
+      if (williamsTeam) {
+        const williamsMarker = createWilliamsMarker({
+          map: map.current,
+          team: williamsTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(williamsMarker);
+        console.log('[Map] Williams marker added');
+      }
+
+      // 자우버 마커
+      const sauberTeam = teamsData.teams.find(team => team.id === 'alfa-romeo');
+      if (sauberTeam) {
+        const sauberMarker = createSauberMarker({
+          map: map.current,
+          team: sauberTeam,
+          onMarkerClick: propsRef.current.onMarkerClick
+        });
+        markers.current.push(sauberMarker);
+        console.log('[Map] Sauber marker added');
+      }
+
       // 다음 레이스 찾기
       const nextRace = findNextRace();
 
@@ -304,10 +453,37 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     // 줌 레벨 변경 감지 핸들러 등록
     const handleZoomChange = () => {
       const zoom = map.current!.getZoom();
+      console.log(`[Map] Zoom level: ${zoom.toFixed(2)}`);
+      
       // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
       if (zoom <= 10) {
         setIsCircuitView(false);
       }
+      
+      // 줌 레벨에 따른 서킷 마커 표시/숨김
+      let circuitMarkersFound = 0;
+      let circuitMarkersHidden = 0;
+      
+      markers.current.forEach(marker => {
+        const element = marker.getElement();
+        if (element && element.classList.contains('circuit-marker')) {
+          circuitMarkersFound++;
+          if (zoom >= 12) {
+            // 줌 레벨이 12 이상이면 서킷 마커 숨김
+            element.style.opacity = '0';
+            element.style.pointerEvents = 'none';
+            element.style.display = 'none'; // 완전히 숨김
+            circuitMarkersHidden++;
+          } else {
+            // 줌 레벨이 12 미만이면 서킷 마커 표시
+            element.style.opacity = '1';
+            element.style.pointerEvents = 'auto';
+            element.style.display = 'block';
+          }
+        }
+      });
+      
+      console.log(`[Map] Circuit markers found: ${circuitMarkersFound}, hidden: ${circuitMarkersHidden}`);
     };
 
     map.current!.on('zoom', handleZoomChange);

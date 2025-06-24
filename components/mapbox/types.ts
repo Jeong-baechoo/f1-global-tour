@@ -26,6 +26,7 @@ export interface MapProps {
   onMarkerClick?: (item: MarkerData) => void;
   onMapReady?: (mapAPI: MapAPI) => void;
   onCinematicModeChange?: (enabled: boolean) => void;
+  onUserInteraction?: () => void;
 }
 
 export interface TrackDrawOptions {
