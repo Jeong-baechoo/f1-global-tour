@@ -35,10 +35,13 @@ interface CircuitRotationHandlers {
 }
 
 // Mapbox 토큰 확인 및 설정
-if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
-  console.error('Mapbox access token is missing!');
+const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+if (!mapboxToken) {
+  console.error('Mapbox access token is missing! Check environment variables.');
+} else {
+  console.log('[Map] Mapbox token loaded successfully');
 }
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
+mapboxgl.accessToken = mapboxToken || '';
 
 export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -274,6 +277,8 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     const addMarkers = () => {
       if (!map.current) return;
 
+      console.log('[Map] Starting to add markers...');
+      
       // 레드불 레이싱 마커
       const redBullTeam = teamsData.teams.find(team => team.id === 'red-bull');
       if (redBullTeam) {
@@ -283,6 +288,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           onMarkerClick
         });
         markers.current.push(redBullMarker);
+        console.log('[Map] Red Bull marker added');
       }
 
       // 다음 레이스 찾기
@@ -295,16 +301,23 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
         nextRaceId: nextRace.id,
         markers: markers.current
       });
+      
+      console.log(`[Map] Total markers created: ${markers.current.length}`);
 
-      // 마커 가시성 관리 설정 - DOM이 완전히 준비된 후에 설정
-      // requestAnimationFrame을 사용하여 다음 프레임에서 실행
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          if (map.current && markers.current.length > 0) {
-            markerVisibilityManager.current = setupMarkerVisibility(map.current, markers.current);
+      // 마커 가시성 관리 설정 - 마커 생성 직후 즉시 설정
+      if (map.current && markers.current.length > 0) {
+        // 초기 가시성 확인을 위해 즉시 설정
+        markerVisibilityManager.current = setupMarkerVisibility(map.current, markers.current);
+        console.log('[Map] Marker visibility manager initialized');
+        
+        // 혹시 모를 타이밍 이슈를 위한 재확인
+        requestAnimationFrame(() => {
+          if (markerVisibilityManager.current) {
+            markerVisibilityManager.current.updateVisibility();
+            console.log('[Map] Marker visibility updated in next frame');
           }
-        }, 500); // 충분한 시간을 줌
-      });
+        });
+      }
     };
 
     // 줌 레벨 변경 감지 핸들러 등록

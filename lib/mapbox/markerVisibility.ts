@@ -63,6 +63,13 @@ export class MarkerVisibilityManager {
         this.hideAllMarkers();
       }
     }
+    
+    // 프로덕션 환경에서 초기 렌더링 시 강제 표시
+    if (!this.initialized && this.markers.length > 0) {
+      console.log('[MarkerVisibility] Force showing markers on initial load');
+      this.showAllMarkers();
+      this.initialized = true;
+    }
   }
 
   /**
