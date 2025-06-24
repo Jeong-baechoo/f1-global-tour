@@ -218,11 +218,11 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           if (element && element.classList.contains('circuit-marker')) {
             if (zoom >= ZOOM_LEVELS.circuit) {
               // 줌 레벨이 12 이상이면 서킷 마커 숨김
-              element.style.visibility = 'hidden';
+              element.style.opacity = '0';
               element.style.pointerEvents = 'none';
             } else {
               // 줌 레벨이 12 미만이면 서킷 마커 표시
-              element.style.visibility = 'visible';
+              element.style.opacity = '1';
               element.style.pointerEvents = 'auto';
             }
           }

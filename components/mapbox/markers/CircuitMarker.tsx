@@ -82,7 +82,9 @@ export const createCircuitMarker = ({
   el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
   el.style.cursor = 'pointer';
   el.style.willChange = 'transform';
-  el.style.transform = 'translateZ(0)'; // GPU 가속
+  el.style.transform = 'translate3d(0, 0, 0)'; // GPU 레이어 강제
+  el.style.backfaceVisibility = 'hidden'; // 렌더링 최적화
+  el.style.perspective = '1000px'; // 3D 가속
 
   // 메인 박스
   const box = document.createElement('div');
@@ -96,6 +98,10 @@ export const createCircuitMarker = ({
   box.style.display = 'flex';
   box.style.alignItems = 'center';
   box.style.justifyContent = 'center';
+  
+  // 초기 opacity 설정 (줌 레벨에 따라)
+  el.style.opacity = '1';
+  el.style.transition = 'opacity 0.3s ease';
 
   // 컨텐트 추가
   if (isNextRace) {
