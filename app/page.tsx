@@ -176,7 +176,7 @@ export default function Home() {
         clearTimeout(initialFocusTimer);
       }
     };
-  }, []);
+  }, [hasUserInteracted, initialFocusTimer]);
 
   return (
     <main className="relative w-full h-screen overflow-hidden">

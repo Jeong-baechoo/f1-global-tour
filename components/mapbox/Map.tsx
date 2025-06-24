@@ -190,7 +190,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange, 
 
         const team = teamsData.teams.find(t => t.id === teamId);
         if (team) {
-          const mobile = window.innerWidth < 640;
           // 글로브 스피너 일시 중단
           globeSpinner.current?.startInteracting();
           
