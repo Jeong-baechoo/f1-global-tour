@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 
 // 줌 레벨 임계값
-const MARKER_VISIBILITY_THRESHOLD = 13; // 줌 레벨 8 이상에서는 마커 숨김
+const MARKER_VISIBILITY_THRESHOLD = 13; // 줌 레벨 13 이상에서는 마커 숨김
 
 /**
  * 줌 레벨에 따라 마커 가시성을 관리하는 클래스
@@ -22,7 +22,15 @@ export class MarkerVisibilityManager {
    */
   setMarkers(markers: mapboxgl.Marker[]) {
     this.markers = markers;
-    this.updateVisibility();
+    console.log(`[MarkerVisibility] Setting ${markers.length} markers`);
+    // 초기 설정 시에는 마커를 먼저 표시
+    this.showAllMarkers();
+    this.isVisible = true;
+    this.initialized = false;
+    // 그 다음 현재 줌 레벨에 맞게 업데이트
+    setTimeout(() => {
+      this.updateVisibility();
+    }, 100);
   }
 
   /**
@@ -51,6 +59,8 @@ export class MarkerVisibilityManager {
   updateVisibility() {
     const zoom = this.map.getZoom();
     const shouldBeVisible = zoom < MARKER_VISIBILITY_THRESHOLD;
+    
+    console.log(`[MarkerVisibility] Zoom: ${zoom}, Threshold: ${MARKER_VISIBILITY_THRESHOLD}, Should be visible: ${shouldBeVisible}`);
 
     // 초기화되지 않았거나 상태가 변경되었을 때 업데이트
     if (!this.initialized || shouldBeVisible !== this.isVisible) {
@@ -58,17 +68,12 @@ export class MarkerVisibilityManager {
       this.initialized = true;
 
       if (this.isVisible) {
+        console.log('[MarkerVisibility] Showing all markers');
         this.showAllMarkers();
       } else {
+        console.log('[MarkerVisibility] Hiding all markers');
         this.hideAllMarkers();
       }
-    }
-    
-    // 프로덕션 환경에서 초기 렌더링 시 강제 표시
-    if (!this.initialized && this.markers.length > 0) {
-      console.log('[MarkerVisibility] Force showing markers on initial load');
-      this.showAllMarkers();
-      this.initialized = true;
     }
   }
 
