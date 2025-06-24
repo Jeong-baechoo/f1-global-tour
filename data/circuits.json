@@ -8,8 +8,8 @@
       "country": "Bahrain",
       "city": "Sakhir",
       "location": {
-        "lat": 26.0325,
-        "lng": 50.5106,
+        "lat": 26.0319,
+        "lng": 50.5122,
         "city": "Sakhir",
         "country": "Bahrain"
       },
@@ -21,7 +21,9 @@
         "year": 2005
       },
       "raceDate2025": "2025-04-13",
-      "round": 4
+      "round": 4,
+      "corners": 15,
+      "totalDistance": 308.484
     },
     {
       "id": "saudi-arabia",
@@ -31,8 +33,8 @@
       "country": "Saudi Arabia",
       "city": "Jeddah",
       "location": {
-        "lat": 21.6319,
-        "lng": 39.1044,
+        "lat": 21.6374,
+        "lng": 39.1035,
         "city": "Jeddah",
         "country": "Saudi Arabia"
       },
@@ -44,7 +46,9 @@
         "year": 2021
       },
       "raceDate2025": "2025-04-20",
-      "round": 5
+      "round": 5,
+      "corners": 27,
+      "totalDistance": 308.7
     },
     {
       "id": "australia",
@@ -54,8 +58,8 @@
       "country": "Australia",
       "city": "Melbourne",
       "location": {
-        "lat": -37.8497,
-        "lng": 144.9680,
+        "lat": -37.8498,
+        "lng": 144.9747,
         "city": "Melbourne",
         "country": "Australia"
       },
@@ -67,7 +71,9 @@
         "year": 2022
       },
       "raceDate2025": "2025-03-16",
-      "round": 1
+      "round": 1,
+      "corners": 14,
+      "totalDistance": 306.124
     },
     {
       "id": "japan",
@@ -77,8 +83,8 @@
       "country": "Japan",
       "city": "Suzuka",
       "location": {
-        "lat": 34.8431,
-        "lng": 136.5407,
+        "lat": 34.8458,
+        "lng": 136.5382,
         "city": "Suzuka",
         "country": "Japan"
       },
@@ -90,7 +96,9 @@
         "year": 2019
       },
       "raceDate2025": "2025-04-06",
-      "round": 3
+      "round": 3,
+      "corners": 18,
+      "totalDistance": 307.771
     },
     {
       "id": "china",
@@ -114,7 +122,9 @@
       },
       "raceDate2025": "2025-03-23",
       "round": 2,
-      "sprint": true
+      "sprint": true,
+      "corners": 16,
+      "totalDistance": 305.256
     },
     {
       "id": "miami",
@@ -124,8 +134,8 @@
       "country": "United States",
       "city": "Miami",
       "location": {
-        "lat": 25.9581,
-        "lng": -80.2389,
+        "lat": 25.961,
+        "lng": -80.2337,
         "city": "Miami",
         "country": "United States"
       },
@@ -138,7 +148,9 @@
       },
       "raceDate2025": "2025-05-04",
       "round": 6,
-      "sprint": true
+      "sprint": true,
+      "corners": 19,
+      "totalDistance": 308.484
     },
     {
       "id": "imola",
@@ -148,8 +160,8 @@
       "country": "Italy",
       "city": "Imola",
       "location": {
-        "lat": 44.3439,
-        "lng": 11.7167,
+        "lat": 44.3469,
+        "lng": 11.719,
         "city": "Imola",
         "country": "Italy"
       },
@@ -161,7 +173,9 @@
         "year": 2020
       },
       "raceDate2025": "2025-05-18",
-      "round": 7
+      "round": 7,
+      "corners": 19,
+      "totalDistance": 309.267
     },
     {
       "id": "monaco",
@@ -171,8 +185,8 @@
       "country": "Monaco",
       "city": "Monte Carlo",
       "location": {
-        "lat": 43.7347,
-        "lng": 7.4206,
+        "lat": 43.7382,
+        "lng": 7.4272,
         "city": "Monte Carlo",
         "country": "Monaco"
       },
@@ -184,7 +198,9 @@
         "year": 2021
       },
       "raceDate2025": "2025-05-25",
-      "round": 8
+      "round": 8,
+      "corners": 19,
+      "totalDistance": 260.286
     },
     {
       "id": "canada",
@@ -207,7 +223,9 @@
         "year": 2019
       },
       "raceDate2025": "2025-06-15",
-      "round": 9
+      "round": 9,
+      "corners": 14,
+      "totalDistance": 305.27
     },
     {
       "id": "spain",
@@ -230,7 +248,9 @@
         "year": 2023
       },
       "raceDate2025": "2025-06-01",
-      "round": 10
+      "round": 10,
+      "corners": 16,
+      "totalDistance": 307.362
     },
     {
       "id": "austria",
@@ -240,8 +260,8 @@
       "country": "Austria",
       "city": "Spielberg",
       "location": {
-        "lat": 47.2197,
-        "lng": 14.7647,
+        "lat": 47.2224,
+        "lng": 14.7651,
         "city": "Spielberg",
         "country": "Austria"
       },
@@ -253,7 +273,9 @@
         "year": 2020
       },
       "raceDate2025": "2025-06-29",
-      "round": 11
+      "round": 11,
+      "corners": 10,
+      "totalDistance": 306.578
     },
     {
       "id": "britain",
@@ -263,8 +285,8 @@
       "country": "United Kingdom",
       "city": "Silverstone",
       "location": {
-        "lat": 52.0786,
-        "lng": -1.0169,
+        "lat": 52.074,
+        "lng": -1.0191,
         "city": "Silverstone",
         "country": "United Kingdom"
       },
@@ -276,7 +298,9 @@
         "year": 2020
       },
       "raceDate2025": "2025-07-06",
-      "round": 12
+      "round": 12,
+      "corners": 18,
+      "totalDistance": 306.332
     },
     {
       "id": "hungary",
@@ -286,8 +310,8 @@
       "country": "Hungary",
       "city": "Budapest",
       "location": {
-        "lat": 47.5789,
-        "lng": 19.2486,
+        "lat": 47.5836,
+        "lng": 19.2526,
         "city": "Budapest",
         "country": "Hungary"
       },
@@ -299,7 +323,9 @@
         "year": 2020
       },
       "raceDate2025": "2025-08-03",
-      "round": 13
+      "round": 13,
+      "corners": 14,
+      "totalDistance": 306.67
     },
     {
       "id": "belgium",
@@ -309,8 +335,8 @@
       "country": "Belgium",
       "city": "Spa",
       "location": {
-        "lat": 50.4372,
-        "lng": 5.9714,
+        "lat": 50.437,
+        "lng": 5.9726,
         "city": "Spa",
         "country": "Belgium"
       },
@@ -323,7 +349,9 @@
       },
       "raceDate2025": "2025-07-27",
       "round": 14,
-      "sprint": true
+      "sprint": true,
+      "corners": 19,
+      "totalDistance": 308.176
     },
     {
       "id": "netherlands",
@@ -333,8 +361,8 @@
       "country": "Netherlands",
       "city": "Zandvoort",
       "location": {
-        "lat": 52.3889,
-        "lng": 4.5408,
+        "lat": 52.3858,
+        "lng": 4.5461,
         "city": "Zandvoort",
         "country": "Netherlands"
       },
@@ -346,7 +374,9 @@
         "year": 2021
       },
       "raceDate2025": "2025-08-31",
-      "round": 15
+      "round": 15,
+      "corners": 14,
+      "totalDistance": 306.648
     },
     {
       "id": "italy",
@@ -356,8 +386,8 @@
       "country": "Italy",
       "city": "Monza",
       "location": {
-        "lat": 45.6156,
-        "lng": 9.2811,
+        "lat": 45.6179,
+        "lng": 9.2846,
         "city": "Monza",
         "country": "Italy"
       },
@@ -369,7 +399,9 @@
         "year": 2004
       },
       "raceDate2025": "2025-09-07",
-      "round": 16
+      "round": 16,
+      "corners": 11,
+      "totalDistance": 307.029
     },
     {
       "id": "azerbaijan",
@@ -379,8 +411,8 @@
       "country": "Azerbaijan",
       "city": "Baku",
       "location": {
-        "lat": 40.3725,
-        "lng": 49.8533,
+        "lat": 40.3711,
+        "lng": 49.8422,
         "city": "Baku",
         "country": "Azerbaijan"
       },
@@ -392,7 +424,9 @@
         "year": 2019
       },
       "raceDate2025": "2025-09-21",
-      "round": 17
+      "round": 17,
+      "corners": 20,
+      "totalDistance": 306.153
     },
     {
       "id": "singapore",
@@ -402,8 +436,8 @@
       "country": "Singapore",
       "city": "Singapore",
       "location": {
-        "lat": 1.2914,
-        "lng": 103.8644,
+        "lat": 1.2943,
+        "lng": 103.8593,
         "city": "Singapore",
         "country": "Singapore"
       },
@@ -415,7 +449,9 @@
         "year": 2023
       },
       "raceDate2025": "2025-10-05",
-      "round": 18
+      "round": 18,
+      "corners": 19,
+      "totalDistance": 306.28
     },
     {
       "id": "usa",
@@ -425,8 +461,8 @@
       "country": "United States",
       "city": "Austin",
       "location": {
-        "lat": 30.1328,
-        "lng": -97.6411,
+        "lat": 30.1359,
+        "lng": -97.6307,
         "city": "Austin",
         "country": "United States"
       },
@@ -439,7 +475,9 @@
       },
       "raceDate2025": "2025-10-19",
       "round": 19,
-      "sprint": true
+      "sprint": true,
+      "corners": 20,
+      "totalDistance": 308.728
     },
     {
       "id": "mexico",
@@ -449,8 +487,8 @@
       "country": "Mexico",
       "city": "Mexico City",
       "location": {
-        "lat": 19.4042,
-        "lng": -99.0907,
+        "lat": 19.4049,
+        "lng": -99.0866,
         "city": "Mexico City",
         "country": "Mexico"
       },
@@ -462,18 +500,20 @@
         "year": 2021
       },
       "raceDate2025": "2025-10-26",
-      "round": 20
+      "round": 20,
+      "corners": 17,
+      "totalDistance": 305.584
     },
     {
       "id": "brazil",
-      "name": "Interlagos",
+      "name": "Autódromo José Carlos Pace",
       "officialName": "Autódromo José Carlos Pace",
       "grandPrix": "Brazilian Grand Prix",
       "country": "Brazil",
       "city": "São Paulo",
       "location": {
-        "lat": -23.7036,
-        "lng": -46.6997,
+        "lat": -23.7039,
+        "lng": -46.6956,
         "city": "São Paulo",
         "country": "Brazil"
       },
@@ -486,7 +526,9 @@
       },
       "raceDate2025": "2025-11-09",
       "round": 21,
-      "sprint": true
+      "sprint": true,
+      "corners": 15,
+      "totalDistance": 305.939
     },
     {
       "id": "las-vegas",
@@ -496,8 +538,8 @@
       "country": "United States",
       "city": "Las Vegas",
       "location": {
-        "lat": 36.1146,
-        "lng": -115.1728,
+        "lat": 36.115,
+        "lng": -115.1635,
         "city": "Las Vegas",
         "country": "United States"
       },
@@ -509,7 +551,9 @@
         "year": 2023
       },
       "raceDate2025": "2025-11-22",
-      "round": 22
+      "round": 22,
+      "corners": 17,
+      "totalDistance": 310.05
     },
     {
       "id": "qatar",
@@ -533,7 +577,9 @@
       },
       "raceDate2025": "2025-11-30",
       "round": 23,
-      "sprint": true
+      "sprint": true,
+      "corners": 16,
+      "totalDistance": 306.66
     },
     {
       "id": "abu-dhabi",
@@ -543,8 +589,8 @@
       "country": "United Arab Emirates",
       "city": "Abu Dhabi",
       "location": {
-        "lat": 24.4672,
-        "lng": 54.6031,
+        "lat": 24.4695,
+        "lng": 54.6073,
         "city": "Abu Dhabi",
         "country": "United Arab Emirates"
       },
@@ -556,7 +602,9 @@
         "year": 2021
       },
       "raceDate2025": "2025-12-07",
-      "round": 24
+      "round": 24,
+      "corners": 16,
+      "totalDistance": 306.298
     },
     {
       "id": "nurburgring",
@@ -566,8 +614,8 @@
       "country": "Germany",
       "city": "Nürburg",
       "location": {
-        "lat": 50.3325934,
-        "lng": 6.9414539,
+        "lat": 50.3352,
+        "lng": 6.9434,
         "city": "Nürburg",
         "country": "Germany"
       },
@@ -584,7 +632,9 @@
         "difference": 300
       },
       "raceDate2025": null,
-      "round": null
+      "round": null,
+      "corners": 15,
+      "totalDistance": 308.88
     }
   ]
 }

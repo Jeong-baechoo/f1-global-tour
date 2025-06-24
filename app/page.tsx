@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import InteractivePanel from '@/components/InteractivePanel';
 import circuitsData from '@/data/circuits.json';
@@ -30,6 +30,7 @@ const Map = dynamic(
 export default function Home() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelModule, setPanelModule] = useState<'next-race' | 'circuit-detail' | 'team-hq' | null>(null);
+  const [panelMinimized, setPanelMinimized] = useState(false);
   const [panelData, setPanelData] = useState<{
     type?: string;
     id?: string;
@@ -45,7 +46,7 @@ export default function Home() {
     corners?: number;
     raceDate?: string;
   } | null>(null);
-  const [mapRef, setMapRef] = useState<{
+  const mapRef = useRef<{
     flyToCircuit: (circuitId: string, gentle?: boolean) => void;
     flyToTeam: (teamId: string) => void;
     toggleCinematicMode?: () => boolean;
@@ -74,8 +75,25 @@ export default function Home() {
     } else if (item.type === 'circuit') {
       setPanelModule('circuit-detail');
       setPanelData(item);
+      
+      // 서킷 클릭 시 지도 줌인 및 트랙 그리기
+      if (item.id && mapRef.current) {
+        mapRef.current.flyToCircuit(item.id);
+      }
     }
-    setPanelOpen(true);
+    
+    // 패널이 이미 열려있고 같은 모듈인 경우 토글
+    if (panelOpen && panelModule === (item.type === 'team' ? 'team-hq' : 'circuit-detail')) {
+      // 최소화 상태라면 펼치기, 펼쳐진 상태라면 닫기
+      if (panelMinimized) {
+        setPanelMinimized(false);
+      } else {
+        setPanelOpen(false);
+      }
+    } else {
+      setPanelOpen(true);
+      setPanelMinimized(false);
+    }
   };
 
   const handleExploreCircuit = () => {
@@ -89,14 +107,12 @@ export default function Home() {
       laps: 71
     });
 
-    if (mapRef) {
-      mapRef.flyToCircuit('austria');
+    if (mapRef.current) {
+      mapRef.current.flyToCircuit('austria');
     }
   };
 
   useEffect(() => {
-    if (!mapRef) return;
-
     // Find the next race based on current date
     const findNextRace = () => {
       const today = new Date();
@@ -122,7 +138,10 @@ export default function Home() {
 
     // Show next race panel after 1 second to ensure map is loaded
     const timer = setTimeout(() => {
+      if (!mapRef.current) return;
+      
       const nextRace = findNextRace();
+      
       setPanelModule('next-race');
       setPanelData({
         grandPrix: nextRace.grandPrix.toUpperCase(),
@@ -134,21 +153,23 @@ export default function Home() {
 
       // Add a small delay for flyTo to ensure map is ready
       setTimeout(() => {
-        if (nextRace.id === 'austria') {
-          mapRef.flyToCircuit('austria', true);
+        if (nextRace.id && mapRef.current) {
+          mapRef.current.flyToCircuit(nextRace.id, true);
         }
-      }, 200);
-    }, 1000);
+      }, 500);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [mapRef]);
+  }, []);
 
   return (
     <main className="relative w-full h-screen overflow-hidden">
       {/* 전체 화면 지도 */}
       <Map 
         onMarkerClick={handleMarkerClick} 
-        onMapReady={setMapRef} 
+        onMapReady={(api) => {
+          mapRef.current = api;
+        }} 
         onCinematicModeChange={setIsCinematicMode}
       />
 
@@ -190,14 +211,16 @@ export default function Home() {
       <InteractivePanel
         isOpen={panelOpen}
         onClose={() => setPanelOpen(false)}
+        onMinimize={() => setPanelMinimized(!panelMinimized)}
+        isMinimized={panelMinimized}
         module={panelModule}
         data={panelData}
         onExploreCircuit={handleExploreCircuit}
         isCinematicMode={isCinematicMode}
         onToggleCinematicMode={() => {
           // 시네마틱 모드 토글
-          if (mapRef?.toggleCinematicMode) {
-            const isEnabled = mapRef.toggleCinematicMode();
+          if (mapRef.current?.toggleCinematicMode) {
+            const isEnabled = mapRef.current.toggleCinematicMode();
             setIsCinematicMode(isEnabled);
           }
         }}
