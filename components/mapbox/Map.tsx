@@ -213,18 +213,13 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         }
         
         // 줌 레벨에 따른 서킷 마커 표시/숨김
-        let circuitMarkersFound = 0;
-        let circuitMarkersHidden = 0;
-        
         markers.current.forEach(marker => {
           const element = marker.getElement();
           if (element && element.classList.contains('circuit-marker')) {
-            circuitMarkersFound++;
             if (zoom >= ZOOM_LEVELS.circuit) {
               // 줌 레벨이 12 이상이면 서킷 마커 숨김
               element.style.visibility = 'hidden';
               element.style.pointerEvents = 'none';
-              circuitMarkersHidden++;
             } else {
               // 줌 레벨이 12 미만이면 서킷 마커 표시
               element.style.visibility = 'visible';
@@ -283,6 +278,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       });
       markers.current = [];
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 빈 의존성 배열 - 마커는 한 번만 생성
 
   return (
