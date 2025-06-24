@@ -80,32 +80,144 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
   const mobile = isMobile();
   const configs: { [key: string]: Partial<CameraConfig> } = {
     'austria': {
-      zoom: mobile ? 14 : 16,  // 모바일: 14, 데스크톱: 16
-      pitch: 60,  // 터레인 효과 극대화 (70에서 60으로 감소)
+      zoom: 15.45,
+      pitch: 60,
       bearing: -20,
       speed: 1.2,
       curve: 1
     },
     'nurburgring': {
-      zoom: mobile ? 13.5 : 15.5,  // 모바일: 13.5, 데스크톱: 15.5
-      pitch: 55,  // 터레인이 잘 보이도록 상향 (65에서 55로 감소)
-      bearing: 45,
+      zoom: 14.32,
+      pitch: 36.5,
+      bearing: -45.4,
       speed: 0.4,
       curve: 0.8,
       duration: 6000
     },
     'monaco': {
-      zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
-      pitch: 60,  // 해안 지형 강조 (70에서 60으로 감소)
-      bearing: 30,
+      zoom: 14.87,
+      pitch: 51.2,
+      bearing: -80.3,
       speed: 0.6,
       curve: 1.2
     },
-    'silverstone': {
-      zoom: mobile ? 13 : 15,  // 모바일: 13, 데스크톱: 15
-      pitch: 55,
-      bearing: 0,
+    'britain': {
+      zoom: 14.8,
+      pitch: 51.5,
+      bearing: 172.8,
       speed: 0.8,
+      curve: 1
+    },
+    'bahrain': {
+      zoom: 15,
+      pitch: 57,
+      bearing: 92,
+      speed: 1.2,
+      curve: 1
+    },
+    'saudi-arabia': {
+      zoom: 15,
+      pitch: 50,
+      bearing: 76.8,
+      speed: 1.2,
+      curve: 1
+    },
+    'azerbaijan': {
+      zoom: 14.72,
+      pitch: 57.5,
+      bearing: -33.6,
+      speed: 1.2,
+      curve: 1
+    },
+    'hungary': {
+      zoom: 14.97,
+      pitch: 62,
+      bearing: 0,
+      speed: 1.2,
+      curve: 1
+    },
+    'italy': {
+      zoom: 14.57,
+      pitch: 55,
+      bearing: 56.8,
+      speed: 1.2,
+      curve: 1
+    },
+    'netherlands': {
+      zoom: 15.13,
+      pitch: 62.2,
+      bearing: 112.1,
+      speed: 1.2,
+      curve: 1
+    },
+    'belgium': {
+      zoom: 14.57,
+      pitch: 56,
+      bearing: 0,
+      speed: 1.2,
+      curve: 1
+    },
+    'singapore': {
+      zoom: 15.11,
+      pitch: 64.5,
+      bearing: -31.2,
+      speed: 1.2,
+      curve: 1
+    },
+    'japan': {
+      zoom: 14.71,
+      pitch: 60,
+      bearing: 0,
+      speed: 1.2,
+      curve: 1
+    },
+    'australia': {
+      zoom: 14.41,
+      pitch: 52,
+      bearing: 51.2,
+      speed: 1.2,
+      curve: 1
+    },
+    'brazil': {
+      zoom: 15.25,
+      pitch: 56.5,
+      bearing: 73.6,
+      speed: 1.2,
+      curve: 1
+    },
+    'las-vegas': {
+      zoom: 14.99,
+      pitch: 60,
+      bearing: 0,
+      speed: 1.2,
+      curve: 1
+    },
+    'mexico': {
+      zoom: 15,
+      pitch: 60.5,
+      bearing: 7,
+      speed: 1.2,
+      curve: 1
+    },
+    'miami': {
+      zoom: 15,
+      pitch: 60,
+      bearing: 0,
+      speed: 1.2,
+      curve: 1
+    },
+    'usa': {
+      zoom: 15,
+      pitch: 62.5,
+      bearing: 42.4,
+      speed: 1.2,
+      curve: 1
+    },
+    'imola': {
+      zoom: 14.26,
+      pitch: 60,
+      bearing: 0,
+      speed: 1.2,
       curve: 1
     },
   };

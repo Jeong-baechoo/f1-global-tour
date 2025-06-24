@@ -11,7 +11,7 @@ export const ANIMATION_CONFIG = {
   secondsPerRevolution: 240,
   maxSpinZoom: 5,
   slowSpinZoom: 3,
-  trackAnimationDuration: 8000,  // 3초에서 8초로 증가
+  trackAnimationDuration: 11000,
   rotationSpeed: 0.07
 };
 
