@@ -51,8 +51,6 @@ export const getTrackCoordinates = async (circuitId: string): Promise<number[][]
     // circuits.json ID를 geojson ID로 변환
     const geoJSONId = CIRCUIT_ID_MAPPING[circuitId];
     if (!geoJSONId) {
-      console.warn(`No mapping found for circuit ID: ${circuitId}`);
-      
       // 개별 트랙 파일 시도 (기존 방식 폴백)
       try {
         const trackData = await import(`@/data/${circuitId}-track.json`);
@@ -65,7 +63,6 @@ export const getTrackCoordinates = async (circuitId: string): Promise<number[][]
     // GeoJSON에서 해당 서킷 찾기
     const feature = geoJSONData.features.find(f => f.properties.id === geoJSONId);
     if (!feature) {
-      console.warn(`No track data found for circuit: ${geoJSONId}`);
       return null;
     }
     

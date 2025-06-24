@@ -15,7 +15,8 @@ export const ANIMATION_CONFIG = {
   rotationSpeed: 0.07
 };
 
-export const FOG_CONFIG = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const FOG_CONFIG: any = {
   range: [0.5, 10] as [number, number],
   color: 'white',
   'high-color': '#245cdf',
@@ -54,6 +55,44 @@ export const LAYERS_TO_REMOVE = [
   'transit-label'
 ];
 
+// Zoom levels
+export const ZOOM_LEVELS = {
+  globe: 1.5,
+  country: 5,
+  region: 10,
+  circuit: 12,
+  teamHQ: {
+    mobile: 15,
+    desktop: 18
+  },
+  circuitView: {
+    mobile: 2,
+    desktop: 6
+  }
+};
+
+// Animation speeds
+export const ANIMATION_SPEEDS = {
+  flyTo: 0.6,
+  flyToGentle: 0.8,
+  flyToReset: 0.8,
+  curve: 1
+};
+
+// Terrain exaggeration
+export const TERRAIN_EXAGGERATION = {
+  far: 2.0,        // zoom < 5
+  medium: 1.5,     // zoom >= 10
+  transition: 0.1  // per zoom level between 5-10
+};
+
+// Map pitch angles
+export const PITCH_ANGLES = {
+  default: 0,
+  circuit: 30,
+  teamHQ: 45
+};
+
 // Marker styles
 export const MARKER_STYLES = {
   redBullMarker: {
@@ -90,4 +129,26 @@ export const MARKER_STYLES = {
     mobileWidth: '45px',
     mobileHeight: '45px'
   }
+};
+
+// Special coordinates
+export const SPECIAL_COORDINATES = {
+  redBull: [-0.689, 52.0092] as [number, number]
+};
+
+// Timeouts
+export const TIMEOUTS = {
+  markerDelay: 100
+};
+
+// Terrain configuration
+export const TERRAIN_CONFIG = {
+  source: 'mapbox-dem',
+  sourceConfig: {
+    type: 'raster-dem' as const,
+    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+    tileSize: 512,
+    maxzoom: 14
+  },
+  initialExaggeration: 1.8
 };

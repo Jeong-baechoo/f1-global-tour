@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../types';
 import { MARKER_STYLES } from '../constants';
-import { createBaseMarker } from './MarkerFactory';
+import { isMobile } from '../utils/device';
 
 // 실제 F1 서킷 코너 정보
 const CIRCUIT_CORNERS: Record<string, number> = {
@@ -71,58 +71,89 @@ export const createCircuitMarker = ({
   onMarkerClick,
   onMarkerCreated 
 }: CircuitMarkerProps): mapboxgl.Marker => {
+  const mobile = isMobile();
   const markerStyle = isNextRace ? MARKER_STYLES.nextRaceMarker : MARKER_STYLES.circuitMarker;
   
-  const customContent = (mobile: boolean) => {
-    if (isNextRace) {
-      return `
-        <div style="font-size: ${mobile ? '10px' : '12px'}; font-weight: bold; color: white; text-align: center;">
-          NEXT<br>RACE
-        </div>
-      `;
-    } else {
-      return `
-        <svg width="${mobile ? '22' : '30'}" height="${mobile ? '22' : '30'}" viewBox="0 0 24 24" fill="none">
-          <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2"/>
-          <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      `;
-    }
-  };
+  // 커스텀 마커 엘리먼트 생성
+  const el = document.createElement('div');
+  el.className = 'marker circuit-marker';
+  el.style.position = 'absolute';
+  el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
+  el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
+  el.style.cursor = 'pointer';
+  el.style.transform = 'translate(-50%, -50%)';
+  el.style.transformOrigin = 'center center';
 
-  const markerData: MarkerData = {
-    type: 'circuit',
-    id: circuit.id,
-    name: circuit.name,
-    grandPrix: circuit.grandPrix,
-    length: circuit.length,
-    laps: circuit.laps,
-    corners: CIRCUIT_CORNERS[circuit.id] || 10,
-    totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
-    location: `${circuit.location.city}, ${circuit.location.country}`
-  };
+  // 메인 박스
+  const box = document.createElement('div');
+  box.style.width = '100%';
+  box.style.height = '100%';
+  box.style.backgroundColor = markerStyle.backgroundColor;
+  box.style.borderRadius = markerStyle.borderRadius;
+  box.style.border = markerStyle.border;
+  box.style.boxShadow = isNextRace ? '0 4px 15px rgba(255, 24, 1, 0.6)' : '0 4px 15px rgba(220, 38, 38, 0.4)';
+  box.style.transition = 'all 0.3s ease';
+  box.style.display = 'flex';
+  box.style.alignItems = 'center';
+  box.style.justifyContent = 'center';
 
-  const marker = createBaseMarker({
-    map,
-    coordinates: [circuit.location.lng, circuit.location.lat],
-    markerStyle: {
-      ...markerStyle,
-      boxShadow: isNextRace ? '0 4px 15px rgba(255, 24, 1, 0.6)' : '0 4px 15px rgba(220, 38, 38, 0.4)'
-    },
-    onMarkerClick: onMarkerClick ? () => onMarkerClick(markerData) : undefined,
-    markerData,
-    customContent,
-    hoverEffects: {
-      scale: 1.1,
-      boxShadow: isNextRace ? '0 6px 20px rgba(255, 24, 1, 0.8)' : '0 6px 20px rgba(220, 38, 38, 0.6)'
-    }
+  // 컨텐트 추가
+  if (isNextRace) {
+    box.innerHTML = `
+      <div style="font-size: ${mobile ? '10px' : '12px'}; font-weight: bold; color: white; text-align: center;">
+        NEXT<br>RACE
+      </div>
+    `;
+  } else {
+    box.innerHTML = `
+      <svg width="${mobile ? '22' : '30'}" height="${mobile ? '22' : '30'}" viewBox="0 0 24 24" fill="none">
+        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2"/>
+        <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+  }
+
+  el.appendChild(box);
+
+  // GPU 가속 호버 효과
+  el.style.willChange = 'transform';
+  box.style.willChange = 'transform, box-shadow';
+
+  el.addEventListener('mouseenter', () => {
+    box.style.transform = 'scale(1.1) translateZ(0)';
+    box.style.boxShadow = isNextRace ? '0 6px 20px rgba(255, 24, 1, 0.8)' : '0 6px 20px rgba(220, 38, 38, 0.6)';
   });
 
-  // 서킷 마커에 CSS 클래스 추가 (줌 레벨에 따른 표시/숨김용)
-  const markerElement = marker.getElement();
-  if (markerElement) {
-    markerElement.classList.add('circuit-marker');
+  el.addEventListener('mouseleave', () => {
+    box.style.transform = 'scale(1) translateZ(0)';
+    box.style.boxShadow = isNextRace ? '0 4px 15px rgba(255, 24, 1, 0.6)' : '0 4px 15px rgba(220, 38, 38, 0.4)';
+  });
+
+  // 클릭 이벤트
+  if (onMarkerClick) {
+    el.addEventListener('click', () => {
+      const markerData: MarkerData = {
+        type: 'circuit',
+        id: circuit.id,
+        name: circuit.name,
+        grandPrix: circuit.grandPrix,
+        length: circuit.length,
+        laps: circuit.laps,
+        corners: CIRCUIT_CORNERS[circuit.id] || 10,
+        totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
+        location: `${circuit.location.city}, ${circuit.location.country}`
+      };
+      onMarkerClick(markerData);
+    });
   }
+
+  // 마커 추가
+  const marker = new mapboxgl.Marker(el, { 
+    anchor: 'top-left',
+    offset: [0, 0]
+  })
+    .setLngLat([circuit.location.lng, circuit.location.lat])
+    .addTo(map);
 
   if (onMarkerCreated) {
     onMarkerCreated(marker);

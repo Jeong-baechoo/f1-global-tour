@@ -1,10 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import InteractivePanel from '@/components/InteractivePanel';
 import circuitsData from '@/data/circuits.json';
+import { MapAPI } from '@/components/mapbox/types';
 
 // Dynamic import to avoid SSR issues with Mapbox
 const Map = dynamic(
@@ -46,16 +47,12 @@ export default function Home() {
     corners?: number;
     raceDate?: string;
   } | null>(null);
-  const mapRef = useRef<{
-    flyToCircuit: (circuitId: string, gentle?: boolean) => void;
-    flyToTeam: (teamId: string) => void;
-    toggleCinematicMode?: () => boolean;
-  } | null>(null);
+  const mapRef = useRef<MapAPI | null>(null);
   const [isCinematicMode, setIsCinematicMode] = useState(false);
-  const [initialFocusTimer, setInitialFocusTimer] = useState<NodeJS.Timeout | null>(null);
+  const initialFocusTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  const handleMarkerClick = (item: {
+  const handleMarkerClick = useCallback((item: {
     type: string;
     id?: string;
     name?: string;
@@ -70,9 +67,9 @@ export default function Home() {
     corners?: number;
   }) => {
     // 사용자가 마커를 클릭하면 초기 포커싱 중단
-    if (initialFocusTimer && !hasUserInteracted) {
-      clearTimeout(initialFocusTimer);
-      setInitialFocusTimer(null);
+    if (initialFocusTimerRef.current && !hasUserInteracted) {
+      clearTimeout(initialFocusTimerRef.current);
+      initialFocusTimerRef.current = null;
       setHasUserInteracted(true);
     }
     if (item.type === 'team') {
@@ -102,7 +99,15 @@ export default function Home() {
       setPanelOpen(true);
       setPanelMinimized(false);
     }
-  };
+  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized]);
+
+  const handleUserInteraction = useCallback(() => {
+    if (initialFocusTimerRef.current && !hasUserInteracted) {
+      clearTimeout(initialFocusTimerRef.current);
+      initialFocusTimerRef.current = null;
+      setHasUserInteracted(true);
+    }
+  }, [hasUserInteracted]);
 
   const handleExploreCircuit = () => {
     setPanelModule('circuit-detail');
@@ -167,33 +172,26 @@ export default function Home() {
       }, 500);
 
       // flyToTimer를 정리할 수 있도록 저장
-      setInitialFocusTimer(flyToTimer);
+      initialFocusTimerRef.current = flyToTimer;
     }, 2000);
 
     return () => {
       clearTimeout(timer);
-      if (initialFocusTimer) {
-        clearTimeout(initialFocusTimer);
+      if (initialFocusTimerRef.current) {
+        clearTimeout(initialFocusTimerRef.current);
+        initialFocusTimerRef.current = null;
       }
     };
-  }, [hasUserInteracted, initialFocusTimer]);
+  }, [hasUserInteracted]);
 
   return (
     <main className="relative w-full h-screen overflow-hidden">
       {/* 전체 화면 지도 */}
       <Map 
+        ref={mapRef}
         onMarkerClick={handleMarkerClick} 
-        onMapReady={(api) => {
-          mapRef.current = api;
-        }} 
         onCinematicModeChange={setIsCinematicMode}
-        onUserInteraction={() => {
-          if (initialFocusTimer && !hasUserInteracted) {
-            clearTimeout(initialFocusTimer);
-            setInitialFocusTimer(null);
-            setHasUserInteracted(true);
-          }
-        }}
+        onUserInteraction={handleUserInteraction}
       />
 
       {/* F1 로고 - 모바일 */}

@@ -1,8 +1,8 @@
 import mapboxgl from 'mapbox-gl';
 import circuitsData from '@/data/circuits.json';
-import { createCircuitMarker } from './CircuitMarker';
+import { createCircuitMarker } from '../markers/CircuitMarker';
 import { MarkerData } from '../types';
-import { F1_2025_CIRCUITS } from '../utils/circuitMapping';
+import { F1_2025_CIRCUITS } from './circuitMapping';
 
 interface AddAllCircuitsOptions {
   map: mapboxgl.Map;
@@ -52,7 +52,7 @@ export const addAllCircuits = ({
   }
 };
 
-// 다음 레이스 찾기 헬퍼 함수
+// 다음 레이스 찾기
 export const findNextRace = () => {
   const today = new Date();
   
