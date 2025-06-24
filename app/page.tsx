@@ -157,7 +157,7 @@ export default function Home() {
           mapRef.current.flyToCircuit(nextRace.id, true);
         }
       }, 500);
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
