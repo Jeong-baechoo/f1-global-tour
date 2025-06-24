@@ -378,7 +378,8 @@ export default function InteractivePanel({
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
-                              target.nextElementSibling!.style.display = 'flex';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
                             }}
                           />
                           <div className="w-full h-full hidden items-center justify-center text-xs text-[#C0C0C0]">
@@ -410,7 +411,8 @@ export default function InteractivePanel({
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
-                          target.nextElementSibling!.style.display = 'flex';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
                         }}
                       />
                       <div className="w-full h-full hidden items-center justify-center text-sm text-[#C0C0C0]">
