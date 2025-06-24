@@ -54,7 +54,8 @@ export const TeamMarkerUsage: React.FC<TeamMarkerUsageProps> = ({ onMarkerClick 
 
     // 클린업
     return () => {
-      TeamMarkerFactory.removeAll(markersRef.current);
+      const markers = markersRef.current;
+      TeamMarkerFactory.removeAll(markers);
     };
   }, [onMarkerClick]);
 

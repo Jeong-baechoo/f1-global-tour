@@ -57,7 +57,17 @@ export class TeamMarkerFactory {
   private static createMarkerElement(
     config: TeamMarkerConfig, 
     mobile: boolean, 
-    markerStyle: any
+    markerStyle: {
+      mobileWidth: string;
+      width: string;
+      mobileHeight: string;
+      height: string;
+      mobileBoxWidth: string;
+      boxWidth: string;
+      mobileBoxHeight: string;
+      boxHeight: string;
+      borderRadius: string;
+    }
   ): HTMLDivElement {
     // 메인 컨테이너
     const el = document.createElement('div');
