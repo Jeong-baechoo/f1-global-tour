@@ -1,11 +1,11 @@
 import mapboxgl from 'mapbox-gl';
-import { Team } from '../types';
+import { Team, MarkerData } from '../types';
 
 // Symbol Layer를 사용한 마커 추가 (WebGL 렌더링)
 export const addTeamMarkersAsSymbols = (
   map: mapboxgl.Map,
   teams: Team[],
-  onMarkerClick?: (item: any) => void
+  onMarkerClick?: (item: MarkerData) => void
 ) => {
   // 팀 아이콘 로드
   teams.forEach(team => {
