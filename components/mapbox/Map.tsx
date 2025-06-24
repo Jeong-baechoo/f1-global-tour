@@ -12,7 +12,6 @@ import {createGlobeSpinner} from './utils/animations';
 import {createRedBullMarker} from './markers/RedBullMarker';
 import {addAllCircuits, findNextRace} from './markers/addAllCircuits';
 import {flyToCircuitWithTrack} from './utils/circuitHelpers';
-import { MarkerVisibilityManager, setupMarkerVisibility, cleanupMarkerVisibility } from '@/lib/mapbox/markerVisibility';
 import CinematicModeButton from './CinematicModeButton';
 
 // Circuit rotation handlers type
@@ -44,7 +43,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
-  const markerVisibilityManager = useRef<MarkerVisibilityManager | null>(null);
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [mapDebugInfo, setMapDebugInfo] = useState({
@@ -295,16 +293,8 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
         nextRaceId: nextRace.id,
         markers: markers.current
       });
-
-      // 마커 가시성 관리 설정 - DOM이 완전히 준비된 후에 설정
-      // requestAnimationFrame을 사용하여 다음 프레임에서 실행
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          if (map.current && markers.current.length > 0) {
-            markerVisibilityManager.current = setupMarkerVisibility(map.current, markers.current);
-          }
-        }, 500); // 충분한 시간을 줌
-      });
+      
+      console.log(`[Map] Total markers created: ${markers.current.length}`);
     };
 
     // 줌 레벨 변경 감지 핸들러 등록
@@ -321,12 +311,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     // cleanup 함수
     return () => {
       globeSpinner.current?.cleanup();
-
-      // 마커 가시성 관리 정리
-      if (markerVisibilityManager.current && map.current) {
-        cleanupMarkerVisibility(map.current, markerVisibilityManager.current);
-        markerVisibilityManager.current = null;
-      }
 
       markers.current.forEach(marker => {
         marker.remove();
