@@ -81,8 +81,8 @@ export const createCircuitMarker = ({
   el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
   el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
   el.style.cursor = 'pointer';
-  el.style.transform = 'translate(-50%, -50%)';
-  el.style.transformOrigin = 'center center';
+  el.style.willChange = 'transform';
+  el.style.transform = 'translateZ(0)'; // GPU 가속
 
   // 메인 박스
   const box = document.createElement('div');
@@ -149,8 +149,7 @@ export const createCircuitMarker = ({
 
   // 마커 추가
   const marker = new mapboxgl.Marker(el, { 
-    anchor: 'top-left',
-    offset: [0, 0]
+    anchor: 'center'
   })
     .setLngLat([circuit.location.lng, circuit.location.lat])
     .addTo(map);

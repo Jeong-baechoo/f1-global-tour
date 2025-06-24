@@ -86,8 +86,8 @@ export const createTeamMarker = ({ map, team, onMarkerClick }: TeamMarkerProps):
   el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
   el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
   el.style.cursor = 'pointer';
-  el.style.transform = 'translate(-50%, -50%)';
-  el.style.transformOrigin = 'center center';
+  el.style.willChange = 'transform';
+  el.style.transform = 'translateZ(0)'; // GPU 가속
 
   // 메인 박스
   const box = document.createElement('div');
@@ -151,8 +151,7 @@ export const createTeamMarker = ({ map, team, onMarkerClick }: TeamMarkerProps):
 
   // 마커 추가 (팝업 없이)
   return new mapboxgl.Marker(el, { 
-    anchor: 'top-left',
-    offset: [0, 0]
+    anchor: 'center'
   })
     .setLngLat(teamHQ.coordinates as [number, number])
     .addTo(map);
