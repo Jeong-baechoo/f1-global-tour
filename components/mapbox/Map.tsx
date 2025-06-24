@@ -304,13 +304,15 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       
       console.log(`[Map] Total markers created: ${markers.current.length}`);
 
-      // 마커 가시성 관리 설정 - 마커 생성 직후 즉시 설정
-      if (map.current && markers.current.length > 0) {
-        // 초기 가시성 확인을 위해 즉시 설정
+      // 마커 가시성 관리 설정 - 프로덕션 환경에서는 비활성화
+      const isProduction = process.env.NODE_ENV === 'production';
+      console.log(`[Map] Environment: ${process.env.NODE_ENV}, Skip visibility manager: ${isProduction}`);
+      
+      if (!isProduction && map.current && markers.current.length > 0) {
+        // 개발 환경에서만 가시성 관리자 사용
         markerVisibilityManager.current = setupMarkerVisibility(map.current, markers.current);
-        console.log('[Map] Marker visibility manager initialized');
+        console.log('[Map] Marker visibility manager initialized (dev only)');
         
-        // 혹시 모를 타이밍 이슈를 위한 재확인
         requestAnimationFrame(() => {
           if (markerVisibilityManager.current) {
             markerVisibilityManager.current.updateVisibility();
@@ -335,8 +337,9 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     return () => {
       globeSpinner.current?.cleanup();
 
-      // 마커 가시성 관리 정리
-      if (markerVisibilityManager.current && map.current) {
+      // 마커 가시성 관리 정리 - 프로덕션 환경 체크
+      const isProduction = process.env.NODE_ENV === 'production';
+      if (!isProduction && markerVisibilityManager.current && map.current) {
         cleanupMarkerVisibility(map.current, markerVisibilityManager.current);
         markerVisibilityManager.current = null;
       }
