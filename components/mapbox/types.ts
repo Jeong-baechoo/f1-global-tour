@@ -1,19 +1,65 @@
 import mapboxgl from 'mapbox-gl';
 
+// 공통 위치 타입
+export interface Location {
+  city: string;
+  country: string;
+}
+
+export interface Headquarters extends Location {
+  lat: number;
+  lng: number;
+}
+
+// 드라이버 정보
+export interface Driver {
+  name: string;
+  number: number;
+  nationality: string;
+  image: string;
+}
+
+// 차량 정보
+export interface Car {
+  name: string;
+  image: string;
+}
+
+// 팀 정보
+export interface Team {
+  id: string;
+  name: string;
+  fullName: string;
+  description: string;
+  teamPrincipal: string;
+  foundingYear: number;
+  headquarters: Headquarters;
+  colors: {
+    primary: string;
+    secondary: string;
+  };
+  drivers2025: Driver[];
+  car2025: Car;
+}
+
+// 마커 데이터 (InteractivePanel과 호환)
 export interface MarkerData {
   type: string;
   id?: string;
   name?: string;
   principal?: string;
-  location?: string | { city: string; country: string };
-  headquarters?: { city: string; country: string; lat: number; lng: number };
+  location?: string | Location;
+  headquarters?: Headquarters;
   color?: string;
   drivers?: string[];
+  drivers2025?: Driver[];
+  car2025?: Car;
   grandPrix?: string;
   length?: number;
   laps?: number;
   corners?: number;
   totalDistance?: number;
+  raceDate?: string;
 }
 
 export interface MapAPI {

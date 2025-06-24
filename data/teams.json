@@ -16,7 +16,25 @@
       },
       "teamPrincipal": "Christian Horner",
       "foundingYear": 2005,
-      "description": "Red Bull Racing has dominated recent years of F1, winning multiple constructors' championships with their innovative design philosophy and strong driver lineup."
+      "description": "Red Bull Racing has dominated recent years of F1, winning multiple constructors' championships with their innovative design philosophy and strong driver lineup.",
+      "drivers2025": [
+        {
+          "name": "Max Verstappen",
+          "number": 1,
+          "nationality": "Dutch",
+          "image": "/drivers/max-verstappen.jpg"
+        },
+        {
+          "name": "Yuki Tsunoda",
+          "number": 22,
+          "nationality": "Japanese",
+          "image": "/drivers/yuki-tsunoda.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "RB21",
+        "image": "/cars/rb21.jpg"
+      }
     },
     {
       "id": "ferrari",
@@ -34,7 +52,25 @@
       },
       "teamPrincipal": "Frédéric Vasseur",
       "foundingYear": 1950,
-      "description": "The most successful and iconic team in F1 history, Ferrari is the oldest surviving team and has won more races and championships than any other constructor."
+      "description": "The most successful and iconic team in F1 history, Ferrari is the oldest surviving team and has won more races and championships than any other constructor.",
+      "drivers2025": [
+        {
+          "name": "Charles Leclerc",
+          "number": 16,
+          "nationality": "Monégasque",
+          "image": "/drivers/charles-leclerc.jpg"
+        },
+        {
+          "name": "Lewis Hamilton",
+          "number": 44,
+          "nationality": "British",
+          "image": "/drivers/lewis-hamilton.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "SF-25",
+        "image": "/cars/sf-25.jpg"
+      }
     },
     {
       "id": "mercedes",
@@ -52,7 +88,25 @@
       },
       "teamPrincipal": "Toto Wolff",
       "foundingYear": 2010,
-      "description": "Mercedes dominated the turbo-hybrid era from 2014-2020, winning seven consecutive constructors' championships with their superior power unit and aerodynamic excellence."
+      "description": "Mercedes dominated the turbo-hybrid era from 2014-2020, winning seven consecutive constructors' championships with their superior power unit and aerodynamic excellence.",
+      "drivers2025": [
+        {
+          "name": "George Russell",
+          "number": 63,
+          "nationality": "British",
+          "image": "/drivers/george-russell.jpg"
+        },
+        {
+          "name": "Kimi Antonelli",
+          "number": 12,
+          "nationality": "Italian",
+          "image": "/drivers/kimi-antonelli.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "W16",
+        "image": "/cars/w16.jpg"
+      }
     },
     {
       "id": "mclaren",
@@ -70,7 +124,25 @@
       },
       "teamPrincipal": "Andrea Stella",
       "foundingYear": 1963,
-      "description": "One of F1's most successful teams, McLaren has won 12 drivers' championships and 8 constructors' championships, with a rich history of innovation and racing excellence."
+      "description": "One of F1's most successful teams, McLaren has won 12 drivers' championships and 8 constructors' championships, with a rich history of innovation and racing excellence.",
+      "drivers2025": [
+        {
+          "name": "Lando Norris",
+          "number": 4,
+          "nationality": "British",
+          "image": "/drivers/lando-norris.jpg"
+        },
+        {
+          "name": "Oscar Piastri",
+          "number": 81,
+          "nationality": "Australian",
+          "image": "/drivers/oscar-piastri.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "MCL39",
+        "image": "/cars/MCL39.jpg"
+      }
     },
     {
       "id": "aston-martin",
@@ -88,7 +160,25 @@
       },
       "teamPrincipal": "Andy Cowell",
       "foundingYear": 2021,
-      "description": "Previously known as Racing Point and Force India, the team was rebranded as Aston Martin in 2021, bringing the luxury British marque back to F1 after 60 years."
+      "description": "Previously known as Racing Point and Force India, the team was rebranded as Aston Martin in 2021, bringing the luxury British marque back to F1 after 60 years.",
+      "drivers2025": [
+        {
+          "name": "Fernando Alonso",
+          "number": 14,
+          "nationality": "Spanish",
+          "image": "/drivers/fernando-alonso.jpg"
+        },
+        {
+          "name": "Lance Stroll",
+          "number": 18,
+          "nationality": "Canadian",
+          "image": "/drivers/lance-stroll.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "AMR25",
+        "image": "/cars/amr25.jpg"
+      }
     },
     {
       "id": "alpine",
@@ -106,7 +196,25 @@
       },
       "teamPrincipal": "Oliver Oakes",
       "foundingYear": 2021,
-      "description": "The works Renault team, rebranded as Alpine in 2021 to promote the French manufacturer's sports car brand, with a rich history including championship wins as Benetton and Renault."
+      "description": "The works Renault team, rebranded as Alpine in 2021 to promote the French manufacturer's sports car brand, with a rich history including championship wins as Benetton and Renault.",
+      "drivers2025": [
+        {
+          "name": "Pierre Gasly",
+          "number": 10,
+          "nationality": "French",
+          "image": "/drivers/pierre-gasly.jpg"
+        },
+        {
+          "name": "Franco Colapinto",
+          "number": 43,
+          "nationality": "Argentine",
+          "image": "/drivers/franco-colapinto.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "A525",
+        "image": "/cars/a525.jpg"
+      }
     },
     {
       "id": "williams",
@@ -124,7 +232,25 @@
       },
       "teamPrincipal": "James Vowles",
       "foundingYear": 1977,
-      "description": "One of the most successful teams in F1 history with 9 constructors' championships, Williams is rebuilding after recent struggles while maintaining their racing heritage."
+      "description": "One of the most successful teams in F1 history with 9 constructors' championships, Williams is rebuilding after recent struggles while maintaining their racing heritage.",
+      "drivers2025": [
+        {
+          "name": "Alex Albon",
+          "number": 23,
+          "nationality": "Thai",
+          "image": "/drivers/alex-albon.jpg"
+        },
+        {
+          "name": "Carlos Sainz Jr.",
+          "number": 55,
+          "nationality": "Spanish",
+          "image": "/drivers/carlos-sainz.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "FW47",
+        "image": "/cars/fw47.jpg"
+      }
     },
     {
       "id": "racing-bulls",
@@ -142,7 +268,25 @@
       },
       "teamPrincipal": "Laurent Mekies",
       "foundingYear": 2024,
-      "description": "Red Bull's sister team, previously known as Toro Rosso, serves as a development team for young drivers while competing independently with its own design philosophy."
+      "description": "Red Bull's sister team, previously known as Toro Rosso, serves as a development team for young drivers while competing independently with its own design philosophy.",
+      "drivers2025": [
+        {
+          "name": "Isack Hadjar",
+          "number": 6,
+          "nationality": "French",
+          "image": "/drivers/isack-hadjar.jpg"
+        },
+        {
+          "name": "Liam Lawson",
+          "number": 30,
+          "nationality": "New Zealand",
+          "image": "/drivers/liam-lawson.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "VCARB02",
+        "image": "/cars/vcarb02.jpg"
+      }
     },
     {
       "id": "alfa-romeo",
@@ -160,7 +304,25 @@
       },
       "teamPrincipal": "Alessandro Alunni Bravi",
       "foundingYear": 2019,
-      "description": "Operating from the former Sauber facilities, Alfa Romeo returned to F1 as a constructor in 2019, bringing Italian racing heritage combined with Swiss engineering precision."
+      "description": "Operating from the former Sauber facilities, Alfa Romeo returned to F1 as a constructor in 2019, bringing Italian racing heritage combined with Swiss engineering precision.",
+      "drivers2025": [
+        {
+          "name": "Nico Hulkenberg",
+          "number": 27,
+          "nationality": "German",
+          "image": "/drivers/nico-hulkenberg.jpg"
+        },
+        {
+          "name": "Gabriel Bortoleto",
+          "number": 5,
+          "nationality": "Brazilian",
+          "image": "/drivers/gabriel-bortoleto.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "C45",
+        "image": "/cars/c45.jpg"
+      }
     },
     {
       "id": "haas",
@@ -178,7 +340,25 @@
       },
       "teamPrincipal": "Ayao Komatsu",
       "foundingYear": 2016,
-      "description": "The first American F1 team in decades, Haas operates with a unique business model utilizing technical partnerships while developing their own competitive package."
+      "description": "The first American F1 team in decades, Haas operates with a unique business model utilizing technical partnerships while developing their own competitive package.",
+      "drivers2025": [
+        {
+          "name": "Oliver Bearman",
+          "number": 87,
+          "nationality": "British",
+          "image": "/drivers/oliver-bearman.jpg"
+        },
+        {
+          "name": "Esteban Ocon",
+          "number": 31,
+          "nationality": "French",
+          "image": "/drivers/esteban-ocon.jpg"
+        }
+      ],
+      "car2025": {
+        "name": "VF-25",
+        "image": "/cars/vf-25.jpg"
+      }
     }
   ]
 }

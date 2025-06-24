@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { ChevronRight, MapPin, Calendar, Camera, CameraOff, Minus } from 'lucide-react';
 import { ModuleHeader } from './ui/ModuleHeader';
-// import Image from 'next/image'; // Uncomment when images are available
+import { Driver, Car } from './mapbox/types';
+import Image from 'next/image';
 
 interface InteractivePanelProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ interface InteractivePanelProps {
     headquarters?: { city: string; country: string; lat: number; lng: number };
     color?: string;
     drivers?: string[];
+    drivers2025?: Driver[];
+    car2025?: Car;
     grandPrix?: string;
     length?: number;
     laps?: number;
@@ -359,13 +362,61 @@ export default function InteractivePanel({
                 <p className="text-white font-medium">{data?.principal || 'Toto Wolff'}</p>
               </div>
 
-              {data?.drivers && (
+              {data?.drivers2025 && (
                 <div>
-                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">2025 Drivers</h3>
-                  <div className="space-y-1">
-                    {data.drivers.map((driver: string, index: number) => (
-                      <p key={index} className="text-white">{driver}</p>
+                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Drivers</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {data.drivers2025.map((driver: Driver, index: number) => (
+                      <div key={index} className="text-center bg-[#0F0F0F]/60 rounded-lg p-3 border border-[#FF1801]/10">
+                        <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden bg-[#1A1A1A] border border-[#FF1801]/20">
+                          <Image 
+                            src={driver.image} 
+                            alt={driver.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling!.style.display = 'flex';
+                            }}
+                          />
+                          <div className="w-full h-full hidden items-center justify-center text-xs text-[#C0C0C0]">
+                            #{driver.number}
+                          </div>
+                        </div>
+                        <p className="text-white text-sm font-medium mb-1">{driver.name}</p>
+                        <p className="text-xs text-[#C0C0C0]">{driver.nationality}</p>
+                      </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {data?.car2025 && (
+                <div>
+                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Car</h3>
+                  <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
+                    <div className="text-center mb-3">
+                      <h4 className="text-white font-bold text-lg mb-2">{data.car2025.name}</h4>
+                    </div>
+                    <div className="relative h-24 bg-[#1A1A1A] rounded overflow-hidden border border-[#FF1801]/20">
+                      <Image
+                        src={data.car2025.image}
+                        alt={data.car2025.name}
+                        width={300}
+                        height={96}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling!.style.display = 'flex';
+                        }}
+                      />
+                      <div className="w-full h-full hidden items-center justify-center text-sm text-[#C0C0C0]">
+                        {data.car2025.name} Image
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
