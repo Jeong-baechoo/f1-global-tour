@@ -60,7 +60,7 @@ export const ZOOM_LEVELS = {
   globe: 1.5,
   country: 5,
   region: 10,
-  circuit: 12,
+  circuit: 14,
   teamHQ: {
     mobile: 15,
     desktop: 18
@@ -69,6 +69,13 @@ export const ZOOM_LEVELS = {
     mobile: 2,
     desktop: 6
   }
+};
+
+// Circuit marker visibility settings
+export const CIRCUIT_MARKER_VISIBILITY = {
+  startFade: 12,      // 줌 레벨 12부터 페이드 시작
+  completelyHidden: 14.5, // 줌 레벨 15에서 완전히 숨김
+  minOpacityForClick: 0.3 // opacity가 0.3 이하일 때 클릭 비활성화
 };
 
 // Animation speeds

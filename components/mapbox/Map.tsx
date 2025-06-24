@@ -12,7 +12,7 @@ import CinematicModeButton from './CinematicModeButton';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
 import { createTeamMarkers } from './utils/teamHelpers';
-import { TERRAIN_EXAGGERATION, ZOOM_LEVELS, TIMEOUTS, TERRAIN_CONFIG, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES } from './constants';
+import { TERRAIN_EXAGGERATION, ZOOM_LEVELS, TIMEOUTS, TERRAIN_CONFIG, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES, CIRCUIT_MARKER_VISIBILITY } from './constants';
 import { flyToCircuitWithTrack } from './utils/circuitHelpers';
 
 // Mapbox 토큰 확인 및 설정
@@ -25,6 +25,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   const mapContainer = useRef<HTMLDivElement>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const [isCircuitView, setIsCircuitView] = useState(false);
+  const isCircuitViewRef = useRef(false);
   const [mapDebugInfo, setMapDebugInfo] = useState({
     center: [0, 0] as [number, number],
     zoom: 0,
@@ -41,6 +42,11 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   useEffect(() => {
     propsRef.current = { onMarkerClick, onCinematicModeChange };
   }, [onMarkerClick, onCinematicModeChange]);
+  
+  // isCircuitView 값을 ref와 동기화
+  useEffect(() => {
+    isCircuitViewRef.current = isCircuitView;
+  }, [isCircuitView]);
 
   // Map API를 부모 컴포넌트에 노출
   useImperativeHandle(ref, () => ({
@@ -207,6 +213,8 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         if (!map.current) return;
         const zoom = map.current.getZoom();
         
+        console.log('Current zoom level:', zoom);
+        
         // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
         if (zoom <= ZOOM_LEVELS.region) {
           setIsCircuitView(false);
@@ -215,15 +223,46 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         // 줌 레벨에 따른 서킷 마커 표시/숨김
         markers.current.forEach(marker => {
           const element = marker.getElement();
-          if (element && element.classList.contains('circuit-marker')) {
-            if (zoom >= ZOOM_LEVELS.circuit) {
-              // 줌 레벨이 12 이상이면 서킷 마커 숨김
-              element.style.opacity = '0';
-              element.style.pointerEvents = 'none';
+          
+          if (element.classList.contains('circuit-marker')) {
+            // 마커의 자식 요소 (실제 보이는 부분)에도 스타일 적용
+            const markerContent = element.firstElementChild as HTMLElement;
+            
+            if (!element.style.transition) {
+              element.style.transition = 'opacity 0.15s ease-out';
+            }
+            if (markerContent && !markerContent.style.transition) {
+              markerContent.style.transition = 'opacity 0.15s ease-out';
+            }
+            
+            // 줌 레벨에 따른 opacity 계산
+            let opacity = 1;
+            if (zoom >= CIRCUIT_MARKER_VISIBILITY.startFade) {
+              if (zoom >= CIRCUIT_MARKER_VISIBILITY.completelyHidden) {
+                opacity = 0;
+              } else {
+                // startFade와 completelyHidden 사이에서 선형 보간
+                const fadeRange = CIRCUIT_MARKER_VISIBILITY.completelyHidden - CIRCUIT_MARKER_VISIBILITY.startFade;
+                opacity = 1 - ((zoom - CIRCUIT_MARKER_VISIBILITY.startFade) / fadeRange);
+              }
+            }
+            
+            element.style.opacity = opacity.toString();
+            if (markerContent) {
+              markerContent.style.opacity = opacity.toString();
+            }
+            
+            if (opacity > 0) {
+              element.style.display = 'block';
+              element.style.pointerEvents = opacity > CIRCUIT_MARKER_VISIBILITY.minOpacityForClick ? 'auto' : 'none';
             } else {
-              // 줌 레벨이 12 미만이면 서킷 마커 표시
-              element.style.opacity = '1';
-              element.style.pointerEvents = 'auto';
+              // 완전히 투명할 때만 display none
+              setTimeout(() => {
+                if (parseFloat(element.style.opacity) === 0) {
+                  element.style.display = 'none';
+                }
+              }, 150);
+              element.style.pointerEvents = 'none';
             }
           }
         });
@@ -261,6 +300,45 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           onMarkerClick: propsRef.current.onMarkerClick,
           nextRaceId: nextRace.id,
           markers: markers.current
+        });
+        
+        // 초기 줌 레벨에 따른 마커 표시/숨김
+        const initialZoom = map.current.getZoom();
+        markers.current.forEach(marker => {
+          const element = marker.getElement();
+          if (element && element.classList.contains('circuit-marker')) {
+            const markerContent = element.firstElementChild as HTMLElement;
+            
+            element.style.transition = 'opacity 0.15s ease-out';
+            if (markerContent) {
+              markerContent.style.transition = 'opacity 0.15s ease-out';
+            }
+            
+            // 줌 레벨에 따른 opacity 계산
+            let opacity = 1;
+            if (initialZoom >= CIRCUIT_MARKER_VISIBILITY.startFade) {
+              if (initialZoom >= CIRCUIT_MARKER_VISIBILITY.completelyHidden) {
+                opacity = 0;
+              } else {
+                // startFade와 completelyHidden 사이에서 선형 보간
+                const fadeRange = CIRCUIT_MARKER_VISIBILITY.completelyHidden - CIRCUIT_MARKER_VISIBILITY.startFade;
+                opacity = 1 - ((initialZoom - CIRCUIT_MARKER_VISIBILITY.startFade) / fadeRange);
+              }
+            }
+            
+            element.style.opacity = opacity.toString();
+            if (markerContent) {
+              markerContent.style.opacity = opacity.toString();
+            }
+            
+            if (opacity > 0) {
+              element.style.display = 'block';
+              element.style.pointerEvents = opacity > CIRCUIT_MARKER_VISIBILITY.minOpacityForClick ? 'auto' : 'none';
+            } else {
+              element.style.display = 'none';
+              element.style.pointerEvents = 'none';
+            }
+          }
         });
       }, TIMEOUTS.markerDelay);
     };
