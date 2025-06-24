@@ -34,13 +34,10 @@ interface CircuitRotationHandlers {
 }
 
 // Mapbox 토큰 확인 및 설정
-const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-if (!mapboxToken) {
-  console.error('Mapbox access token is missing! Check environment variables.');
-} else {
-  console.log('[Map] Mapbox token loaded successfully');
+if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
+  console.error('Mapbox access token is missing!');
 }
-mapboxgl.accessToken = mapboxToken || '';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
 export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -188,7 +185,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
     // 맵 로드 완료 이벤트
     map.current.on('load', () => {
-      console.log('[Map] Map loaded, calling onMapReady');
       if (propsRef.current.onMapReady) {
         propsRef.current.onMapReady(mapAPI);
       }
@@ -273,7 +269,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       }
 
       // 마커 추가
-      console.log('[Map] Adding markers after 100ms delay');
       setTimeout(() => {
         addMarkers();
       }, 100);
@@ -281,37 +276,29 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
     // 마커 추가 함수
     const addMarkers = () => {
-      console.log('[Map] addMarkers called');
       if (!map.current) return;
-
-      console.log('[Map] Starting to add markers...');
       
       // 레드불 레이싱 마커
       const redBullTeam = teamsData.teams.find(team => team.id === 'red-bull');
       if (redBullTeam) {
-        console.log('[Map] Creating Red Bull marker');
         const redBullMarker = createRedBullMarker({
           map: map.current,
           team: redBullTeam,
           onMarkerClick: propsRef.current.onMarkerClick
         });
         markers.current.push(redBullMarker);
-        console.log('[Map] Red Bull marker added');
       }
 
       // 다음 레이스 찾기
       const nextRace = findNextRace();
 
       // 모든 서킷 마커 추가
-      console.log('[Map] Adding all circuit markers');
       addAllCircuits({
         map: map.current,
         onMarkerClick: propsRef.current.onMarkerClick,
         nextRaceId: nextRace.id,
         markers: markers.current
       });
-      
-      console.log(`[Map] Total markers created: ${markers.current.length}`);
     };
 
     // 줌 레벨 변경 감지 핸들러 등록

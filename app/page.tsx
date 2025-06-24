@@ -138,7 +138,6 @@ export default function Home() {
 
     // Show next race panel after 1 second to ensure map is loaded
     const timer = setTimeout(() => {
-      console.log('[page.tsx] Timer fired, mapRef.current:', !!mapRef.current);
       if (!mapRef.current) return;
       
       const nextRace = findNextRace();
@@ -169,7 +168,6 @@ export default function Home() {
       <Map 
         onMarkerClick={handleMarkerClick} 
         onMapReady={(api) => {
-          console.log('[page.tsx] Map ready, setting mapRef.current');
           mapRef.current = api;
         }} 
         onCinematicModeChange={setIsCinematicMode}
