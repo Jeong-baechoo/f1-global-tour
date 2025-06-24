@@ -86,7 +86,8 @@ f1-global-tour/
 ├── app/                    # Next.js app directory
 ├── components/            
 │   ├── mapbox/            # Map-related components
-│   │   ├── markers/       # Team & circuit markers
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── markers/       # Marker components
 │   │   └── utils/         # Map utilities
 │   ├── ui/                # Reusable UI components
 │   └── InteractivePanel.tsx
@@ -125,14 +126,17 @@ f1-global-tour/
 
 ## 🎨 Key Components
 
-### Map Component
-The core 3D globe with optimized rendering:
+### Map Component (v0.4.0+)
+Enhanced with modern React patterns:
 ```typescript
-// GPU-accelerated performance optimizations
-- Reduced tile cache size
-- Disabled anti-aliasing
-- Removed unnecessary layers
-- Efficient marker management
+// Using forwardRef and useImperativeHandle
+const mapRef = useRef<MapAPI>(null);
+<Map ref={mapRef} />
+
+// Clean separation of concerns
+- useMapInitialization: Map setup and lifecycle
+- useCinematicMode: Tour mode management
+- Efficient ref-based state management
 ```
 
 ### Interactive Panel
@@ -151,8 +155,9 @@ Efficient marker creation with factory pattern:
 - **Dynamic imports** for code splitting
 - **GPU acceleration** with `translateZ(0)`
 - **Optimized map style** (satellite-v9)
-- **Efficient event management** with custom EventManager
-- **Responsive asset loading** based on device
+- **Ref-based state management** to prevent re-renders
+- **Memoization** of components and callbacks
+- **Single marker component** instead of 10 duplicates
 
 ## 📝 Development Commands
 
@@ -168,6 +173,11 @@ npm run type-check   # Run TypeScript compiler
 
 ### Recent Updates
 ```
+🏎️ v0.4.0 - Major Architecture Refactoring
+├─ c8569b5 refactor: Map 컴포넌트 구조 개선 및 성능 최적화
+├─ d018da2 chore: v0.4.0 버전 업데이트
+└─ 🎯 Fixed critical marker disappearing bug!
+
 🏎️ v0.3.0 - Performance & Code Quality
 ├─ ec04f5b fix: 명시적 타입으로 변경 및 불필요한 변수 제거
 ├─ b282cf0 fix: 시네마틱 모드 작동 문제 해결
