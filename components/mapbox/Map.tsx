@@ -54,6 +54,12 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     bearing: 0,
     pitch: 0
   });
+  
+  // Props를 ref로 저장하여 re-render 시에도 최신 값 유지
+  const propsRef = useRef({ onMarkerClick, onMapReady, onCinematicModeChange });
+  useEffect(() => {
+    propsRef.current = { onMarkerClick, onMapReady, onCinematicModeChange };
+  }, [onMarkerClick, onMapReady, onCinematicModeChange]);
 
   // 시네마틱 모드 토글 핸들러
   const handleCinematicModeToggle = useCallback((): boolean => {
@@ -70,13 +76,13 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
         handlers.onCinematicModeToggle(isEnabled);
       }
       // 상위 컴포넌트로 상태 전달
-      if (onCinematicModeChange) {
-        onCinematicModeChange(isEnabled);
+      if (propsRef.current.onCinematicModeChange) {
+        propsRef.current.onCinematicModeChange(isEnabled);
       }
       return isEnabled;
     }
     return false;
-  }, [onCinematicModeChange]);
+  }, []);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -145,8 +151,8 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
           // circuitId를 직접 사용하여 클로저로 캡처
           flyToCircuitWithTrack(map.current, circuit, undefined, (enabled) => {
             // 시네마틱 모드 토글 콜백 처리
-            if (onCinematicModeChange) {
-              onCinematicModeChange(enabled);
+            if (propsRef.current.onCinematicModeChange) {
+              propsRef.current.onCinematicModeChange(enabled);
             }
           });
         }
@@ -182,8 +188,9 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
     // 맵 로드 완료 이벤트
     map.current.on('load', () => {
-      if (onMapReady) {
-        onMapReady(mapAPI);
+      console.log('[Map] Map loaded, calling onMapReady');
+      if (propsRef.current.onMapReady) {
+        propsRef.current.onMapReady(mapAPI);
       }
 
       // 대기 효과 및 스카이 레이어 추가
@@ -266,6 +273,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       }
 
       // 마커 추가
+      console.log('[Map] Adding markers after 100ms delay');
       setTimeout(() => {
         addMarkers();
       }, 100);
@@ -273,6 +281,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
     // 마커 추가 함수
     const addMarkers = () => {
+      console.log('[Map] addMarkers called');
       if (!map.current) return;
 
       console.log('[Map] Starting to add markers...');
@@ -280,10 +289,11 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       // 레드불 레이싱 마커
       const redBullTeam = teamsData.teams.find(team => team.id === 'red-bull');
       if (redBullTeam) {
+        console.log('[Map] Creating Red Bull marker');
         const redBullMarker = createRedBullMarker({
           map: map.current,
           team: redBullTeam,
-          onMarkerClick
+          onMarkerClick: propsRef.current.onMarkerClick
         });
         markers.current.push(redBullMarker);
         console.log('[Map] Red Bull marker added');
@@ -293,9 +303,10 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       const nextRace = findNextRace();
 
       // 모든 서킷 마커 추가
+      console.log('[Map] Adding all circuit markers');
       addAllCircuits({
         map: map.current,
-        onMarkerClick,
+        onMarkerClick: propsRef.current.onMarkerClick,
         nextRaceId: nextRace.id,
         markers: markers.current
       });
@@ -325,7 +336,7 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
 
       // 이벤트 리스너는 맵 제거 시 자동으로 정리됨
     };
-  }, [onMapReady, onMarkerClick, onCinematicModeChange, handleCinematicModeToggle]);
+  }, []); // 빈 의존성 배열로 변경하여 맵이 한 번만 초기화되도록 함
 
   return (
     <>
