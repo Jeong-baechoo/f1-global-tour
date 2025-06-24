@@ -29,9 +29,8 @@ export const addTeamMarkersAsSymbols = (
         coordinates: [team.headquarters.lng, team.headquarters.lat]
       },
       properties: {
-        id: team.id,
-        name: team.name,
-        ...team
+        ...team,
+        type: 'team'
       }
     }))
   };
