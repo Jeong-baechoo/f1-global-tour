@@ -12,7 +12,6 @@ import {createGlobeSpinner} from './utils/animations';
 import {createRedBullMarker} from './markers/RedBullMarker';
 import {addAllCircuits, findNextRace} from './markers/addAllCircuits';
 import {flyToCircuitWithTrack} from './utils/circuitHelpers';
-import { MarkerVisibilityManager, setupMarkerVisibility, cleanupMarkerVisibility } from '@/lib/mapbox/markerVisibility';
 import CinematicModeButton from './CinematicModeButton';
 
 // Circuit rotation handlers type
@@ -47,7 +46,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
-  const markerVisibilityManager = useRef<MarkerVisibilityManager | null>(null);
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [mapDebugInfo, setMapDebugInfo] = useState({
@@ -303,23 +301,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
       });
       
       console.log(`[Map] Total markers created: ${markers.current.length}`);
-
-      // 마커 가시성 관리 설정 - 프로덕션 환경에서는 비활성화
-      const isProduction = process.env.NODE_ENV === 'production';
-      console.log(`[Map] Environment: ${process.env.NODE_ENV}, Skip visibility manager: ${isProduction}`);
-      
-      if (!isProduction && map.current && markers.current.length > 0) {
-        // 개발 환경에서만 가시성 관리자 사용
-        markerVisibilityManager.current = setupMarkerVisibility(map.current, markers.current);
-        console.log('[Map] Marker visibility manager initialized (dev only)');
-        
-        requestAnimationFrame(() => {
-          if (markerVisibilityManager.current) {
-            markerVisibilityManager.current.updateVisibility();
-            console.log('[Map] Marker visibility updated in next frame');
-          }
-        });
-      }
     };
 
     // 줌 레벨 변경 감지 핸들러 등록
@@ -336,13 +317,6 @@ export default function Map({ onMarkerClick, onMapReady, onCinematicModeChange }
     // cleanup 함수
     return () => {
       globeSpinner.current?.cleanup();
-
-      // 마커 가시성 관리 정리 - 프로덕션 환경 체크
-      const isProduction = process.env.NODE_ENV === 'production';
-      if (!isProduction && markerVisibilityManager.current && map.current) {
-        cleanupMarkerVisibility(map.current, markerVisibilityManager.current);
-        markerVisibilityManager.current = null;
-      }
 
       markers.current.forEach(marker => {
         marker.remove();
