@@ -139,7 +139,7 @@ export default function InteractivePanel({
     if (newHeight >= SHEET_HEIGHTS.peek && heightPercent <= SHEET_HEIGHTS.full) {
       sheetRef.current.style.height = `${newHeight}px`;
     }
-  }, [isDragging, startY]);
+  }, [isDragging, startY, sheetState]);
 
   const handleDragEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
