@@ -196,12 +196,31 @@ export class TeamMarkerFactory {
     teamHQ: { coordinates: [number, number] }
   ): void {
     const flyToConfig = config.flyTo;
+    const mobile = isMobile();
+    
+    // 팀별 모바일 전용 설정
+    const mobileConfigs: Record<string, any> = {
+      'red-bull': {
+        center: [-0.6913, 52.0086] as [number, number],
+        zoom: 15.41,
+        pitch: 45,
+        bearing: 0
+      },
+      'mclaren': {
+        center: [-0.5444, 51.3457] as [number, number],
+        zoom: 14.68,
+        pitch: 49.5,
+        bearing: 48.4
+      }
+    };
+    
+    const mobileConfig = mobile && mobileConfigs[config.teamId] ? mobileConfigs[config.teamId] : null;
     
     map.flyTo({
-      center: flyToConfig.center || teamHQ.coordinates,
-      zoom: flyToConfig.zoom || 15.68,
-      pitch: flyToConfig.pitch || 45,
-      bearing: flyToConfig.bearing || 0,
+      center: mobileConfig ? mobileConfig.center : (flyToConfig.center || teamHQ.coordinates),
+      zoom: mobileConfig ? mobileConfig.zoom : (flyToConfig.zoom || 15.68),
+      pitch: mobileConfig ? mobileConfig.pitch : (flyToConfig.pitch || 45),
+      bearing: mobileConfig ? mobileConfig.bearing : (flyToConfig.bearing || 0),
       speed: flyToConfig.speed || 0.4,
       curve: flyToConfig.curve || 0.8,
       duration: flyToConfig.duration || 6000,
