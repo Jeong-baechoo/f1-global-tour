@@ -8,6 +8,8 @@ export interface TeamMarkerStyle {
   borderColor: string;
   shadowColor: string;
   shadowColorHover: string;
+  backgroundSize?: string; // 팀별 커스텀 backgroundSize
+  backgroundPosition?: string; // 팀별 커스텀 backgroundPosition
 }
 
 // 팀 플라이투 설정
@@ -40,18 +42,34 @@ const DEFAULT_FLY_TO: TeamFlyToConfig = {
   duration: 6000,
 };
 
+// 기본 팀 스타일 설정
+const createDefaultTeamStyle = (
+  logoUrl: string,
+  backgroundColor: string,
+  borderColor: string,
+  shadowColor: string,
+  customProps?: Partial<TeamMarkerStyle>
+): TeamMarkerStyle => ({
+  className: '',
+  logoUrl,
+  backgroundColor,
+  borderColor,
+  shadowColor,
+  shadowColorHover: shadowColor.replace('0.4', '0.6'),
+  ...customProps
+});
+
 // 모든 팀 마커 설정
 export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
   'red-bull': {
     teamId: 'red-bull',
-    style: {
-      className: 'redbull-marker',
-      logoUrl: '/team-logos/red-bull-racing.png',
-      backgroundColor: 'white',
-      borderColor: '#1e3a8a',
-      shadowColor: 'rgba(0,0,0,0.3)',
-      shadowColorHover: 'rgba(0,0,0,0.4)',
-    },
+    style: createDefaultTeamStyle(
+      '/team-logos/red-bull-racing.png',
+      'white',
+      '#1e3a8a',
+      'rgba(0,0,0,0.3)',
+      { className: 'redbull-marker' }
+    ),
     drivers2025: [
       {
         name: "Max Verstappen",
@@ -109,14 +127,17 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
 
   'mercedes': {
     teamId: 'mercedes',
-    style: {
-      className: 'mercedes-marker',
-      logoUrl: '/team-logos/mercedes.png',
-      backgroundColor: '#00D2BE',
-      borderColor: '#008B8B',
-      shadowColor: 'rgba(0,210,190,0.4)',
-      shadowColorHover: 'rgba(0,210,190,0.6)',
-    },
+    style: createDefaultTeamStyle(
+      '/team-logos/mercedes.png',
+      '#00D2BE',
+      '#008B8B',
+      'rgba(0,210,190,0.4)',
+      { 
+        className: 'mercedes-marker',
+        backgroundSize: '90%',
+        backgroundPosition: 'center'
+      }
+    ),
     drivers2025: [
       {
         name: "George Russell",
@@ -140,14 +161,16 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
 
   'mclaren': {
     teamId: 'mclaren',
-    style: {
-      className: 'mclaren-marker',
-      logoUrl: '/team-logos/mclaren.png',
-      backgroundColor: '#FF8700',
-      borderColor: '#CC6600',
-      shadowColor: 'rgba(255,135,0,0.4)',
-      shadowColorHover: 'rgba(255,135,0,0.6)',
-    },
+    style: createDefaultTeamStyle(
+      '/team-logos/mclaren.png',
+      '#FF8700',
+      '#CC6600',
+      'rgba(255,135,0,0.4)',
+      { 
+        className: 'mclaren-marker',
+        backgroundPosition: '75% center'
+      }
+    ),
     drivers2025: [
       {
         name: "Lando Norris",
@@ -336,14 +359,17 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
 
   'haas': {
     teamId: 'haas',
-    style: {
-      className: 'haas-marker',
-      logoUrl: '/team-logos/MoneyGram_Haas_F1_Team_Logo.svg.png',
-      backgroundColor: '#B6BABD',
-      borderColor: '#8a8e91',
-      shadowColor: 'rgba(182,186,189,0.4)',
-      shadowColorHover: 'rgba(182,186,189,0.6)',
-    },
+    style: createDefaultTeamStyle(
+      '/team-logos/MoneyGram_Haas_F1_Team_Logo.svg.png',
+      '#B6BABD',
+      '#8a8e91',
+      'rgba(182,186,189,0.4)',
+      { 
+        className: 'haas-marker',
+        backgroundSize: '90%',
+        backgroundPosition: 'center'
+      }
+    ),
     drivers2025: [
       {
         name: "Esteban Ocon",

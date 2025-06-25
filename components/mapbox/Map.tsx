@@ -213,8 +213,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         if (!map.current) return;
         const zoom = map.current.getZoom();
         
-        console.log('Current zoom level:', zoom);
-        
         // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
         if (zoom <= ZOOM_LEVELS.region) {
           setIsCircuitView(false);
