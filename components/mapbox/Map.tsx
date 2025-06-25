@@ -14,6 +14,7 @@ import { useCinematicMode } from './hooks/useCinematicMode';
 import { TeamMarkerFactory } from './markers/team/TeamMarkerFactory';
 import { TERRAIN_EXAGGERATION, ZOOM_LEVELS, TIMEOUTS, TERRAIN_CONFIG, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES, CIRCUIT_MARKER_VISIBILITY } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
+import ZoomScrollbar from './ZoomScrollbar';
 
 // Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
@@ -26,6 +27,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   const markers = useRef<mapboxgl.Marker[]>([]);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const isCircuitViewRef = useRef(false);
+  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   const [mapDebugInfo, setMapDebugInfo] = useState({
     center: [0, 0] as [number, number],
     zoom: 0,
@@ -47,6 +49,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   useEffect(() => {
     isCircuitViewRef.current = isCircuitView;
   }, [isCircuitView]);
+
 
   // Map API를 부모 컴포넌트에 노출
   useImperativeHandle(ref, () => ({
@@ -165,6 +168,9 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
     // 맵이 로드되었는지 확인
     const setupMap = () => {
       if (!map.current) return;
+
+      // map instance를 state에 저장
+      setMapInstance(map.current);
 
       // 3D 터레인 추가
       map.current.addSource(TERRAIN_CONFIG.source, TERRAIN_CONFIG.sourceConfig);
@@ -375,6 +381,9 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         isCircuitView={isCircuitView}
         onToggle={handleCinematicModeToggle}
       />
+      
+      {/* 모바일 줌 스크롤바 */}
+      <ZoomScrollbar map={mapInstance} className="sm:hidden" />
     </>
   );
 });

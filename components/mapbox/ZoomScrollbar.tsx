@@ -137,6 +137,11 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
 
   const thumbPosition = zoomToPosition(zoomLevel);
 
+  // map이 없으면 렌더링하지 않음
+  if (!map) {
+    return null;
+  }
+
   return (
     <div className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-50 ${className}`}>
       <div className="flex flex-col items-center">
