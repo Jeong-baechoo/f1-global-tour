@@ -102,7 +102,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
 
   // 터치 핸들러
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    e.preventDefault();
+    // React 이벤트에서는 preventDefault를 호출하지 않음
     e.stopPropagation();
     setIsDragging(true);
     isUserInteracting.current = true;
@@ -122,7 +122,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
     };
 
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
   }, [updateZoom, setInteractionTimeout]);
 
   // 스크롤바 클릭 핸들러
@@ -172,14 +172,20 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
           <div
             ref={thumbRef}
             onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
+            onTouchStart={(e) => {
+              // passive: false를 명시적으로 설정
+              if (e.nativeEvent && 'preventDefault' in e.nativeEvent) {
+                handleTouchStart(e);
+              }
+            }}
             className={`absolute w-full h-4 bg-blue-500 hover:bg-blue-600 cursor-grab ${
               isDragging ? 'cursor-grabbing bg-blue-600' : ''
             } transition-colors rounded-sm select-none`}
             style={{
               top: `${thumbPosition}%`,
               transform: 'translateY(-50%)',
-              zIndex: 10
+              zIndex: 10,
+              touchAction: 'none' // 터치 동작 비활성화
             }}
           />
           

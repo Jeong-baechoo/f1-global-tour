@@ -8,13 +8,13 @@ import circuitsData from '@/data/circuits.json';
 
 import {MapProps, MapAPI} from './types';
 import {addAllCircuits, findNextRace} from './markers/circuit/CircuitMarkerManager';
-import CinematicModeButton from './CinematicModeButton';
+import CinematicModeButton from './controls/CinematicModeButton';
+import ZoomScrollbar from './controls/ZoomScrollbar';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
 import { TeamMarkerFactory } from './markers/team/TeamMarkerFactory';
 import { TERRAIN_EXAGGERATION, ZOOM_LEVELS, TIMEOUTS, TERRAIN_CONFIG, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES, CIRCUIT_MARKER_VISIBILITY } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
-import ZoomScrollbar from './ZoomScrollbar';
 
 // Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
