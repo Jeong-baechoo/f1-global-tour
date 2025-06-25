@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { ANIMATION_CONFIG } from '../constants';
+import { ANIMATION_CONFIG } from '../../constants';
 
 // 좌표 보간 함수
 export const interpolateCoordinates = (coords: number[][]): number[][] => {

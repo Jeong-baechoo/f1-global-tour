@@ -1,8 +1,8 @@
 import mapboxgl from 'mapbox-gl';
 import circuitsData from '@/data/circuits.json';
-import { createCircuitMarker } from '../markers/CircuitMarker';
-import { MarkerData } from '../types';
-import { F1_2025_CIRCUITS } from './circuitMapping';
+import { createCircuitMarker } from './CircuitMarker';
+import { MarkerData } from '../../types';
+import { F1_2025_CIRCUITS } from '../../utils/data/circuitMapping';
 
 interface AddAllCircuitsOptions {
   map: mapboxgl.Map;

@@ -26,6 +26,8 @@
 - **24 Official Circuits** from the 2025 season
 - **Real-time race countdown** for upcoming events
 - **Detailed information panels** for teams and circuits
+- **2025 Driver profiles** with photos and information
+- **F1 Car images** for each team
 
 ### 📱 Responsive Design
 - **Mobile-optimized** interactive bottom sheet
@@ -88,7 +90,13 @@ f1-global-tour/
 │   ├── mapbox/            # Map-related components
 │   │   ├── hooks/         # Custom React hooks
 │   │   ├── markers/       # Marker components
+│   │   │   ├── team/      # Team marker factory & config
+│   │   │   ├── circuit/   # Circuit markers & manager
+│   │   │   └── symbolLayer/ # Symbol layer markers
 │   │   └── utils/         # Map utilities
+│   │       ├── animations/ # Animation functions
+│   │       ├── map/       # Map helpers
+│   │       └── data/      # Data loaders
 │   ├── ui/                # Reusable UI components
 │   └── InteractivePanel.tsx
 ├── data/                  # F1 teams & circuits data
@@ -100,6 +108,9 @@ f1-global-tour/
 │   ├── styles/           # Style utilities
 │   └── utils/            # General utilities
 └── public/               # Static assets
+    ├── team-logos/       # Team logo images
+    ├── drivers/          # Driver profile photos
+    └── cars/            # F1 car images
 ```
 
 ## 🎮 Usage
@@ -114,6 +125,8 @@ f1-global-tour/
 - **Next Race Countdown** - See time until the next Grand Prix
 - **Circuit Details** - Track layout, corners, and race schedule
 - **Team Information** - Headquarters, drivers, and team colors
+- **Driver Profiles** - Photos, nationality, and racing numbers
+- **F1 Cars Gallery** - 2025 season car images for each team
 - **Cinematic Tours** - Automated circuit exploration
 
 ## 🛠️ Technology Stack
@@ -139,16 +152,31 @@ const mapRef = useRef<MapAPI>(null);
 - Efficient ref-based state management
 ```
 
+### Team Marker Factory (v0.5.0+)
+Unified team marker system:
+```typescript
+// Single factory for all teams
+TeamMarkerFactory.createMultiple(map, teams, onMarkerClick)
+
+// Centralized configuration
+- Team colors and logos
+- Driver profiles with images
+- Car models and photos
+```
+
 ### Interactive Panel
-Responsive information display:
+Enhanced with rich content:
 - Desktop: Slide-in side panel
 - Mobile: Draggable bottom sheet with snap points
+- Driver profiles grid with photos
+- F1 car showcase section
 
 ### Marker System
 Efficient marker creation with factory pattern:
-- Base marker factory for consistency
-- Custom designs for teams and circuits
-- Hover effects and animations
+- Unified TeamMarkerFactory for all teams
+- CircuitMarkerManager for circuit markers
+- Custom designs with hover effects
+- Performance-optimized rendering
 
 ## 🔧 Performance Optimizations
 
@@ -157,7 +185,9 @@ Efficient marker creation with factory pattern:
 - **Optimized map style** (satellite-v9)
 - **Ref-based state management** to prevent re-renders
 - **Memoization** of components and callbacks
-- **Single marker component** instead of 10 duplicates
+- **Unified marker factory** - 85% code reduction (1,320→200 lines)
+- **Local image assets** - 5-10x faster than external URLs
+- **Efficient file structure** - Clear separation of concerns
 
 ## 📝 Development Commands
 
@@ -173,6 +203,18 @@ npm run type-check   # Run TypeScript compiler
 
 ### Recent Updates
 ```
+🏎️ v0.5.0 - Team Details & Project Restructuring
+├─ Team detail features with driver profiles and car images
+├─ Major project structure reorganization
+├─ Performance optimizations with local assets
+└─ 🚀 85% code reduction with factory pattern!
+
+🏎️ v0.4.1 - Circuit Marker Visibility
+├─ f54d566 fix: TypeScript any 타입 에러 수정
+├─ e8a9fa0 fix: Symbol Layer 타입 에러 수정
+├─ e2c3542 fix: 서킷 마커 드래그 후 점프 문제 해결
+└─ 83398de fix: 서킷 마커 줌 레벨별 가시성 제어 개선
+
 🏎️ v0.4.0 - Major Architecture Refactoring
 ├─ c8569b5 refactor: Map 컴포넌트 구조 개선 및 성능 최적화
 ├─ d018da2 chore: v0.4.0 버전 업데이트
@@ -203,6 +245,9 @@ npm run type-check   # Run TypeScript compiler
 ```
 
 ### Version Milestones
+- **v0.5.0** - Team details with drivers/cars, project restructuring, local assets
+- **v0.4.1** - Circuit marker visibility controls, bug fixes
+- **v0.4.0** - Architecture refactoring, performance optimization, marker bug fix
 - **v0.3.0** - Enhanced performance, TypeScript improvements, mobile UX refinements
 - **v0.2.5** - Cinematic mode, responsive bottom sheet, mobile optimization
 - **v0.2.0** - Full circuit data integration, component modularization

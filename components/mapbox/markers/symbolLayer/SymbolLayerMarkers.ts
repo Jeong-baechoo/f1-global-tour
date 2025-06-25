@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { Team, MarkerData } from '../types';
+import { Team, MarkerData } from '../../types';
 
 // Symbol Layer를 사용한 마커 추가 (WebGL 렌더링)
 export const addTeamMarkersAsSymbols = (
