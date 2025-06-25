@@ -68,7 +68,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "RB21",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/red-bull-racing.png"
+      image: "/cars/rb21.jpg"
     },
     flyTo: {
       ...DEFAULT_FLY_TO,
@@ -102,7 +102,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "SF-25",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/ferrari.png"
+      image: "/cars/SF-25.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -133,7 +133,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "W16",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/mercedes.png"
+      image: "/cars/w16.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -164,7 +164,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "MCL39",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/mclaren.png"
+      image: "/cars/MCL39.jpg"
     },
     flyTo: {
       ...DEFAULT_FLY_TO,
@@ -200,7 +200,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "AMR25",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/aston-martin.png"
+      image: "/cars/amr25.jpg"
     },
     flyTo: {
       ...DEFAULT_FLY_TO,
@@ -236,7 +236,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "A525",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/alpine.png"
+      image: "/cars/a525.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -267,7 +267,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "FW47",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/williams.png"
+      image: "/cars/fw47.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -298,7 +298,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "VCARB02",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/rb.png"
+      image: "/cars/vcarb02.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -329,7 +329,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "C45",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/kick-sauber.png"
+      image: "/cars/c45.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -360,7 +360,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     ],
     car2025: {
       name: "VF-25",
-      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/haas.png"
+      image: "/cars/vf-25.jpg"
     },
     flyTo: DEFAULT_FLY_TO
   }
