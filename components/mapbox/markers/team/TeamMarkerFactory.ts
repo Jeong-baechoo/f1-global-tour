@@ -1,7 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { Team, MarkerData } from '../../types';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
-import { MARKER_STYLES } from '../../constants';
 import { isMobile } from '../../utils/viewport';
 
 interface TeamMarkerFactoryProps {
@@ -9,6 +8,31 @@ interface TeamMarkerFactoryProps {
   team: Team;
   onMarkerClick?: (item: MarkerData) => void;
 }
+
+interface TeamMarkerStyle {
+  width: string;
+  height: string;
+  boxWidth: string;
+  boxHeight: string;
+  borderRadius: string;
+  mobileWidth: string;
+  mobileHeight: string;
+  mobileBoxWidth: string;
+  mobileBoxHeight: string;
+}
+
+// 기본 팀 마커 스타일 상수
+const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = {
+  width: '80px',
+  height: '95px',
+  boxWidth: '80px',
+  boxHeight: '80px',
+  borderRadius: '4px',
+  mobileWidth: '60px',
+  mobileHeight: '71px',
+  mobileBoxWidth: '60px',
+  mobileBoxHeight: '60px'
+};
 
 /**
  * 통합된 팀 마커 생성 팩토리
@@ -26,7 +50,6 @@ export class TeamMarkerFactory {
     }
 
     const mobile = isMobile();
-    const markerStyle = MARKER_STYLES.redBullMarker; // TODO: 팀별 스타일로 개선
     
     // 팀 본부 정보 구성
     const teamHQ = {
@@ -37,7 +60,7 @@ export class TeamMarkerFactory {
     };
 
     // 마커 엘리먼트 생성
-    const el = TeamMarkerFactory.createMarkerElement(config, mobile, markerStyle);
+    const el = TeamMarkerFactory.createMarkerElement(config, mobile);
     
     // 클릭 이벤트 설정
     TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, onMarkerClick);
@@ -56,42 +79,41 @@ export class TeamMarkerFactory {
    */
   private static createMarkerElement(
     config: TeamMarkerConfig, 
-    mobile: boolean, 
-    markerStyle: {
-      mobileWidth: string;
-      width: string;
-      mobileHeight: string;
-      height: string;
-      mobileBoxWidth: string;
-      boxWidth: string;
-      mobileBoxHeight: string;
-      boxHeight: string;
-      borderRadius: string;
-    }
+    mobile: boolean
   ): HTMLDivElement {
+    const markerStyle = DEFAULT_TEAM_MARKER_STYLE;
+    
     // 메인 컨테이너
     const el = document.createElement('div');
     el.className = `marker ${config.style.className}`;
-    el.style.position = 'absolute';
-    el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
-    el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
-    el.style.cursor = 'pointer';
-    el.style.transform = 'translate(-50%, -50%)';
-    el.style.transformOrigin = 'center center';
+    
+    // 컨테이너 스타일 적용
+    Object.assign(el.style, {
+      position: 'absolute',
+      width: mobile ? markerStyle.mobileWidth : markerStyle.width,
+      height: mobile ? markerStyle.mobileHeight : markerStyle.height,
+      cursor: 'pointer',
+      transform: 'translate(-50%, -50%)',
+      transformOrigin: 'center center'
+    });
 
     // 메인 박스
     const box = document.createElement('div');
-    box.style.width = mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth;
-    box.style.height = mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight;
-    box.style.backgroundImage = `url(${config.style.logoUrl})`;
-    box.style.backgroundSize = 'contain';
-    box.style.backgroundPosition = 'center';
-    box.style.backgroundRepeat = 'no-repeat';
-    box.style.backgroundColor = config.style.backgroundColor;
-    box.style.borderRadius = markerStyle.borderRadius;
-    box.style.border = `2px solid ${config.style.borderColor}`;
-    box.style.boxShadow = `0 2px 10px ${config.style.shadowColor}`;
-    box.style.transition = 'all 0.3s ease';
+    
+    // 박스 스타일 적용
+    Object.assign(box.style, {
+      width: mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth,
+      height: mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight,
+      backgroundImage: `url(${config.style.logoUrl})`,
+      backgroundSize: config.style.backgroundSize || 'contain',
+      backgroundPosition: config.style.backgroundPosition || 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: config.style.backgroundColor,
+      borderRadius: markerStyle.borderRadius,
+      border: `2px solid ${config.style.borderColor}`,
+      boxShadow: `0 2px 10px ${config.style.shadowColor}`,
+      transition: 'all 0.3s ease'
+    });
 
     el.appendChild(box);
 

@@ -4,7 +4,7 @@ export const MAP_CONFIG = {
   center: [0, 20] as [number, number],
   zoom: 1.5,
   projection: { name: 'globe' as const }
-};
+} as const;
 
 export const ANIMATION_CONFIG = {
   spinEnabled: true,
@@ -13,7 +13,7 @@ export const ANIMATION_CONFIG = {
   slowSpinZoom: 3,
   trackAnimationDuration: 11000,
   rotationSpeed: 0.07
-};
+} as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const FOG_CONFIG: any = {
@@ -73,32 +73,32 @@ export const ZOOM_LEVELS = {
 
 // Circuit marker visibility settings
 export const CIRCUIT_MARKER_VISIBILITY = {
-  startFade: 12,      // 줌 레벨 12부터 페이드 시작
-  completelyHidden: 14.5, // 줌 레벨 15에서 완전히 숨김
+  startFade: 11.5,      // 줌 레벨 11.5부터 페이드 시작 (지역 레벨)
+  completelyHidden: 13.5, // 줌 레벨 13.5에서 완전히 숨김 (도시 레벨)
   minOpacityForClick: 0.3 // opacity가 0.3 이하일 때 클릭 비활성화
-};
+} as const;
 
-// Animation speeds
+// Animation speeds - 카메라 이동 속도 설정
 export const ANIMATION_SPEEDS = {
-  flyTo: 0.6,
-  flyToGentle: 0.8,
-  flyToReset: 0.8,
-  curve: 1
-};
+  flyTo: 0.6,        // 일반 flyTo 속도
+  flyToGentle: 0.8,  // 부드러운 flyTo 속도
+  flyToReset: 0.8,   // 리셋 시 flyTo 속도
+  curve: 1           // 곡선 정도
+} as const;
 
-// Terrain exaggeration
+// Terrain exaggeration - 지형 높이 과장 설정
 export const TERRAIN_EXAGGERATION = {
-  far: 2.0,        // zoom < 5
-  medium: 1.5,     // zoom >= 10
-  transition: 0.1  // per zoom level between 5-10
-};
+  far: 2.0,        // zoom < 5 (글로브 뷰)
+  medium: 1.5,     // zoom >= 10 (상세 뷰)
+  transition: 0.1  // 줌 레벨 5-10 사이의 전환 단계
+} as const;
 
-// Map pitch angles
+// Map pitch angles - 카메라 기울기 설정
 export const PITCH_ANGLES = {
-  default: 0,
-  circuit: 30,
-  teamHQ: 45
-};
+  default: 0,   // 기본 (평면)
+  circuit: 30,  // 서킷 뷰
+  teamHQ: 45    // 팀 본부 뷰
+} as const;
 
 // Marker styles
 export const MARKER_STYLES = {

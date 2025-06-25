@@ -3,6 +3,24 @@ import { MarkerData } from '../../types';
 import { MARKER_STYLES } from '../../constants';
 import { isMobile } from '../../utils/viewport';
 
+// Next Race 마커 텍스트 스타일 상수
+const NEXT_RACE_TEXT_STYLE = {
+  desktop: {
+    fontSize: '12px',
+    lineHeight: '1.3'
+  },
+  mobile: {
+    fontSize: '10px', 
+    lineHeight: '1.3'
+  }
+} as const;
+
+// 일반 서킷 마커 SVG 크기 상수
+const CIRCUIT_SVG_SIZE = {
+  desktop: { width: '30', height: '30' },
+  mobile: { width: '22', height: '22' }
+} as const;
+
 // 실제 F1 서킷 코너 정보
 const CIRCUIT_CORNERS: Record<string, number> = {
   'bahrain': 15,
@@ -105,14 +123,16 @@ export const createCircuitMarker = ({
 
   // 컨텐트 추가
   if (isNextRace) {
+    const textStyle = mobile ? NEXT_RACE_TEXT_STYLE.mobile : NEXT_RACE_TEXT_STYLE.desktop;
     box.innerHTML = `
-      <div style="font-size: ${mobile ? '10px' : '12px'}; font-weight: bold; color: white; text-align: center;">
+      <div style="font-size: ${textStyle.fontSize}; font-weight: bold; color: white; text-align: center; line-height: ${textStyle.lineHeight};">
         NEXT<br>RACE
       </div>
     `;
   } else {
+    const svgSize = mobile ? CIRCUIT_SVG_SIZE.mobile : CIRCUIT_SVG_SIZE.desktop;
     box.innerHTML = `
-      <svg width="${mobile ? '22' : '30'}" height="${mobile ? '22' : '30'}" viewBox="0 0 24 24" fill="none">
+      <svg width="${svgSize.width}" height="${svgSize.height}" viewBox="0 0 24 24" fill="none">
         <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>

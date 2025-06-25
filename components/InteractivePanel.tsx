@@ -1,10 +1,43 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { ChevronRight, MapPin, Calendar, Camera, CameraOff, Minus } from 'lucide-react';
 import { ModuleHeader } from './ui/ModuleHeader';
 import { Driver, Car } from './mapbox/types';
 import Image from 'next/image';
+
+// 스타일 상수들을 컴포넌트 외부로 분리
+const MOBILE_CONTENT_STYLE = {
+  touchAction: 'pan-y' as const,
+  WebkitOverflowScrolling: 'touch' as const,
+  overscrollBehavior: 'contain' as const,
+  height: '100%',
+  maxHeight: '100%',
+  paddingBottom: 'max(20px, env(safe-area-inset-bottom))'
+};
+
+const SHEET_HEIGHTS = {
+  closed: 0,
+  peek: 80, // 80px - 핸들과 제목만 보임
+  half: 45, // 45vh - 중간 상태
+  full: 85  // 85vh - 전체 상태
+} as const;
+
+// 드래그 동작 임계값
+const DRAG_THRESHOLDS = {
+  minDrag: 50,        // 최소 드래그 거리
+  closeDistance: 100, // 패널 닫기 임계값
+  snapThreshold: {
+    peek: 20,         // peek 상태 스냅 임계값 (vh)
+    half: 65          // half 상태 스냅 임계값 (vh)
+  }
+} as const;
+
+// 콘텐츠 최소 높이
+const MIN_CONTENT_HEIGHT = 'calc(100vh - 200px)';
+
+// 콘텐츠 하단 패딩
+const CONTENT_BOTTOM_PADDING = '80px'; // pb-20 equivalent
 
 interface InteractivePanelProps {
   isOpen: boolean;
@@ -48,18 +81,10 @@ export default function InteractivePanel({
 }: InteractivePanelProps) {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isMobile, setIsMobile] = useState(false);
-  const [sheetState, setSheetState] = useState<'closed' | 'peek' | 'half' | 'full'>('peek'); // 시트 상태
+  const [sheetState, setSheetState] = useState<'closed' | 'peek' | 'half' | 'full'>('peek');
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
-
-  // 각 상태별 높이 정의
-  const SHEET_HEIGHTS = {
-    closed: 0,
-    peek: 80, // 80px - 핸들과 제목만 보임
-    half: 45, // 45vh - 중간 상태
-    full: 85  // 85vh - 전체 상태
-  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -77,15 +102,24 @@ export default function InteractivePanel({
     }
   }, [isOpen, isMobile]);
 
-  // Touch/Mouse handlers for dragging
-  const handleDragStart = (e: React.TouchEvent | React.MouseEvent) => {
+  // 드래그 핸들러들을 useCallback으로 최적화
+  const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    // 터치 이벤트의 경우 기본 동작 방지
+    if ('touches' in e) {
+      e.preventDefault();
+    }
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
-  };
+  }, []);
 
-  const handleDragMove = (e: React.TouchEvent | React.MouseEvent) => {
+  const handleDragMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
+
+    // 터치 이벤트의 경우 기본 동작 방지
+    if ('touches' in e) {
+      e.preventDefault();
+    }
 
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = startY - clientY;
@@ -105,9 +139,9 @@ export default function InteractivePanel({
     if (newHeight >= SHEET_HEIGHTS.peek && heightPercent <= SHEET_HEIGHTS.full) {
       sheetRef.current.style.height = `${newHeight}px`;
     }
-  };
+  }, [isDragging, startY, sheetState]);
 
-  const handleDragEnd = (e: React.TouchEvent | React.MouseEvent) => {
+  const handleDragEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
     setIsDragging(false);
 
@@ -118,29 +152,30 @@ export default function InteractivePanel({
     const currentHeightVh = (currentHeightPx / windowHeight) * 100;
 
     // 드래그 방향과 현재 높이에 따라 상태 결정
-    if (deltaY > 50) { // 위로 드래그
+    if (deltaY > DRAG_THRESHOLDS.minDrag) { // 위로 드래그
       if (sheetState === 'peek') setSheetState('half');
       else if (sheetState === 'half') setSheetState('full');
-    } else if (deltaY < -50) { // 아래로 드래그
+    } else if (deltaY < -DRAG_THRESHOLDS.minDrag) { // 아래로 드래그
       if (sheetState === 'full') setSheetState('half');
       else if (sheetState === 'half') setSheetState('peek');
-      else if (sheetState === 'peek' && deltaY < -100) {
+      else if (sheetState === 'peek' && deltaY < -DRAG_THRESHOLDS.closeDistance) {
         onClose();
         return;
       }
     } else {
       // 가장 가까운 snap point로 이동
-      if (currentHeightVh < 20) setSheetState('peek');
-      else if (currentHeightVh < 65) setSheetState('half');
+      if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.peek) setSheetState('peek');
+      else if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.half) setSheetState('half');
       else setSheetState('full');
     }
-  };
+  }, [isDragging, startY, sheetState, onClose]);
 
   // 클릭으로 상태 전환
-  const handleHeaderClick = () => {
+  const handleHeaderClick = useCallback(() => {
     if (sheetState === 'peek') setSheetState('half');
     else if (sheetState === 'half') setSheetState('full');
-  };
+  }, [sheetState]);
+
 
   useEffect(() => {
     if (module === 'next-race' && data?.raceDate) {
@@ -526,25 +561,25 @@ export default function InteractivePanel({
         }}
       >
         {/* Drag Handle Area */}
-        <div
-          className="sticky top-0 z-10 bg-transparent rounded-t-2xl cursor-grab active:cursor-grabbing"
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-          onMouseDown={handleDragStart}
-          onMouseMove={isDragging ? handleDragMove : undefined}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={handleDragEnd}
-          onClick={handleHeaderClick}
-        >
-          {/* Handle Bar */}
-          <div className="flex justify-center pt-2 pb-1">
+        <div className="sticky top-0 z-10 bg-transparent rounded-t-2xl">
+          {/* Handle Bar - 드래그 영역을 핸들 바로만 제한 */}
+          <div 
+            className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+            onMouseDown={handleDragStart}
+            onMouseMove={isDragging ? handleDragMove : undefined}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+          >
             <div className="w-12 h-1 bg-[#FF1801]/30 rounded-full" />
           </div>
 
           {/* Peek State - 제목만 표시 */}
           {sheetState === 'peek' && (
-            <div className="px-4 pb-3">
+            <div className="px-4 pb-3" onClick={handleHeaderClick}>
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-white font-semibold text-base">
@@ -582,8 +617,16 @@ export default function InteractivePanel({
 
         {/* Content Area - 스크롤 가능 */}
         {(sheetState === 'half' || sheetState === 'full') && (
-          <div className="flex-1 overflow-y-auto px-4 pb-safe">
-            <div className="py-4">
+          <div 
+            className="flex-1 overflow-y-scroll overflow-x-hidden px-4"
+            style={MOBILE_CONTENT_STYLE}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <div className="pt-4" style={{ 
+              minHeight: MIN_CONTENT_HEIGHT,
+              paddingBottom: CONTENT_BOTTOM_PADDING 
+            }}>
               {renderContent()}
             </div>
           </div>
