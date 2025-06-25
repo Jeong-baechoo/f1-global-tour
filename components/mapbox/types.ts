@@ -92,25 +92,6 @@ export interface MarkerCreationOptions {
   onMarkerClick?: (item: MarkerData) => void;
 }
 
-export interface Team {
-  id: string;
-  name: string;
-  fullName: string;
-  description: string;
-  teamPrincipal: string;
-  headquarters: {
-    city: string;
-    country: string;
-    lat: number;
-    lng: number;
-  };
-  colors: {
-    primary: string;
-    secondary: string;
-  };
-  foundingYear: number;
-}
-
 export interface TransformedTeam extends Team {
   logo: string;
   drivers: string[];

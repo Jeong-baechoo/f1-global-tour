@@ -11,7 +11,7 @@ import {addAllCircuits, findNextRace} from './utils/circuitMarkerHelpers';
 import CinematicModeButton from './CinematicModeButton';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
-import { createTeamMarkers } from './utils/teamHelpers';
+import { TeamMarkerFactory } from './factories/TeamMarkerFactory';
 import { TERRAIN_EXAGGERATION, ZOOM_LEVELS, TIMEOUTS, TERRAIN_CONFIG, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES, CIRCUIT_MARKER_VISIBILITY } from './constants';
 import { flyToCircuitWithTrack } from './utils/circuitHelpers';
 
@@ -283,8 +283,8 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       setTimeout(() => {
         if (!map.current) return;
         
-        // 팀 마커 추가 - 팩토리 패턴 사용
-        const teamMarkers = createTeamMarkers(
+        // 팀 마커 추가 - 통합 팩토리 패턴 사용
+        const teamMarkers = TeamMarkerFactory.createMultiple(
           map.current,
           teamsData.teams,
           propsRef.current.onMarkerClick

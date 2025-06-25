@@ -57,18 +57,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Max Verstappen",
         number: 1,
         nationality: "Dutch",
-        image: "/drivers/max-verstappen.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png"
       },
       {
         name: "Yuki Tsunoda",
         number: 22,
         nationality: "Japanese",
-        image: "/drivers/yuki-tsunoda.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png"
       }
     ],
     car2025: {
       name: "RB21",
-      image: "/cars/rb21.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/red-bull-racing.png"
     },
     flyTo: {
       ...DEFAULT_FLY_TO,
@@ -91,18 +91,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Charles Leclerc",
         number: 16,
         nationality: "Monégasque",
-        image: "/drivers/charles-leclerc.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png"
       },
       {
         name: "Lewis Hamilton",
         number: 44,
         nationality: "British",
-        image: "/drivers/lewis-hamilton.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png"
       }
     ],
     car2025: {
       name: "SF-25",
-      image: "/cars/SF-25.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/ferrari.png"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -122,18 +122,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "George Russell",
         number: 63,
         nationality: "British",
-        image: "/drivers/george-russell.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png"
       },
       {
         name: "Kimi Antonelli",
         number: 12,
         nationality: "Italian",
-        image: "/drivers/kimi-antonelli.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/2024/KIMANT01_Kimi_Antonelli/kimant01.png"
       }
     ],
     car2025: {
       name: "W16",
-      image: "/cars/w16.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/mercedes.png"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -153,18 +153,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Lando Norris",
         number: 4,
         nationality: "British",
-        image: "/drivers/lando-norris.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png"
       },
       {
         name: "Oscar Piastri",
         number: 81,
         nationality: "Australian",
-        image: "/drivers/oscar-piastri.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png"
       }
     ],
     car2025: {
       name: "MCL39",
-      image: "/cars/MCL39.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/mclaren.png"
     },
     flyTo: {
       ...DEFAULT_FLY_TO,
@@ -189,18 +189,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Fernando Alonso",
         number: 14,
         nationality: "Spanish",
-        image: "/drivers/fernando-alonso.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png"
       },
       {
         name: "Lance Stroll",
         number: 18,
         nationality: "Canadian",
-        image: "/drivers/lance-stroll.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png"
       }
     ],
     car2025: {
       name: "AMR25",
-      image: "/cars/amr25.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/aston-martin.png"
     },
     flyTo: {
       ...DEFAULT_FLY_TO,
@@ -225,18 +225,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Pierre Gasly",
         number: 10,
         nationality: "French",
-        image: "/drivers/pierre-gasly.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png"
       },
       {
         name: "Franco Colapinto",
         number: 43,
         nationality: "Argentine",
-        image: "/drivers/franco-colapinto.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/2024/FRACOL01_Franco_Colapinto/fracol01.png"
       }
     ],
     car2025: {
       name: "A525",
-      image: "/cars/a525.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/alpine.png"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -256,18 +256,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Alex Albon",
         number: 23,
         nationality: "Thai",
-        image: "/drivers/alex-albon.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alexander_Albon/alealb01.png"
       },
       {
         name: "Carlos Sainz Jr.",
         number: 55,
         nationality: "Spanish",
-        image: "/drivers/carlos-sainz.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png"
       }
     ],
     car2025: {
       name: "FW47",
-      image: "/cars/fw47.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/williams.png"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -287,18 +287,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Isack Hadjar",
         number: 6,
         nationality: "French",
-        image: "/drivers/isack-hadjar.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/2024/ISAHAD01_Isack_Hadjar/isahad01.png"
       },
       {
         name: "Liam Lawson",
         number: 30,
         nationality: "New Zealand",
-        image: "/drivers/liam-lawson.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LIALAW01_Liam_Lawson/lialaw01.png"
       }
     ],
     car2025: {
       name: "VCARB02",
-      image: "/cars/vcarb02.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/rb.png"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -318,18 +318,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Nico Hulkenberg",
         number: 27,
         nationality: "German",
-        image: "/drivers/nico-hulkenberg.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png"
       },
       {
         name: "Gabriel Bortoleto",
         number: 5,
         nationality: "Brazilian",
-        image: "/drivers/gabriel-bortoleto.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/2024/GABORT01_Gabriel_Bortoleto/gabort01.png"
       }
     ],
     car2025: {
       name: "C45",
-      image: "/cars/c45.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/kick-sauber.png"
     },
     flyTo: DEFAULT_FLY_TO
   },
@@ -349,18 +349,18 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         name: "Esteban Ocon",
         number: 31,
         nationality: "French",
-        image: "/drivers/esteban-ocon.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png"
       },
       {
         name: "Oliver Bearman",
         number: 87,
         nationality: "British",
-        image: "/drivers/oliver-bearman.jpg"
+        image: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/2024/OLIBEA01_Oliver_Bearman/olibea01.png"
       }
     ],
     car2025: {
       name: "VF-25",
-      image: "/cars/vf-25.jpg"
+      image: "https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/haas.png"
     },
     flyTo: DEFAULT_FLY_TO
   }
