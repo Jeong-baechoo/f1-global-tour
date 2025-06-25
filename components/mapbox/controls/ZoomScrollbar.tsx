@@ -107,9 +107,6 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
     setIsDragging(true);
     isUserInteracting.current = true;
 
-    const touch = e.touches[0];
-    const startY = touch.clientY;
-
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       if (e.touches.length > 0) {
