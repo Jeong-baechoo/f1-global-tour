@@ -7,13 +7,13 @@ import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
 
 import {MapProps, MapAPI} from './types';
-import {addAllCircuits, findNextRace} from './utils/circuitMarkerHelpers';
+import {addAllCircuits, findNextRace} from './markers/circuit/CircuitMarkerManager';
 import CinematicModeButton from './CinematicModeButton';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
-import { createTeamMarkers } from './utils/teamHelpers';
+import { TeamMarkerFactory } from './markers/team/TeamMarkerFactory';
 import { TERRAIN_EXAGGERATION, ZOOM_LEVELS, TIMEOUTS, TERRAIN_CONFIG, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES, CIRCUIT_MARKER_VISIBILITY } from './constants';
-import { flyToCircuitWithTrack } from './utils/circuitHelpers';
+import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
 
 // Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
@@ -90,7 +90,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         // 일반 flyTo는 트랙 그리기 포함
         globeSpinner.current?.startInteracting();
         setIsCircuitView(true);
-        flyToCircuitWithTrack(map.current, circuit, undefined, (enabled) => {
+        flyToCircuitWithTrack(map.current, circuit, undefined, (enabled: boolean) => {
           // 시네마틱 모드 토글 콜백 처리
           if (propsRef.current.onCinematicModeChange) {
             propsRef.current.onCinematicModeChange(enabled);
@@ -283,8 +283,8 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       setTimeout(() => {
         if (!map.current) return;
         
-        // 팀 마커 추가 - 팩토리 패턴 사용
-        const teamMarkers = createTeamMarkers(
+        // 팀 마커 추가 - 통합 팩토리 패턴 사용
+        const teamMarkers = TeamMarkerFactory.createMultiple(
           map.current,
           teamsData.teams,
           propsRef.current.onMarkerClick

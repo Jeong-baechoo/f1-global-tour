@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { MAP_CONFIG, LAYERS_TO_REMOVE, SKY_LAYER_CONFIG, FOG_CONFIG } from '../constants';
-import { createGlobeSpinner } from '../utils/animations';
+import { createGlobeSpinner } from '../utils/animations/globeAnimation';
 
 interface UseMapInitializationProps {
   mapContainer: React.RefObject<HTMLDivElement | null>;

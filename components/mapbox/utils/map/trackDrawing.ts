@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
-import { interpolateCoordinates } from './animations';
-import { TrackDrawOptions } from '../types';
-import { ANIMATION_CONFIG } from '../constants';
+import { interpolateCoordinates } from '../animations/globeAnimation';
+import { TrackDrawOptions } from '../../types';
+import { ANIMATION_CONFIG } from '../../constants';
 
 // 범용 트랙 그리기 함수
 export const drawTrack = (

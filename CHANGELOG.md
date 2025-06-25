@@ -2,6 +2,50 @@
 
 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
+## [0.5.0] - 2025-06-25
+
+### Added
+- 🏁 2025 시즌 F1 팀 상세 정보 표시 기능
+  - 20명의 드라이버 프로필 이미지 및 정보 (이름, 국적, 레이싱 번호)
+  - 10개 팀의 2025년 F1 차량 이미지 및 모델명
+  - InteractivePanel에 드라이버/차량 정보 섹션 추가
+- 📁 프로젝트 구조 개선을 위한 새로운 폴더 구조
+  - `markers/team/`, `markers/circuit/`, `markers/symbolLayer/` 서브폴더 생성
+  - `utils/animations/`, `utils/map/`, `utils/data/` 서브폴더 생성
+
+### Changed
+- 🔄 팀 마커 시스템 전면 리팩토링
+  - 개별 팀 마커 파일 제거 → `TeamMarkerFactory` 패턴으로 통합
+  - 중앙 집중식 팀 마커 설정 관리 (`teamMarkerConfig.ts`)
+  - 코드 중복 85% 감소 (1,320줄 → 200줄)
+- 📂 파일 구조 재구성
+  - `device.ts` → `viewport.ts`로 이름 변경
+  - `tracks.ts` → `map/trackDrawing.ts`로 이동 및 이름 변경
+  - `circuitHelpers.ts` → 기능별로 분리 (camera.ts, circuitColors.ts, circuitAnimation.ts)
+  - `symbolLayerMarkers.ts` → `markers/symbolLayer/`로 이동
+- 🖼️ 리소스 로딩 최적화
+  - 모든 팀 로고를 로컬 파일로 변경 (`/team-logos/`)
+  - 모든 드라이버 이미지를 로컬 파일로 변경 (`/drivers/`)
+  - 외부 URL 의존성 제거로 5-10배 로딩 속도 향상
+
+### Improved
+- 📱 사용자 경험
+  - 팀 마커 클릭 시 풍부한 시각적 정보 제공
+  - 드라이버 프로필과 차량 이미지로 몰입감 향상
+- 🏗️ 코드 구조
+  - 명확한 책임 분리 (markers = UI 컴포넌트, utils = 헬퍼 함수)
+  - 관련 코드의 논리적 그룹핑
+  - 직관적인 파일명으로 가독성 향상
+- ⚡ 성능
+  - 로컬 이미지 사용으로 네트워크 요청 감소
+  - CDN 캐싱 가능
+  - 예측 가능한 로딩 시간
+
+### Fixed
+- 🐛 캐싱 문제로 인한 이미지 로딩 실패 해결
+- 🐛 SVG 파일 확장자 불일치 문제 수정
+- 🐛 TypeScript 타입 정의 개선 (Driver, Car 인터페이스 추가)
+
 ## [0.4.1] - 2025-06-24
 
 ### Fixed

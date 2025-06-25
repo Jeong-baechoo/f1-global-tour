@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
-import { MarkerData } from '../types';
-import { MARKER_STYLES } from '../constants';
-import { isMobile } from '../utils/device';
+import { MarkerData } from '../../types';
+import { MARKER_STYLES } from '../../constants';
+import { isMobile } from '../../utils/viewport';
 
 // 실제 F1 서킷 코너 정보
 const CIRCUIT_CORNERS: Record<string, number> = {
