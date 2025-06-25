@@ -23,6 +23,22 @@ const SHEET_HEIGHTS = {
   full: 85  // 85vh - 전체 상태
 } as const;
 
+// 드래그 동작 임계값
+const DRAG_THRESHOLDS = {
+  minDrag: 50,        // 최소 드래그 거리
+  closeDistance: 100, // 패널 닫기 임계값
+  snapThreshold: {
+    peek: 20,         // peek 상태 스냅 임계값 (vh)
+    half: 65          // half 상태 스냅 임계값 (vh)
+  }
+} as const;
+
+// 콘텐츠 최소 높이
+const MIN_CONTENT_HEIGHT = 'calc(100vh - 200px)';
+
+// 콘텐츠 하단 패딩
+const CONTENT_BOTTOM_PADDING = '80px'; // pb-20 equivalent
+
 interface InteractivePanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -88,6 +104,10 @@ export default function InteractivePanel({
 
   // 드래그 핸들러들을 useCallback으로 최적화
   const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    // 터치 이벤트의 경우 기본 동작 방지
+    if ('touches' in e) {
+      e.preventDefault();
+    }
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
@@ -95,6 +115,11 @@ export default function InteractivePanel({
 
   const handleDragMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
+
+    // 터치 이벤트의 경우 기본 동작 방지
+    if ('touches' in e) {
+      e.preventDefault();
+    }
 
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = startY - clientY;
@@ -127,20 +152,20 @@ export default function InteractivePanel({
     const currentHeightVh = (currentHeightPx / windowHeight) * 100;
 
     // 드래그 방향과 현재 높이에 따라 상태 결정
-    if (deltaY > 50) { // 위로 드래그
+    if (deltaY > DRAG_THRESHOLDS.minDrag) { // 위로 드래그
       if (sheetState === 'peek') setSheetState('half');
       else if (sheetState === 'half') setSheetState('full');
-    } else if (deltaY < -50) { // 아래로 드래그
+    } else if (deltaY < -DRAG_THRESHOLDS.minDrag) { // 아래로 드래그
       if (sheetState === 'full') setSheetState('half');
       else if (sheetState === 'half') setSheetState('peek');
-      else if (sheetState === 'peek' && deltaY < -100) {
+      else if (sheetState === 'peek' && deltaY < -DRAG_THRESHOLDS.closeDistance) {
         onClose();
         return;
       }
     } else {
       // 가장 가까운 snap point로 이동
-      if (currentHeightVh < 20) setSheetState('peek');
-      else if (currentHeightVh < 65) setSheetState('half');
+      if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.peek) setSheetState('peek');
+      else if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.half) setSheetState('half');
       else setSheetState('full');
     }
   }, [isDragging, startY, sheetState, onClose]);
@@ -598,7 +623,10 @@ export default function InteractivePanel({
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
           >
-            <div className="pt-4 pb-20" style={{ minHeight: 'calc(100vh - 200px)' }}>
+            <div className="pt-4" style={{ 
+              minHeight: MIN_CONTENT_HEIGHT,
+              paddingBottom: CONTENT_BOTTOM_PADDING 
+            }}>
               {renderContent()}
             </div>
           </div>
