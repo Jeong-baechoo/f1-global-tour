@@ -1,25 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../../types';
-import { MARKER_STYLES } from '../../constants';
 import { isMobile } from '../../utils/viewport';
 
-// Next Race 마커 텍스트 스타일 상수
-const NEXT_RACE_TEXT_STYLE = {
-  desktop: {
-    fontSize: '12px',
-    lineHeight: '1.3'
-  },
-  mobile: {
-    fontSize: '10px', 
-    lineHeight: '1.3'
-  }
-} as const;
-
-// 일반 서킷 마커 SVG 크기 상수
-const CIRCUIT_SVG_SIZE = {
-  desktop: { width: '30', height: '30' },
-  mobile: { width: '22', height: '22' }
-} as const;
 
 // 실제 F1 서킷 코너 정보
 const CIRCUIT_CORNERS: Record<string, number> = {
@@ -67,6 +49,7 @@ interface Circuit {
   length: number;
   laps?: number;
   corners?: number;
+  raceDate2025?: string | null;
   lapRecord?: {
     time: string;
     driver: string;
@@ -82,6 +65,18 @@ interface CircuitMarkerProps {
   onMarkerCreated?: (marker: mapboxgl.Marker) => void;
 }
 
+// 레이스 시간 포맷팅 함수
+const formatRaceTime = (raceDate: string | null): string => {
+  if (!raceDate) return '';
+  
+  const date = new Date(raceDate);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+  // 간단한 시간 표시 (예: 08:00 CST)
+  return `${hours}:${minutes} GMT`;
+};
+
 export const createCircuitMarker = ({ 
   map, 
   circuit, 
@@ -90,69 +85,165 @@ export const createCircuitMarker = ({
   onMarkerCreated 
 }: CircuitMarkerProps): mapboxgl.Marker => {
   const mobile = isMobile();
-  const markerStyle = isNextRace ? MARKER_STYLES.nextRaceMarker : MARKER_STYLES.circuitMarker;
   
-  // 커스텀 마커 엘리먼트 생성
+  // 메인 컨테이너 - 점과 라벨을 포함
   const el = document.createElement('div');
   el.className = 'marker circuit-marker';
   el.style.position = 'absolute';
-  el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
-  el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
   el.style.cursor = 'pointer';
   el.style.willChange = 'transform';
   el.style.transform = 'translate3d(0, 0, 0)'; // GPU 레이어 강제
   el.style.backfaceVisibility = 'hidden'; // 렌더링 최적화
   el.style.perspective = '1000px'; // 3D 가속
-
-  // 메인 박스
-  const box = document.createElement('div');
-  box.style.width = '100%';
-  box.style.height = '100%';
-  box.style.backgroundColor = markerStyle.backgroundColor;
-  box.style.borderRadius = markerStyle.borderRadius;
-  box.style.border = markerStyle.border;
-  box.style.boxShadow = isNextRace ? '0 4px 15px rgba(255, 24, 1, 0.6)' : '0 4px 15px rgba(220, 38, 38, 0.4)';
-  box.style.transition = 'all 0.3s ease';
-  box.style.display = 'flex';
-  box.style.alignItems = 'center';
-  box.style.justifyContent = 'center';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.gap = '0';
   
-  // 초기 opacity 설정 (줌 레벨에 따라)
+  // 초기 opacity 설정
   el.style.opacity = '1';
   el.style.transition = 'opacity 0.3s ease';
 
-  // 컨텐트 추가
-  if (isNextRace) {
-    const textStyle = mobile ? NEXT_RACE_TEXT_STYLE.mobile : NEXT_RACE_TEXT_STYLE.desktop;
-    box.innerHTML = `
-      <div style="font-size: ${textStyle.fontSize}; font-weight: bold; color: white; text-align: center; line-height: ${textStyle.lineHeight};">
-        NEXT<br>RACE
-      </div>
-    `;
+  // 점 (실제 서킷 위치)
+  const dotContainer = document.createElement('div');
+  dotContainer.style.position = 'relative';
+  dotContainer.style.width = mobile ? '10px' : '12px';
+  dotContainer.style.height = mobile ? '10px' : '12px';
+  dotContainer.style.display = 'flex';
+  dotContainer.style.alignItems = 'center';
+  dotContainer.style.justifyContent = 'center';
+  
+  const dot = document.createElement('div');
+  dot.style.width = mobile ? '8px' : '10px';
+  dot.style.height = mobile ? '8px' : '10px';
+  dot.style.borderRadius = '50%';
+  dot.style.backgroundColor = isNextRace ? '#FF1801' : '#DC2626';
+  dot.style.border = '2px solid rgba(255, 255, 255, 0.8)';
+  dot.style.boxShadow = '0 0 10px rgba(220, 38, 38, 0.6)';
+  dot.style.transition = 'all 0.3s ease';
+  dotContainer.appendChild(dot);
+
+  // 연결선
+  const line = document.createElement('div');
+  line.style.position = 'absolute';
+  line.style.left = '100%';
+  line.style.top = '50%';
+  line.style.transform = 'translateY(-50%)';
+  line.style.width = mobile ? '20px' : '30px';
+  line.style.height = '1px';
+  line.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+  line.style.transition = 'all 0.3s ease';
+  dotContainer.appendChild(line);
+
+  // 라벨 컨테이너
+  const labelContainer = document.createElement('div');
+  labelContainer.style.display = 'flex';
+  labelContainer.style.alignItems = 'center';
+  labelContainer.style.gap = '6px';
+  labelContainer.style.padding = mobile ? '4px 8px' : '6px 12px';
+  labelContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+  labelContainer.style.borderRadius = '4px';
+  labelContainer.style.border = isNextRace ? '2px solid #FF1801' : '1px solid rgba(255, 255, 255, 0.2)';
+  labelContainer.style.boxShadow = isNextRace 
+    ? '0 4px 15px rgba(255, 24, 1, 0.6)' 
+    : '0 2px 8px rgba(0, 0, 0, 0.5)';
+  labelContainer.style.transition = 'all 0.3s ease';
+  labelContainer.style.whiteSpace = 'nowrap';
+  labelContainer.style.position = 'relative';
+  labelContainer.style.overflow = 'visible';
+  labelContainer.style.marginLeft = mobile ? '20px' : '30px';
+
+  
+  // 텍스트 컨테이너
+  const textContainer = document.createElement('div');
+  textContainer.style.display = 'flex';
+  textContainer.style.flexDirection = 'column';
+  textContainer.style.alignItems = 'flex-start';
+  textContainer.style.gap = '2px';
+  
+  // 도시 이름
+  const cityName = document.createElement('div');
+  cityName.style.color = '#FFFFFF';
+  cityName.style.fontSize = mobile ? '11px' : '13px';
+  cityName.style.fontWeight = '600';
+  cityName.style.letterSpacing = '0.5px';
+  cityName.style.textTransform = 'uppercase';
+  cityName.textContent = circuit.location.city;
+  
+  // 시간 정보 (레이스 날짜가 있을 경우)
+  if (circuit.raceDate2025) {
+    const timeInfo = document.createElement('div');
+    timeInfo.style.color = 'rgba(255, 255, 255, 0.7)';
+    timeInfo.style.fontSize = mobile ? '9px' : '10px';
+    timeInfo.style.fontWeight = '400';
+    timeInfo.textContent = formatRaceTime(circuit.raceDate2025);
+    textContainer.appendChild(cityName);
+    textContainer.appendChild(timeInfo);
   } else {
-    const svgSize = mobile ? CIRCUIT_SVG_SIZE.mobile : CIRCUIT_SVG_SIZE.desktop;
-    box.innerHTML = `
-      <svg width="${svgSize.width}" height="${svgSize.height}" viewBox="0 0 24 24" fill="none">
-        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2"/>
-        <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    `;
+    textContainer.appendChild(cityName);
+  }
+  
+  // 요소 조립
+  labelContainer.appendChild(textContainer);
+  
+  // Next Race 인 경우 추가 스타일
+  if (isNextRace) {
+    const nextRaceLabel = document.createElement('div');
+    nextRaceLabel.style.position = 'absolute';
+    nextRaceLabel.style.top = '-20px';
+    nextRaceLabel.style.left = '50%';
+    nextRaceLabel.style.transform = 'translateX(-50%)';
+    nextRaceLabel.style.backgroundColor = '#FF1801';
+    nextRaceLabel.style.color = '#FFFFFF';
+    nextRaceLabel.style.fontSize = mobile ? '9px' : '10px';
+    nextRaceLabel.style.fontWeight = '700';
+    nextRaceLabel.style.padding = '2px 6px';
+    nextRaceLabel.style.borderRadius = '2px';
+    nextRaceLabel.style.whiteSpace = 'nowrap';
+    nextRaceLabel.textContent = 'NEXT RACE';
+    labelContainer.appendChild(nextRaceLabel);
   }
 
-  el.appendChild(box);
+  // 메인 컨테이너에 점과 라벨 추가
+  el.appendChild(dotContainer);
+  el.appendChild(labelContainer);
 
   // GPU 가속 호버 효과
   el.style.willChange = 'transform';
-  box.style.willChange = 'transform, box-shadow';
+  labelContainer.style.willChange = 'transform, box-shadow';
+  dot.style.willChange = 'transform, box-shadow';
 
   el.addEventListener('mouseenter', () => {
-    box.style.transform = 'scale(1.1) translateZ(0)';
-    box.style.boxShadow = isNextRace ? '0 6px 20px rgba(255, 24, 1, 0.8)' : '0 6px 20px rgba(220, 38, 38, 0.6)';
+    // 라벨 효과
+    labelContainer.style.transform = 'scale(1.05) translateZ(0)';
+    labelContainer.style.boxShadow = isNextRace 
+      ? '0 6px 20px rgba(255, 24, 1, 0.8)' 
+      : '0 4px 12px rgba(0, 0, 0, 0.7)';
+    labelContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+    
+    // 점 효과
+    dot.style.transform = 'scale(1.2) translateZ(0)';
+    dot.style.boxShadow = '0 0 20px rgba(220, 38, 38, 0.8)';
+    
+    // 선 효과
+    line.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+    line.style.width = mobile ? '25px' : '35px';
   });
 
   el.addEventListener('mouseleave', () => {
-    box.style.transform = 'scale(1) translateZ(0)';
-    box.style.boxShadow = isNextRace ? '0 4px 15px rgba(255, 24, 1, 0.6)' : '0 4px 15px rgba(220, 38, 38, 0.4)';
+    // 라벨 효과
+    labelContainer.style.transform = 'scale(1) translateZ(0)';
+    labelContainer.style.boxShadow = isNextRace 
+      ? '0 4px 15px rgba(255, 24, 1, 0.6)' 
+      : '0 2px 8px rgba(0, 0, 0, 0.5)';
+    labelContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+    
+    // 점 효과
+    dot.style.transform = 'scale(1) translateZ(0)';
+    dot.style.boxShadow = '0 0 10px rgba(220, 38, 38, 0.6)';
+    
+    // 선 효과
+    line.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+    line.style.width = mobile ? '20px' : '30px';
   });
 
   // 클릭 이벤트
@@ -173,9 +264,9 @@ export const createCircuitMarker = ({
     });
   }
 
-  // 마커 추가
+  // 마커 추가 - anchor를 'left'로 설정하여 점이 정확한 위치에 오도록 함
   const marker = new mapboxgl.Marker(el, { 
-    anchor: 'center'
+    anchor: 'left'
   })
     .setLngLat([circuit.location.lng, circuit.location.lat])
     .addTo(map);

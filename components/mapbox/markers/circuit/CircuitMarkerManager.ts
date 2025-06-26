@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import circuitsData from '@/data/circuits.json';
-import { createCircuitMarker } from './CircuitMarker';
+import { createCircuitMarkerWithLeader } from './CircuitMarkerWithLeader';
 import { MarkerData } from '../../types';
 import { F1_2025_CIRCUITS } from '../../utils/data/circuitMapping';
 
@@ -26,13 +26,13 @@ export const addAllCircuits = ({
   circuits2025.forEach(circuit => {
     const isNextRace = circuit.id === nextRaceId;
     
-    createCircuitMarker({
+    createCircuitMarkerWithLeader({
       map,
       circuit,
       isNextRace,
       onMarkerClick,
-      onMarkerCreated: (marker) => {
-        markers.push(marker);
+      onMarkerCreated: (m) => {
+        markers.push(m);
       }
     });
   });
@@ -40,13 +40,13 @@ export const addAllCircuits = ({
   // 추가로 뉘르부르크링 추가 (데모용)
   const nurburgring = circuitsData.circuits.find(c => c.id === 'nurburgring');
   if (nurburgring) {
-    createCircuitMarker({
+    createCircuitMarkerWithLeader({
       map,
       circuit: nurburgring,
       isNextRace: false,
       onMarkerClick,
-      onMarkerCreated: (marker) => {
-        markers.push(marker);
+      onMarkerCreated: (m) => {
+        markers.push(m);
       }
     });
   }
@@ -58,18 +58,15 @@ export const findNextRace = () => {
   
   // 레이스 날짜가 있는 서킷만 필터링하고 정렬
   const sortedCircuits = circuitsData.circuits
-    .filter((circuit) => circuit.raceDate2025 !== null)
-    .sort((a, b) => {
-      const dateA = new Date(a.raceDate2025!).getTime();
-      const dateB = new Date(b.raceDate2025!).getTime();
-      return dateA - dateB;
-    });
+    .filter(circuit => circuit.raceDate2025)
+    .map(circuit => ({
+      ...circuit,
+      raceDate: new Date(circuit.raceDate2025!)
+    }))
+    .sort((a, b) => a.raceDate.getTime() - b.raceDate.getTime());
   
-  // 다음 레이스 찾기
-  const nextRace = sortedCircuits.find((circuit) => {
-    if (!circuit.raceDate2025) return false;
-    return new Date(circuit.raceDate2025) > today;
-  });
+  // 오늘 이후의 첫 번째 레이스 찾기
+  const nextRace = sortedCircuits.find(circuit => circuit.raceDate >= today);
   
-  return nextRace || sortedCircuits[0]; // 미래 레이스가 없으면 시즌 첫 레이스
+  return nextRace ? nextRace.id : null;
 };
