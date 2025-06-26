@@ -199,7 +199,12 @@ export class TeamMarkerFactory {
     const mobile = isMobile();
     
     // 팀별 모바일 전용 설정
-    const mobileConfigs: Record<string, any> = {
+    const mobileConfigs: Record<string, {
+      center: [number, number];
+      zoom: number;
+      pitch: number;
+      bearing: number;
+    }> = {
       'red-bull': {
         center: [-0.6913, 52.0086] as [number, number],
         zoom: 15.41,
