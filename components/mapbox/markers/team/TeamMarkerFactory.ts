@@ -183,8 +183,9 @@ export class TeamMarkerFactory {
    * GPU 가속 설정
    */
   private static setupGPUAcceleration(el: HTMLDivElement, box: HTMLDivElement): void {
-    el.style.willChange = 'transform';
-    box.style.willChange = 'transform, box-shadow';
+    // willChange 제거 - 드래그 시 마커 움직임 문제 해결
+    // el.style.willChange = 'transform';
+    box.style.willChange = 'box-shadow';
   }
 
   /**
