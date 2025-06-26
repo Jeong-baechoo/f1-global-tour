@@ -5,11 +5,11 @@ import { Camera, CameraOff } from 'lucide-react';
 
 interface CinematicModeButtonProps {
   isCircuitView: boolean;
-  onToggle: () => void;
+  onToggleAction: () => void;
   'data-cinematic-toggle'?: boolean;
 }
 
-export default function CinematicModeButton({ isCircuitView, onToggle, ...props }: CinematicModeButtonProps) {
+export default function CinematicModeButton({ isCircuitView, onToggleAction, ...props }: CinematicModeButtonProps) {
   const [isActive, setIsActive] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -18,7 +18,7 @@ export default function CinematicModeButton({ isCircuitView, onToggle, ...props 
 
   const handleToggle = () => {
     setIsActive(!isActive);
-    onToggle();
+    onToggleAction();
   };
 
   return (

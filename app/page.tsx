@@ -409,7 +409,7 @@ export default function Home() {
       {/* Interactive Panel */}
       <InteractivePanel
         isOpen={panelOpen}
-        onClose={() => setPanelOpen(false)}
+        onCloseAction={() => setPanelOpen(false)}
         onMinimize={() => setPanelMinimized(!panelMinimized)}
         isMinimized={panelMinimized}
         module={panelModule}
