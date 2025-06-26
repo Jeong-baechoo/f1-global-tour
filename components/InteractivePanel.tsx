@@ -41,7 +41,7 @@ const CONTENT_BOTTOM_PADDING = '80px'; // pb-20 equivalent
 
 interface InteractivePanelProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   onMinimize?: () => void;
   isMinimized?: boolean;
   module: 'next-race' | 'circuit-detail' | 'team-hq' | null;
@@ -70,7 +70,7 @@ interface InteractivePanelProps {
 
 export default function InteractivePanel({
   isOpen,
-  onClose,
+  onCloseAction,
   onMinimize,
   isMinimized = false,
   module,
@@ -159,7 +159,7 @@ export default function InteractivePanel({
       if (sheetState === 'full') setSheetState('half');
       else if (sheetState === 'half') setSheetState('peek');
       else if (sheetState === 'peek' && deltaY < -DRAG_THRESHOLDS.closeDistance) {
-        onClose();
+        onCloseAction();
         return;
       }
     } else {
@@ -168,7 +168,7 @@ export default function InteractivePanel({
       else if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.half) setSheetState('half');
       else setSheetState('full');
     }
-  }, [isDragging, startY, sheetState, onClose]);
+  }, [isDragging, startY, sheetState, onCloseAction]);
 
   // 클릭으로 상태 전환
   const handleHeaderClick = useCallback(() => {
