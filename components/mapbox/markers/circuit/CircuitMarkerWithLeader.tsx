@@ -32,51 +32,59 @@ export const createCircuitMarkerWithLeader = ({
 }: CircuitMarkerProps): { marker: mapboxgl.Marker } => {
   const mobile = isMobile();
   
-  // 메인 컨테이너
+  // 컨테이너 요소 (고정 크기)
   const container = document.createElement('div');
+  container.className = 'circuit-marker';
   container.style.position = 'absolute';
-  container.style.pointerEvents = 'none';
+  container.style.width = '14px';
+  container.style.height = '14px';
+  container.style.transform = 'translate(-50%, -50%)';
+  container.style.transformOrigin = 'center center';
   
-  // 점 (서킷 위치에 고정)
-  const dot = document.createElement('div');
-  dot.style.position = 'absolute';
-  dot.style.width = mobile ? '12px' : '14px';
-  dot.style.height = mobile ? '12px' : '14px';
-  dot.style.borderRadius = '50%';
-  dot.style.backgroundColor = isNextRace ? '#FF1801' : '#DC2626';
-  dot.style.border = '2px solid rgba(255, 255, 255, 0.8)';
-  dot.style.boxShadow = '0 0 10px rgba(220, 38, 38, 0.6)';
-  dot.style.cursor = 'pointer';
-  dot.style.pointerEvents = 'auto';
-  dot.style.transition = 'all 0.3s ease';
-  dot.style.transform = 'translate(-50%, -50%)';
-  dot.style.zIndex = '2';
+  // 점 마커 (서킷 위치)
+  const dotElement = document.createElement('div');
+  dotElement.style.position = 'absolute';
+  dotElement.style.width = mobile ? '12px' : '14px';
+  dotElement.style.height = mobile ? '12px' : '14px';
+  dotElement.style.borderRadius = '50%';
+  dotElement.style.backgroundColor = isNextRace ? '#FF1801' : '#DC2626';
+  dotElement.style.border = '2px solid rgba(255, 255, 255, 0.8)';
+  dotElement.style.boxShadow = '0 0 10px rgba(220, 38, 38, 0.6)';
+  dotElement.style.cursor = 'pointer';
+  dotElement.style.transition = 'all 0.3s ease';
+  dotElement.style.left = '50%';
+  dotElement.style.top = '50%';
+  dotElement.style.transform = 'translate(-50%, -50%)';
   
-  // 간단한 리더 라인 (SVG)
+  // 라벨 + 리더라인 컨테이너
+  const labelContainer = document.createElement('div');
+  labelContainer.style.position = 'absolute';
+  labelContainer.style.left = '20px';
+  labelContainer.style.top = '-40px';
+  labelContainer.style.pointerEvents = 'none';
+  
+  // SVG 리더 라인
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.style.position = 'absolute';
+  svg.style.width = '100px';
+  svg.style.height = '60px';
+  svg.style.left = '-20px';
+  svg.style.top = '40px';
   svg.style.pointerEvents = 'none';
   svg.style.overflow = 'visible';
-  svg.style.width = '200px';
-  svg.style.height = '100px';
-  svg.style.left = '-100px';
-  svg.style.top = '-50px';
   
   const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line.setAttribute('x1', '100');
-  line.setAttribute('y1', '50');
-  line.setAttribute('x2', '150');
-  line.setAttribute('y2', '30');
+  line.setAttribute('x1', '0');
+  line.setAttribute('y1', '0');
+  line.setAttribute('x2', '20');
+  line.setAttribute('y2', '-40');
   line.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
   line.setAttribute('stroke-width', '1');
+  line.setAttribute('stroke-dasharray', '2,2');
   svg.appendChild(line);
   
   // 라벨
   const label = document.createElement('div');
-  label.style.position = 'absolute';
-  label.style.left = '150px';
-  label.style.top = '20px';
-  label.style.transform = 'translateX(-50%)';
   label.style.padding = mobile ? '4px 8px' : '6px 12px';
   label.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
   label.style.border = '1px solid rgba(255, 255, 255, 0.2)';
@@ -104,23 +112,55 @@ export const createCircuitMarkerWithLeader = ({
     label.appendChild(badge);
   }
   
-  // 줌 레벨에 따른 표시/숨김
+  // 라벨 컨테이너에 SVG와 라벨 추가
+  labelContainer.appendChild(svg);
+  labelContainer.appendChild(label);
+  
+  // 컨테이너에 요소들 추가
+  container.appendChild(dotElement);
+  container.appendChild(labelContainer);
+  
+  // 줌 레벨 및 지구 반대편 체크
   const updateVisibility = () => {
     const zoom = map.getZoom();
-    const show = zoom > 5.5;
+    const showLabel = zoom > 5.5;
     
-    label.style.opacity = show ? '1' : '0';
-    label.style.display = show ? 'block' : 'none';
-    line.style.opacity = show ? '1' : '0';
+    // 지구본 모드에서 뒷면 체크 (줌 레벨이 낮을 때)
+    if (zoom < 6) {
+      // 카메라 중심과 마커 위치 간의 거리 계산
+      const center = map.getCenter();
+      const markerLng = circuit.location.lng;
+      const markerLat = circuit.location.lat;
+      
+      // 경도 차이 계산 (180도 넘으면 반대편)
+      let lngDiff = Math.abs(center.lng - markerLng);
+      if (lngDiff > 180) lngDiff = 360 - lngDiff;
+      
+      // 위도 차이도 고려
+      const latDiff = Math.abs(center.lat - markerLat);
+      
+      // 75도 이상 차이나면 숨김 (지구 반대편)
+      const isOnBackside = lngDiff > 75 || (latDiff > 50 && lngDiff > 50);
+      
+      container.style.display = isOnBackside ? 'none' : 'block';
+      container.style.opacity = isOnBackside ? '0' : '1';
+    } else {
+      // 높은 줌 레벨에서는 항상 표시
+      container.style.display = 'block';
+      container.style.opacity = '1';
+    }
+    
+    // 라벨 표시/숨김
+    label.style.opacity = showLabel ? '1' : '0';
+    label.style.display = showLabel ? 'block' : 'none';
+    line.style.opacity = showLabel ? '1' : '0';
   };
   
-  // 컨테이너에 추가
-  svg.appendChild(label);
-  container.appendChild(svg);
-  container.appendChild(dot);
-  
-  // 마커 생성
-  const marker = new mapboxgl.Marker(container, { anchor: 'center' })
+  // 마커 생성 - 팀 마커와 동일한 설정 사용
+  const marker = new mapboxgl.Marker(container, {
+    anchor: 'top-left',
+    offset: [0, 0]
+  })
     .setLngLat([circuit.location.lng, circuit.location.lat])
     .addTo(map);
   
@@ -137,15 +177,18 @@ export const createCircuitMarkerWithLeader = ({
       onMarkerClick(markerData);
     };
     
-    dot.addEventListener('click', handleClick);
+    container.addEventListener('click', handleClick);
     label.addEventListener('click', handleClick);
   }
   
   // 초기 가시성 설정
   updateVisibility();
   
-  // 맵 줌 이벤트 리스너
+  // 맵 이벤트 리스너
   map.on('zoom', updateVisibility);
+  map.on('move', updateVisibility);
+  map.on('rotate', updateVisibility);
+  map.on('pitch', updateVisibility);
   
   if (onMarkerCreated) {
     onMarkerCreated(marker);

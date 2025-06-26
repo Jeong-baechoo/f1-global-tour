@@ -195,17 +195,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           setIsCircuitView(false);
         }
         
-        // 서킷 마커 페이드 로직 (단순화)
-        markers.current.forEach(marker => {
-          const element = marker.getElement();
-          
-          if (element.classList.contains('circuit-marker')) {
-            const show = zoom < 10;
-            element.style.opacity = show ? '1' : '0';
-            element.style.display = show ? 'block' : 'none';
-            element.style.pointerEvents = show ? 'auto' : 'none';
-          }
-        });
       };
 
       // 이벤트 리스너 등록
@@ -235,48 +224,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         addAllCircuits({
           map: map.current,
           onMarkerClick: propsRef.current.onMarkerClick,
-          nextRaceId: nextRace?.id,
+          nextRaceId: nextRace || undefined,
           markers: markers.current
         });
         
-        // 초기 줌 레벨에 따른 마커 표시/숨김
-        const initialZoom = map.current.getZoom();
-        markers.current.forEach(marker => {
-          const element = marker.getElement();
-          if (element && element.classList.contains('circuit-marker')) {
-            const markerContent = element.firstElementChild as HTMLElement;
-            
-            element.style.transition = 'opacity 0.15s ease-out';
-            if (markerContent) {
-              markerContent.style.transition = 'opacity 0.15s ease-out';
-            }
-            
-            // 줌 레벨에 따른 opacity 계산
-            let opacity = 1;
-            if (initialZoom >= CIRCUIT_MARKER_VISIBILITY.startFade) {
-              if (initialZoom >= CIRCUIT_MARKER_VISIBILITY.completelyHidden) {
-                opacity = 0;
-              } else {
-                // startFade와 completelyHidden 사이에서 선형 보간
-                const fadeRange = CIRCUIT_MARKER_VISIBILITY.completelyHidden - CIRCUIT_MARKER_VISIBILITY.startFade;
-                opacity = 1 - ((initialZoom - CIRCUIT_MARKER_VISIBILITY.startFade) / fadeRange);
-              }
-            }
-            
-            element.style.opacity = opacity.toString();
-            if (markerContent) {
-              markerContent.style.opacity = opacity.toString();
-            }
-            
-            if (opacity > 0) {
-              element.style.display = 'block';
-              element.style.pointerEvents = opacity > CIRCUIT_MARKER_VISIBILITY.minOpacityForClick ? 'auto' : 'none';
-            } else {
-              element.style.display = 'none';
-              element.style.pointerEvents = 'none';
-            }
-          }
-        });
       }, TIMEOUTS.markerDelay);
     };
 
