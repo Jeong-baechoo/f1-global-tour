@@ -1,25 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../../types';
-import { MARKER_STYLES } from '../../constants';
 import { isMobile } from '../../utils/viewport';
 
-// Next Race 마커 텍스트 스타일 상수
-const NEXT_RACE_TEXT_STYLE = {
-  desktop: {
-    fontSize: '12px',
-    lineHeight: '1.3'
-  },
-  mobile: {
-    fontSize: '10px', 
-    lineHeight: '1.3'
-  }
-} as const;
-
-// 일반 서킷 마커 SVG 크기 상수
-const CIRCUIT_SVG_SIZE = {
-  desktop: { width: '30', height: '30' },
-  mobile: { width: '22', height: '22' }
-} as const;
 
 // 실제 F1 서킷 코너 정보
 const CIRCUIT_CORNERS: Record<string, number> = {
@@ -67,6 +49,7 @@ interface Circuit {
   length: number;
   laps?: number;
   corners?: number;
+  raceDate2025?: string | null;
   lapRecord?: {
     time: string;
     driver: string;
