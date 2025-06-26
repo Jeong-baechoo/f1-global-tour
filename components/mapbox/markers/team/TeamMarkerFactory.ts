@@ -2,6 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { Team, MarkerData } from '../../types';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
 import { isMobile } from '../../utils/viewport';
+import { MOBILE_TEAM_CONFIGS } from '../../../../configs/mobile-team-configs';
 
 interface TeamMarkerFactoryProps {
   map: mapboxgl.Map;
@@ -198,28 +199,9 @@ export class TeamMarkerFactory {
     const flyToConfig = config.flyTo;
     const mobile = isMobile();
     
-    // 팀별 모바일 전용 설정
-    const mobileConfigs: Record<string, {
-      center: [number, number];
-      zoom: number;
-      pitch: number;
-      bearing: number;
-    }> = {
-      'red-bull': {
-        center: [-0.6913, 52.0086] as [number, number],
-        zoom: 15.41,
-        pitch: 45,
-        bearing: 0
-      },
-      'mclaren': {
-        center: [-0.5444, 51.3457] as [number, number],
-        zoom: 14.68,
-        pitch: 49.5,
-        bearing: 48.4
-      }
-    };
+    // 팀별 모바일 전용 설정은 별도 config 파일에서 관리
     
-    const mobileConfig = mobile && mobileConfigs[config.teamId] ? mobileConfigs[config.teamId] : null;
+    const mobileConfig = mobile && MOBILE_TEAM_CONFIGS[config.teamId] ? MOBILE_TEAM_CONFIGS[config.teamId] : null;
     
     map.flyTo({
       center: mobileConfig ? mobileConfig.center : (flyToConfig.center || teamHQ.coordinates),

@@ -1,5 +1,11 @@
 import { isMobile } from '../viewport';
 
+// 모바일 설정 적용 헬퍼 함수
+const getMobileConfig = (config: CircuitConfig, mobile: boolean): CircuitConfig => {
+  if (!mobile || !config.mobile) return config;
+  return { ...config, ...config.mobile };
+};
+
 // 카메라 설정 타입
 export interface CameraConfig {
   center: [number, number];
@@ -14,7 +20,7 @@ export interface CameraConfig {
 
 // 서킷별 카메라 설정 타입
 interface CircuitConfig extends Partial<CameraConfig> {
-  mobile?: Partial<CameraConfig>;
+  mobile?: Pick<CameraConfig, 'zoom' | 'pitch' | 'bearing'>;
 }
 
 // 서킷별 카메라 설정
@@ -315,11 +321,7 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
   };
 
   const circuitConfig = configs[circuitId] || {};
-  
-  // 모바일 전용 설정이 있는 경우 사용
-  const finalConfig = mobile && circuitConfig.mobile 
-    ? { ...circuitConfig, ...circuitConfig.mobile }
-    : circuitConfig;
+  const finalConfig = getMobileConfig(circuitConfig, mobile);
   
   return {
     ...defaultConfig,
