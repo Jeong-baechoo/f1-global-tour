@@ -64,42 +64,6 @@ export interface MapProps {
   onMarkerClick?: (item: MarkerData) => void;
   onCinematicModeChange?: (enabled: boolean) => void;
   onUserInteraction?: () => void;
-  showSectors?: boolean;
-  showDRS?: boolean;
-}
-
-export interface DRSZone {
-  id: string;
-  name: string;
-  detectionPoint: string;
-  activationPoint: string;
-  length: number;
-  description: string;
-  startPercentage?: number;
-  endPercentage?: number;
-}
-
-export interface TrackDetails {
-  drsZones?: DRSZone[];
-  sectors?: Array<{
-    id: string;
-    name: string;
-    corners: string[];
-    characteristics: string;
-    startPercentage?: number;
-    endPercentage?: number;
-  }>;
-  keyCorners?: Array<{
-    number: number;
-    name: string;
-    type: string;
-    characteristics: string;
-  }>;
-  elevation?: {
-    highest: number;
-    lowest: number;
-    difference: number;
-  };
 }
 
 export interface TrackDrawOptions {
@@ -108,8 +72,6 @@ export interface TrackDrawOptions {
   color?: string;
   delay?: number;
   onComplete?: () => void;
-  trackDetails?: TrackDetails;
-  showDRSZones?: boolean;
 }
 
 export interface MarkerCreationOptions {

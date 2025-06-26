@@ -70,10 +70,6 @@ interface InteractivePanelProps {
   onExploreCircuit?: () => void;
   isCinematicMode?: boolean;
   onToggleCinematicMode?: () => void;
-  onToggleSectors?: () => void;
-  onToggleDRS?: () => void;
-  showSectors?: boolean;
-  showDRS?: boolean;
 }
 
 export default function InteractivePanel({
@@ -85,11 +81,7 @@ export default function InteractivePanel({
   data,
   onExploreCircuit,
   isCinematicMode = false,
-  onToggleCinematicMode,
-  onToggleSectors,
-  onToggleDRS,
-  showSectors = false,
-  showDRS = false
+  onToggleCinematicMode
 }: InteractivePanelProps) {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -336,49 +328,6 @@ export default function InteractivePanel({
               </div>
             </div>
 
-            {/* 트랙 표시 옵션 토글 버튼들 */}
-            <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Track Display Options</h3>
-              <div className="space-y-3">
-                {/* 섹터 토글 버튼 */}
-                {onToggleSectors && (
-                  <button
-                    onClick={onToggleSectors}
-                    className={`w-full font-medium py-2 px-3 rounded transition-all duration-300 flex items-center justify-between border text-sm ${
-                      showSectors
-                        ? 'bg-[#00FF00]/20 text-[#00FF00] border-[#00FF00]/50 hover:bg-[#00FF00]/30'
-                        : 'bg-[#1A1A1A]/60 text-white border-[#FF1801]/20 hover:bg-[#1A1A1A]/80'
-                    }`}
-                  >
-                    <span>섹터 애니메이션</span>
-                    <div className={`w-4 h-4 rounded border-2 transition-colors ${
-                      showSectors ? 'bg-[#00FF00] border-[#00FF00]' : 'border-[#C0C0C0]'
-                    }`}>
-                      {showSectors && <div className="w-full h-full flex items-center justify-center text-black text-xs">✓</div>}
-                    </div>
-                  </button>
-                )}
-
-                {/* DRS 존 토글 버튼 */}
-                {onToggleDRS && (
-                  <button
-                    onClick={onToggleDRS}
-                    className={`w-full font-medium py-2 px-3 rounded transition-all duration-300 flex items-center justify-between border text-sm ${
-                      showDRS
-                        ? 'bg-[#00FF00]/20 text-[#00FF00] border-[#00FF00]/50 hover:bg-[#00FF00]/30'
-                        : 'bg-[#1A1A1A]/60 text-white border-[#FF1801]/20 hover:bg-[#1A1A1A]/80'
-                    }`}
-                  >
-                    <span>DRS 존 표시</span>
-                    <div className={`w-4 h-4 rounded border-2 transition-colors ${
-                      showDRS ? 'bg-[#00FF00] border-[#00FF00]' : 'border-[#C0C0C0]'
-                    }`}>
-                      {showDRS && <div className="w-full h-full flex items-center justify-center text-black text-xs">✓</div>}
-                    </div>
-                  </button>
-                )}
-              </div>
-            </div>
 
             {/* 시네마틱 모드 버튼 - 데스크탑 패널에만 표시 */}
             {!isMobile && onToggleCinematicMode && (
