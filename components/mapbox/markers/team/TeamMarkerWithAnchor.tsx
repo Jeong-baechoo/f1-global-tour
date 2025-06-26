@@ -189,7 +189,8 @@ export const createTeamMarkerWithAnchor = ({
         color: team.colors.primary,
         drivers: config.drivers2025?.map(d => d.name) || [],
         drivers2025: config.drivers2025,
-        car2025: config.car2025
+        car2025: config.car2025,
+        championships2025: team.championships2025
       };
       
       onMarkerClick(markerData);
