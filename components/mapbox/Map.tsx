@@ -28,12 +28,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   const [isCircuitView, setIsCircuitView] = useState(false);
   const isCircuitViewRef = useRef(false);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
-  const [mapDebugInfo, setMapDebugInfo] = useState({
-    center: [0, 0] as [number, number],
-    zoom: 0,
-    bearing: 0,
-    pitch: 0
-  });
   
   // Custom hooks 사용
   const { map, globeSpinner } = useMapInitialization({ mapContainer, onUserInteraction });
@@ -172,18 +166,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       // map instance를 state에 저장
       setMapInstance(map.current);
 
-      // 지도 상태 업데이트 함수
-      const updateMapDebugInfo = () => {
-        if (map.current) {
-          const center = map.current.getCenter();
-          setMapDebugInfo({
-            center: [Number(center.lng.toFixed(4)), Number(center.lat.toFixed(4))],
-            zoom: Number(map.current.getZoom().toFixed(2)),
-            bearing: Number(map.current.getBearing().toFixed(1)),
-            pitch: Number(map.current.getPitch().toFixed(1))
-          });
-        }
-      };
 
       // 줌 레벨 변경 감지 핸들러
       const handleZoomChange = () => {
@@ -199,12 +181,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
       // 이벤트 리스너 등록
       map.current.on('zoom', handleZoomChange);
-      map.current.on('move', updateMapDebugInfo);
-      map.current.on('rotate', updateMapDebugInfo);
-      map.current.on('pitch', updateMapDebugInfo);
-      
-      // 초기 상태 설정
-      updateMapDebugInfo();
 
       // 마커 추가
       setTimeout(() => {
@@ -251,15 +227,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
     <>
       <div ref={mapContainer} className="w-full h-full" />
       
-      {/* 지도 디버그 정보 */}
-      <div className="absolute top-4 left-4 bg-black/80 text-white p-3 rounded-lg text-xs font-mono z-50">
-        <div className="space-y-1">
-          <div>중심: {mapDebugInfo.center[0]}, {mapDebugInfo.center[1]}</div>
-          <div>줌: {mapDebugInfo.zoom}</div>
-          <div>방향각: {mapDebugInfo.bearing}°</div>
-          <div>틸트: {mapDebugInfo.pitch}°</div>
-        </div>
-      </div>
       
       <CinematicModeButton
         isCircuitView={isCircuitView}
