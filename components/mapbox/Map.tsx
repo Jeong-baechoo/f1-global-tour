@@ -379,7 +379,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       
       <CinematicModeButton
         isCircuitView={isCircuitView}
-        onToggle={handleCinematicModeToggle}
+        onToggleAction={handleCinematicModeToggle}
       />
       
       {/* 모바일 줌 스크롤바 */}
