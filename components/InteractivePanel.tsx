@@ -56,6 +56,10 @@ interface InteractivePanelProps {
     drivers?: string[];
     drivers2025?: Driver[];
     car2025?: Car;
+    championships2025?: {
+      totalPoints: number;
+      raceResults: { race: string; points: number }[];
+    };
     grandPrix?: string;
     length?: number;
     laps?: number;
@@ -324,6 +328,7 @@ export default function InteractivePanel({
               </div>
             </div>
 
+
             {/* 시네마틱 모드 버튼 - 데스크탑 패널에만 표시 */}
             {!isMobile && onToggleCinematicMode && (
               <button
@@ -452,6 +457,31 @@ export default function InteractivePanel({
                       />
                       <div className="w-full h-full hidden items-center justify-center text-sm text-[#C0C0C0]">
                         {data.car2025.name} Image
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {data?.championships2025 && (
+                <div>
+                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Championship</h3>
+                  <div className="space-y-4">
+                    <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
+                      <div className="text-center mb-3">
+                        <div className="text-2xl font-bold text-white mb-1">{data.championships2025.totalPoints}</div>
+                        <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Total Points</div>
+                      </div>
+                    </div>
+                    <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
+                      <h4 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">All Race Results</h4>
+                      <div className="space-y-2 max-h-24 overflow-y-auto scrollbar-transparent">
+                        {data.championships2025.raceResults.slice().reverse().map((result, index) => (
+                          <div key={index} className="flex justify-between items-center py-1">
+                            <span className="text-sm text-white">{result.race}</span>
+                            <span className="text-sm font-medium text-[#FF8700]">{result.points} pts</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>

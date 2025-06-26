@@ -37,6 +37,10 @@ export interface MarkerData {
   drivers?: string[];
   drivers2025?: Driver[];
   car2025?: Car;
+  championships2025?: {
+    totalPoints: number;
+    raceResults: { race: string; points: number }[];
+  };
   grandPrix?: string;
   length?: number;
   laps?: number;
@@ -90,6 +94,10 @@ export interface Team {
   };
   drivers2025?: Driver[];
   car2025?: Car;
+  championships2025?: {
+    totalPoints: number;
+    raceResults: { race: string; points: number }[];
+  };
 }
 
 export interface TransformedTeam extends Team {
