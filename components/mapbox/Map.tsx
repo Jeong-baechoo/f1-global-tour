@@ -13,7 +13,7 @@ import CinematicModeButton from './controls/CinematicModeButton';
 import ZoomScrollbar from './controls/ZoomScrollbar';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
-import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES, CIRCUIT_MARKER_VISIBILITY } from './constants';
+import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
 
 // Mapbox 토큰 확인 및 설정

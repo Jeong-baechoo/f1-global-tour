@@ -172,7 +172,10 @@ export const createCircuitMarkerWithLeader = ({
         name: circuit.name,
         type: 'circuit',
         location: circuit.location,
-        data: circuit
+        length: circuit.length,
+        laps: circuit.laps,
+        corners: circuit.corners,
+        raceDate: circuit.raceDate2025 || undefined
       };
       onMarkerClick(markerData);
     };

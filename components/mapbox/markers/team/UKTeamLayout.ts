@@ -1,10 +1,6 @@
 // 영국 팀들을 위한 특별한 레이아웃 설정
 
-interface TeamPosition {
-  teamId: string;
-  offset: { x: number; y: number };
-  scale?: number;
-}
+// Team position interface (for future use)
 
 // 영국 기반 팀들의 ID
 export const UK_TEAMS = [
@@ -95,6 +91,6 @@ export const isUKTeam = (teamId: string): boolean => {
  * 줌 레벨에서 영국 특별 레이아웃을 사용해야 하는지 확인
  * 영국 팀은 항상 특별 레이아웃 사용
  */
-export const shouldUseUKLayout = (zoom: number): boolean => {
+export const shouldUseUKLayout = (): boolean => {
   return true; // 항상 true
 };

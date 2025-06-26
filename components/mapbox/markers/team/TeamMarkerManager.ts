@@ -3,7 +3,7 @@ import teamsData from '@/data/teams.json';
 import { TeamMarkerFactory } from './TeamMarkerFactory';
 import { createTeamMarkerWithAnchor } from './TeamMarkerWithAnchor';
 import { MarkerData } from '../../types';
-import { getUKTeamAdjustedPosition, shouldUseUKLayout, isUKTeam } from './UKTeamLayout';
+import { getUKTeamAdjustedPosition, isUKTeam } from './UKTeamLayout';
 
 interface AddAllTeamsOptions {
   map: mapboxgl.Map;
@@ -14,6 +14,7 @@ interface AddAllTeamsOptions {
 // 영국 팀 마커 생성 함수
 const createUKTeamMarker = (
   map: mapboxgl.Map,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   team: any,
   onMarkerClick: ((item: MarkerData) => void) | undefined,
   markers: mapboxgl.Marker[]
@@ -54,8 +55,9 @@ const createUKTeamMarker = (
     );
     
     // updatePosition 메서드 호출
-    if ((markerInstance as any).updatePosition) {
-      (markerInstance as any).updatePosition(adjustedPosition);
+    const markerWithUpdate = markerInstance as mapboxgl.Marker & { updatePosition?: (pos: { lat: number; lng: number }) => void };
+    if (markerWithUpdate.updatePosition) {
+      markerWithUpdate.updatePosition(adjustedPosition);
     }
   };
   

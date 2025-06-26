@@ -105,7 +105,7 @@ export const createTeamMarkerWithAnchor = ({
   const updateVisibility = () => {
     const zoom = map.getZoom();
     // 영국 팀은 항상 리더 라인 표시
-    const showLeader = true;
+    // 영국 팀은 항상 리더 라인 표시
     
     // 실제 위치와 표시 위치 계산
     const actualPoint = map.project([team.headquarters.lng, team.headquarters.lat]);
@@ -120,18 +120,6 @@ export const createTeamMarkerWithAnchor = ({
     markerContainer.style.top = '0px';
     
     // 팀 요소를 중앙에 배치
-    const mobile = isMobile();
-    const markerStyle = DEFAULT_TEAM_MARKER_STYLE;
-    const width = mobile ? parseInt(markerStyle.mobileWidth) : parseInt(markerStyle.width);
-    const height = mobile ? parseInt(markerStyle.mobileHeight) : parseInt(markerStyle.height);
-    
-    // 줌 레벨에 따라 마커 크기 조정 (줌 5 이하에서 점으로)
-    let actualWidth = width;
-    let actualHeight = height;
-    if (zoom <= 5) {
-      actualWidth = 12;
-      actualHeight = 12;
-    }
     
     teamElement.style.transform = `translate(-50%, -50%)`;
     
@@ -182,7 +170,8 @@ export const createTeamMarkerWithAnchor = ({
     .addTo(map);
   
   // 마커 위치 업데이트 함수 (외부에서 호출 가능)
-  (marker as any).updatePosition = (newPosition: { lat: number; lng: number }) => {
+  const markerWithUpdate = marker as mapboxgl.Marker & { updatePosition?: (pos: { lat: number; lng: number }) => void };
+  markerWithUpdate.updatePosition = (newPosition: { lat: number; lng: number }) => {
     currentDisplayPosition = newPosition;
     marker.setLngLat([newPosition.lng, newPosition.lat]);
     updateVisibility();  // 리더 라인도 업데이트
