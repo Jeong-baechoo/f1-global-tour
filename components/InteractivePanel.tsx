@@ -89,6 +89,7 @@ export default function InteractivePanel({
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -108,10 +109,6 @@ export default function InteractivePanel({
 
   // 드래그 핸들러들을 useCallback으로 최적화
   const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    // 터치 이벤트의 경우 기본 동작 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
@@ -119,11 +116,6 @@ export default function InteractivePanel({
 
   const handleDragMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
-
-    // 터치 이벤트의 경우 기본 동작 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
 
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = startY - clientY;
@@ -145,6 +137,67 @@ export default function InteractivePanel({
     }
   }, [isDragging, startY, sheetState]);
 
+  // Native touch event handlers for non-passive events
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setStartY(e.touches[0].clientY);
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isDragging || !sheetRef.current) return;
+    
+    e.preventDefault();
+    const clientY = e.touches[0].clientY;
+    const deltaY = startY - clientY;
+
+    // 현재 높이 계산
+    const windowHeight = window.innerHeight;
+    let currentHeight = 0;
+
+    if (sheetState === 'peek') currentHeight = SHEET_HEIGHTS.peek;
+    else if (sheetState === 'half') currentHeight = (SHEET_HEIGHTS.half / 100) * windowHeight;
+    else if (sheetState === 'full') currentHeight = (SHEET_HEIGHTS.full / 100) * windowHeight;
+
+    const newHeight = currentHeight + deltaY;
+    const heightPercent = (newHeight / windowHeight) * 100;
+
+    // 높이 제한
+    if (newHeight >= SHEET_HEIGHTS.peek && heightPercent <= SHEET_HEIGHTS.full) {
+      sheetRef.current.style.height = `${newHeight}px`;
+    }
+  }, [isDragging, startY, sheetState]);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (!isDragging || !sheetRef.current) return;
+    setIsDragging(false);
+
+    const clientY = e.changedTouches[0].clientY;
+    const deltaY = startY - clientY;
+    const windowHeight = window.innerHeight;
+    const currentHeightPx = sheetRef.current.offsetHeight;
+    const currentHeightVh = (currentHeightPx / windowHeight) * 100;
+
+    // 드래그 방향과 현재 높이에 따라 상태 결정
+    if (deltaY > DRAG_THRESHOLDS.minDrag) { // 위로 드래그
+      if (sheetState === 'peek') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('full');
+    } else if (deltaY < -DRAG_THRESHOLDS.minDrag) { // 아래로 드래그
+      if (sheetState === 'full') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('peek');
+      else if (sheetState === 'peek' && deltaY < -DRAG_THRESHOLDS.closeDistance) {
+        onCloseAction();
+        return;
+      }
+    } else {
+      // 가장 가까운 snap point로 이동
+      if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.peek) setSheetState('peek');
+      else if (currentHeightVh < DRAG_THRESHOLDS.snapThreshold.half) setSheetState('half');
+      else setSheetState('full');
+    }
+  }, [isDragging, startY, sheetState, onCloseAction]);
+
+  // Mouse event handlers (React events)
   const handleDragEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
     setIsDragging(false);
@@ -179,6 +232,23 @@ export default function InteractivePanel({
     if (sheetState === 'peek') setSheetState('half');
     else if (sheetState === 'half') setSheetState('full');
   }, [sheetState]);
+
+  // Native touch event listeners for drag handle
+  useEffect(() => {
+    const dragHandle = dragHandleRef.current;
+    if (!dragHandle) return;
+
+    // Add non-passive touch event listeners
+    dragHandle.addEventListener('touchstart', handleTouchStart, { passive: false });
+    dragHandle.addEventListener('touchmove', handleTouchMove, { passive: false });
+    dragHandle.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      dragHandle.removeEventListener('touchstart', handleTouchStart);
+      dragHandle.removeEventListener('touchmove', handleTouchMove);
+      dragHandle.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
 
   useEffect(() => {
@@ -594,11 +664,9 @@ export default function InteractivePanel({
         <div className="sticky top-0 z-10 bg-transparent rounded-t-2xl">
           {/* Handle Bar - 드래그 영역을 핸들 바로만 제한 */}
           <div 
+            ref={dragHandleRef}
             className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
             style={{ touchAction: 'none' }}
-            onTouchStart={handleDragStart}
-            onTouchMove={handleDragMove}
-            onTouchEnd={handleDragEnd}
             onMouseDown={handleDragStart}
             onMouseMove={isDragging ? handleDragMove : undefined}
             onMouseUp={handleDragEnd}
