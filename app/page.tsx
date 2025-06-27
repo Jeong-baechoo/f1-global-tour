@@ -6,6 +6,8 @@ import Image from 'next/image';
 import InteractivePanel from '@/components/InteractivePanel';
 import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/components/mapbox/types';
+import LanguageSelector from '@/components/ui/LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Dynamic import to avoid SSR issues with Mapbox
 const Map = dynamic(
@@ -29,6 +31,7 @@ const Map = dynamic(
 );
 
 export default function Home() {
+  const { language, setLanguage } = useLanguage();
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelModule, setPanelModule] = useState<'next-race' | 'circuit-detail' | 'team-hq' | null>(null);
   const [panelMinimized, setPanelMinimized] = useState(false);
@@ -323,6 +326,14 @@ export default function Home() {
         />
       </div>
 
+      {/* 언어 선택 버튼 - 모바일 */}
+      <div className="absolute top-7 right-14 z-10 sm:hidden">
+        <LanguageSelector
+          currentLanguage={language}
+          onLanguageChangeAction={setLanguage}
+        />
+      </div>
+
       {/* F1 로고 - 데스크탑 */}
       <div className="hidden sm:block absolute top-0.5 left-14 z-10">
         <Image
@@ -332,6 +343,14 @@ export default function Home() {
           height={30}
           className="drop-shadow-lg"
           priority
+        />
+      </div>
+
+      {/* 언어 선택 버튼 - 데스크탑 */}
+      <div className="hidden sm:block absolute bottom-32 left-6 z-10">
+        <LanguageSelector
+          currentLanguage={language}
+          onLanguageChangeAction={setLanguage}
         />
       </div>
 
