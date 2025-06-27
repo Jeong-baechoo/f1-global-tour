@@ -2,6 +2,21 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+// 상수 정의
+const ZOOM_CONFIG = {
+  CENTER_POSITION: 50,
+  BASE_SPEED: 0.001,
+  MAX_SPEED: 0.03,
+  FRAME_RATE: 16, // 60fps
+  RETURN_DURATION: 800, // 0.8초
+  BUTTON_ZOOM_STEP: 0.5,
+  INTERACTION_TIMEOUT: 100,
+} as const;
+
+const EASING = {
+  CUBIC_OUT: (t: number) => 1 - Math.pow(1 - t, 3),
+} as const;
+
 interface ZoomScrollbarProps {
   map: mapboxgl.Map | null;
   className?: string;
@@ -10,47 +25,117 @@ interface ZoomScrollbarProps {
 const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
   const [zoomLevel, setZoomLevel] = useState(2);
   const [isDragging, setIsDragging] = useState(false);
+  const [thumbPosition, setThumbPosition] = useState(50); // 중앙 위치 (50%)
   const scrollbarRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const isUserInteracting = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const zoomIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const returnIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const minZoom = map?.getMinZoom() ?? 0.5;
   const maxZoom = map?.getMaxZoom() ?? 20;
 
-  // 줄 레벨을 스크롤바 위치로 변환 (아래가 최소줄, 위가 최대줄)
-  const zoomToPosition = useCallback((zoom: number) => {
-    return 100 - ((zoom - minZoom) / (maxZoom - minZoom)) * 100;
-  }, [minZoom, maxZoom]);
+  // 썸 위치에 따른 줌 속도 계산 (중앙 기준)
+  const calculateZoomSpeed = useCallback((position: number): number => {
+    const distance = Math.abs(position - ZOOM_CONFIG.CENTER_POSITION) / ZOOM_CONFIG.CENTER_POSITION;
+    const speedRange = ZOOM_CONFIG.MAX_SPEED - ZOOM_CONFIG.BASE_SPEED;
+    return ZOOM_CONFIG.BASE_SPEED + (distance * distance * speedRange);
+  }, []);
 
-  // 스크롤바 위치를 줄 레벨로 변환 (아래가 최소줄, 위가 최대줄)
-  const positionToZoom = useCallback((position: number) => {
-    const invertedPosition = 100 - position;
-    return minZoom + (invertedPosition / 100) * (maxZoom - minZoom);
-  }, [minZoom, maxZoom]);
+  // 줌 방향 계산 (중앙 기준)
+  const getZoomDirection = useCallback((position: number): -1 | 0 | 1 => {
+    if (position < ZOOM_CONFIG.CENTER_POSITION) return 1; // 위쪽 = 줌 인
+    if (position > ZOOM_CONFIG.CENTER_POSITION) return -1; // 아래쪽 = 줌 아웃
+    return 0; // 중앙 = 정지
+  }, []);
 
-  // 공통 줄 업데이트 함수
-  const updateZoom = useCallback((clientY: number) => {
-    if (!scrollbarRef.current || !map) return;
+  // 연속 줌 동작 중지
+  const stopContinuousZoom = useCallback((): void => {
+    if (zoomIntervalRef.current) {
+      clearInterval(zoomIntervalRef.current);
+      zoomIntervalRef.current = null;
+    }
+  }, []);
+
+  // 연속 줌 동작 시작
+  const startContinuousZoom = useCallback((position: number): void => {
+    stopContinuousZoom();
+
+    const direction = getZoomDirection(position);
+    if (direction === 0 || !map) return;
+
+    const speed = calculateZoomSpeed(position);
+    
+    zoomIntervalRef.current = setInterval(() => {
+      const currentZoom = map.getZoom();
+      const newZoom = currentZoom + (direction * speed);
+      const clampedZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
+      
+      setZoomLevel(clampedZoom);
+      map.setZoom(clampedZoom);
+    }, ZOOM_CONFIG.FRAME_RATE);
+  }, [map, minZoom, maxZoom, getZoomDirection, calculateZoomSpeed, stopContinuousZoom]);
+
+  // 인터벌 정리 헬퍼 함수
+  const clearAllIntervals = useCallback((): void => {
+    if (zoomIntervalRef.current) {
+      clearInterval(zoomIntervalRef.current);
+      zoomIntervalRef.current = null;
+    }
+    if (returnIntervalRef.current) {
+      clearInterval(returnIntervalRef.current);
+      returnIntervalRef.current = null;
+    }
+  }, []);
+
+  // 썸을 중앙으로 복귀
+  const returnToCenter = useCallback((): void => {
+    if (returnIntervalRef.current) {
+      clearInterval(returnIntervalRef.current);
+    }
+
+    const startPosition = thumbPosition;
+    const startTime = Date.now();
+
+    returnIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / ZOOM_CONFIG.RETURN_DURATION, 1);
+      
+      const easeOut = EASING.CUBIC_OUT(progress);
+      const currentPosition = startPosition + (ZOOM_CONFIG.CENTER_POSITION - startPosition) * easeOut;
+      
+      setThumbPosition(currentPosition);
+      
+      if (progress >= 1) {
+        clearInterval(returnIntervalRef.current!);
+        returnIntervalRef.current = null;
+        setThumbPosition(ZOOM_CONFIG.CENTER_POSITION);
+      }
+    }, ZOOM_CONFIG.FRAME_RATE);
+  }, [thumbPosition]);
+
+  // 썸 위치 업데이트 함수
+  const updateThumbPosition = useCallback((clientY: number): void => {
+    if (!scrollbarRef.current) return;
     
     const rect = scrollbarRef.current.getBoundingClientRect();
     const relativeY = clientY - rect.top;
     const position = (relativeY / rect.height) * 100;
     const clampedPosition = Math.max(0, Math.min(100, position));
-    const newZoom = positionToZoom(clampedPosition);
     
-    setZoomLevel(newZoom);
-    map.setZoom(newZoom);
-  }, [map, positionToZoom]);
+    setThumbPosition(clampedPosition);
+    startContinuousZoom(clampedPosition);
+  }, [startContinuousZoom]);
 
   // 타임아웃 설정 함수
-  const setInteractionTimeout = useCallback(() => {
+  const setInteractionTimeout = useCallback((): void => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       isUserInteracting.current = false;
-    }, 100);
+    }, ZOOM_CONFIG.INTERACTION_TIMEOUT);
   }, []);
 
   // 맵의 줄 레벨 변화 감지
@@ -66,7 +151,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
 
     map.on('zoom', handleZoomChange);
     
-    // 초기 줄 레벨 설정
+    // 초기 줌 레벨 설정
     setZoomLevel(map.getZoom());
 
     return () => {
@@ -74,8 +159,9 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      clearAllIntervals();
     };
-  }, [map]);
+  }, [map, clearAllIntervals]);
 
   // 드래그 핸들러
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -84,13 +170,18 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
     setIsDragging(true);
     isUserInteracting.current = true;
 
+    // 모든 애니메이션 중지
+    clearAllIntervals();
+
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
-      updateZoom(e.clientY);
+      updateThumbPosition(e.clientY);
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      stopContinuousZoom();
+      returnToCenter();
       setInteractionTimeout();
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
@@ -98,7 +189,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [updateZoom, setInteractionTimeout]);
+  }, [updateThumbPosition, stopContinuousZoom, returnToCenter, setInteractionTimeout, clearAllIntervals]);
 
   // 터치 핸들러
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -107,15 +198,20 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
     setIsDragging(true);
     isUserInteracting.current = true;
 
+    // 모든 애니메이션 중지
+    clearAllIntervals();
+
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       if (e.touches.length > 0) {
-        updateZoom(e.touches[0].clientY);
+        updateThumbPosition(e.touches[0].clientY);
       }
     };
 
     const handleTouchEnd = () => {
       setIsDragging(false);
+      stopContinuousZoom();
+      returnToCenter();
       setInteractionTimeout();
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
@@ -123,19 +219,14 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
 
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
-  }, [updateZoom, setInteractionTimeout]);
+  }, [updateThumbPosition, stopContinuousZoom, returnToCenter, setInteractionTimeout, clearAllIntervals]);
 
-  // 스크롤바 클릭 핸들러
+  // 스크롤바 클릭 핸들러 (새로운 동작에서는 사용하지 않음)
   const handleScrollbarClick = useCallback((e: React.MouseEvent) => {
-    // 썸을 클릭했을 때는 드래그로 처리하므로 스크롤바 클릭 무시
-    if (!scrollbarRef.current || !map || isDragging || e.target !== scrollbarRef.current) return;
-    
-    isUserInteracting.current = true;
-    updateZoom(e.clientY);
-    setInteractionTimeout();
-  }, [map, isDragging, updateZoom, setInteractionTimeout]);
-
-  const thumbPosition = zoomToPosition(zoomLevel);
+    // 새로운 동작에서는 클릭으로 바로 이동하지 않고 드래그만 허용
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   // map이 없으면 렌더링하지 않음
   if (!map) {
@@ -145,19 +236,20 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
   return (
     <div className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-50 ${className}`}>
       <div className="flex flex-col items-center">
-        {/* 줄 인 버튼 */}
+        {/* 줌 인 버튼 */}
         <button
-          aria-label="줄 인"
+          aria-label="줌 인"
           onClick={() => {
             if (map) {
-              const newZoom = Math.min(maxZoom, zoomLevel + 1);
+              const currentZoom = map.getZoom();
+              const newZoom = Math.min(maxZoom, currentZoom + ZOOM_CONFIG.BUTTON_ZOOM_STEP);
               isUserInteracting.current = true;
               setZoomLevel(newZoom);
               map.setZoom(newZoom);
               setInteractionTimeout();
             }
           }}
-          className="w-10 h-10 bg-white/90 hover:bg-white shadow-lg rounded-t-lg flex items-center justify-center text-lg font-bold text-gray-700 hover:text-black transition-colors border border-gray-200"
+          className="w-9 h-9 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 shadow-lg rounded-t-lg flex items-center justify-center text-lg font-bold text-gray-200 hover:text-white transition-all duration-200 border border-red-500/30 hover:border-red-400"
         >
           +
         </button>
@@ -166,7 +258,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
         <div
           ref={scrollbarRef}
           onClick={handleScrollbarClick}
-          className="w-10 h-32 bg-white/90 shadow-lg border-l border-r border-gray-200 relative cursor-pointer"
+          className="w-9 h-28 bg-gradient-to-b from-gray-800 via-gray-900 to-gray-800 shadow-lg border-l border-r border-red-500/40 relative cursor-pointer backdrop-blur-sm"
         >
           {/* 스크롤바 썸 */}
           <div
@@ -178,9 +270,9 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
                 handleTouchStart(e);
               }
             }}
-            className={`absolute w-full h-4 bg-blue-500 hover:bg-blue-600 cursor-grab ${
-              isDragging ? 'cursor-grabbing bg-blue-600' : ''
-            } transition-colors rounded-sm select-none`}
+            className={`absolute w-full h-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 cursor-grab ${
+              isDragging ? 'cursor-grabbing from-red-400 to-red-500 shadow-red-500/50 shadow-md' : ''
+            } transition-all duration-200 rounded-sm select-none border border-red-400/50`}
             style={{
               top: `${thumbPosition}%`,
               transform: 'translateY(-50%)',
@@ -189,36 +281,40 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
             }}
           />
           
-          {/* 스크롤바 트랙 표시선들 */}
-          <div className="absolute inset-0 flex flex-col justify-between p-1">
+          {/* 스크롤바 트랙 표시선들 및 중앙선 */}
+          <div className="absolute inset-0 flex flex-col justify-between p-1.5">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="w-full h-px bg-gray-300"
+                className={`w-full h-px ${i === 2 ? 'bg-red-400/60' : 'bg-red-500/20'}`}
               />
             ))}
           </div>
+          
+          {/* 중앙 표시 */}
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-400/40 rounded-full" />
         </div>
 
-        {/* 줄 아웃 버튼 */}
+        {/* 줌 아웃 버튼 */}
         <button
-          aria-label="줄 아웃"
+          aria-label="줌 아웃"
           onClick={() => {
             if (map) {
-              const newZoom = Math.max(minZoom, zoomLevel - 1);
+              const currentZoom = map.getZoom();
+              const newZoom = Math.max(minZoom, currentZoom - ZOOM_CONFIG.BUTTON_ZOOM_STEP);
               isUserInteracting.current = true;
               setZoomLevel(newZoom);
               map.setZoom(newZoom);
               setInteractionTimeout();
             }
           }}
-          className="w-10 h-10 bg-white/90 hover:bg-white shadow-lg rounded-b-lg flex items-center justify-center text-lg font-bold text-gray-700 hover:text-black transition-colors border border-gray-200"
+          className="w-9 h-9 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 shadow-lg rounded-b-lg flex items-center justify-center text-lg font-bold text-gray-200 hover:text-white transition-all duration-200 border border-red-500/30 hover:border-red-400"
         >
           −
         </button>
 
-        {/* 줄 레벨 표시 */}
-        <div className="mt-2 px-2 py-1 bg-black/80 text-white text-xs rounded font-mono">
+        {/* 줌 레벨 표시 */}
+        <div className="mt-2 px-2 py-1 bg-gradient-to-r from-gray-900 to-black border border-red-500/30 text-red-400 text-xs rounded font-mono shadow-md backdrop-blur-sm">
           {zoomLevel.toFixed(1)}x
         </div>
       </div>
