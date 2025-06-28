@@ -1,3 +1,5 @@
+import { MultiLanguageText } from '@/utils/i18n';
+
 export interface Team {
   id: string;
   name: string;
@@ -19,19 +21,21 @@ export interface Team {
 
 export interface Circuit {
   id: string;
-  name: string;
-  officialName: string;
-  grandPrix: string;
+  name: string | MultiLanguageText;
+  officialName: string | MultiLanguageText;
+  grandPrix: string | MultiLanguageText;
   country: string;
   city: string;
   location: {
     lat: number;
     lng: number;
-    city: string;
-    country: string;
+    city: string | MultiLanguageText;
+    country: string | MultiLanguageText;
   };
   length: number; // in kilometers
   laps: number;
+  corners: number;
+  totalDistance: number;
   lapRecord: {
     time: string;
     driver: string;
@@ -44,5 +48,12 @@ export interface Circuit {
     highest: number;
     lowest: number;
     difference: number;
+  };
+  schedule?: {
+    practice1?: string;
+    practice2?: string;
+    practice3?: string;
+    qualifying?: string;
+    race: string;
   };
 }

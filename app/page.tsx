@@ -8,6 +8,7 @@ import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/components/mapbox/types';
 import LanguageSelector from '@/components/ui/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import type { PanelData } from '@/types/panel';
 
 // Dynamic import to avoid SSR issues with Mapbox
 const Map = dynamic(
@@ -35,21 +36,7 @@ export default function Home() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelModule, setPanelModule] = useState<'next-race' | 'circuit-detail' | 'team-hq' | null>(null);
   const [panelMinimized, setPanelMinimized] = useState(false);
-  const [panelData, setPanelData] = useState<{
-    type?: string;
-    id?: string;
-    name?: string;
-    principal?: string;
-    location?: string | { city: string; country: string };
-    headquarters?: { city: string; country: string; lat: number; lng: number };
-    color?: string;
-    drivers?: string[];
-    grandPrix?: string;
-    length?: number;
-    laps?: number;
-    corners?: number;
-    raceDate?: string;
-  } | null>(null);
+  const [panelData, setPanelData] = useState<PanelData | null>(null);
   const mapRef = useRef<MapAPI | null>(null);
   const [isCinematicMode, setIsCinematicMode] = useState(false);
   const initialFocusTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -65,26 +52,15 @@ export default function Home() {
   const lastMoveTime = useRef<number>(0);
   const lastMoveX = useRef<number>(0);
 
-  const handleMarkerClick = useCallback((item: {
-    type: string;
-    id?: string;
-    name?: string;
-    principal?: string;
-    location?: string | { city: string; country: string };
-    headquarters?: { city: string; country: string; lat: number; lng: number };
-    color?: string;
-    drivers?: string[];
-    grandPrix?: string;
-    length?: number;
-    laps?: number;
-    corners?: number;
-  }) => {
+  const handleMarkerClick = useCallback((item: PanelData) => {
     // 사용자가 마커를 클릭하면 초기 포커싱 중단
     if (initialFocusTimerRef.current && !hasUserInteracted) {
       clearTimeout(initialFocusTimerRef.current);
       initialFocusTimerRef.current = null;
       setHasUserInteracted(true);
     }
+    if (!item.type) return; // type이 없으면 처리하지 않음
+    
     if (item.type === 'team') {
       setPanelModule('team-hq');
       setPanelData({
@@ -277,9 +253,9 @@ export default function Home() {
 
       setPanelModule('next-race');
       setPanelData({
-        grandPrix: nextRace.grandPrix.toUpperCase(),
+        grandPrix: nextRace.grandPrix,
         name: nextRace.name,
-        location: `${nextRace.location.city}, ${nextRace.location.country}`,
+        location: nextRace.location,
         raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
       });
       setPanelOpen(true);
@@ -416,7 +392,7 @@ export default function Home() {
                 </span>
                 {/* Grand Prix 이름 */}
                 <span className="text-white text-2xl font-black uppercase tracking-tight group-hover:text-white transition-colors pb-4 drop-shadow-lg" style={{ fontFamily: 'Oswald, sans-serif' }}>
-                  {circuit.grandPrix}
+                  {typeof circuit.grandPrix === 'string' ? circuit.grandPrix : circuit.grandPrix.en}
                 </span>
               </div>
             ))}

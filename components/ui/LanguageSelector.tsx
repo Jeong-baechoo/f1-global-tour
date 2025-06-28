@@ -41,7 +41,7 @@ const STYLES = {
   icon: {
     globe: 'w-3 h-3 sm:w-5 sm:h-5',
     chevron: 'w-4 h-4 transition-transform',
-    check: 'ml-2 w-3 h-3 sm:w-4 sm:h-4 text-[#FF1801]',
+    check: 'ml-1 w-3 h-3 sm:w-4 sm:h-4 text-[#FF1801]',
   },
   flag: {
     button: 'text-lg',

@@ -1,23 +1,12 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../../types';
 import { isMobile } from '../../utils/viewport';
+import { getText } from '@/utils/i18n';
+import type { Circuit } from '@/types/f1';
 
 interface CircuitMarkerProps {
   map: mapboxgl.Map;
-  circuit: {
-    id: string;
-    name: string;
-    location: {
-      lng: number;
-      lat: number;
-      city: string;
-      country: string;
-    };
-    length: number;
-    laps?: number;
-    corners?: number;
-    raceDate2025?: string | null;
-  };
+  circuit: Circuit;
   isNextRace?: boolean;
   onMarkerClick?: (item: MarkerData) => void;
   onMarkerCreated?: (marker: mapboxgl.Marker) => void;
@@ -96,7 +85,7 @@ export const createCircuitMarkerWithLeader = ({
   label.style.cursor = 'pointer';
   label.style.pointerEvents = 'auto';
   label.style.transition = 'opacity 0.3s ease';
-  label.textContent = circuit.name;
+  label.textContent = getText(circuit.name, 'en'); // Use English for marker labels for consistency
   
   // NEXT RACE 뱃지
   if (isNextRace) {
@@ -172,10 +161,13 @@ export const createCircuitMarkerWithLeader = ({
         name: circuit.name,
         type: 'circuit',
         location: circuit.location,
+        grandPrix: circuit.grandPrix,
         length: circuit.length,
         laps: circuit.laps,
         corners: circuit.corners,
-        raceDate: circuit.raceDate2025 || undefined
+        totalDistance: circuit.totalDistance,
+        raceDate: circuit.raceDate2025 || undefined,
+        lapRecord: circuit.lapRecord
       };
       onMarkerClick(markerData);
     };

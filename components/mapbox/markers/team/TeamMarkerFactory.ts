@@ -224,9 +224,9 @@ export class TeamMarkerFactory {
         const markerData: MarkerData = {
           type: 'team',
           id: team.id,
-          name: team.fullName,
-          principal: team.teamPrincipal,
-          location: team.headquarters,
+          name: team.fullName, // 다국어 객체 그대로 전달
+          principal: team.teamPrincipal, // 다국어 객체 그대로 전달
+          headquarters: team.headquarters, // 다국어 객체 포함된 본부 정보 전달
           color: team.colors.primary,
           drivers: config.drivers2025?.map(d => d.name) || [],
           drivers2025: config.drivers2025,
