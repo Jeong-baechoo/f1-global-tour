@@ -42,12 +42,16 @@ export const createTeamMarkerWithAnchor = ({
   onMarkerClick,
   displayPosition,  // 이건 리더 라인이 가리킬 위치
   onMarkerCreated
-}: TeamMarkerWithAnchorProps): { marker: mapboxgl.Marker } => {
+}: TeamMarkerWithAnchorProps): { marker: mapboxgl.Marker; cleanup: () => void } => {
   let currentDisplayPosition = displayPosition;
   const config = getTeamMarkerConfig(team.id);
   if (!config) {
     console.warn(`No marker config found for team: ${team.id}`);
-    return { marker: new mapboxgl.Marker() };
+    const emptyMarker = new mapboxgl.Marker();
+    return { 
+      marker: emptyMarker,
+      cleanup: () => { emptyMarker.remove(); }
+    };
   }
 
   const mobile = isMobile();
@@ -81,21 +85,21 @@ export const createTeamMarkerWithAnchor = ({
   markerContainer.style.height = '1px';
   
   // SVG 리더 라인
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.style.position = 'absolute';
-  svg.style.pointerEvents = 'none';
-  svg.style.overflow = 'visible';
-  svg.style.left = '-1000px';
-  svg.style.top = '-1000px';
-  svg.style.width = '2000px';
-  svg.style.height = '2000px';
+  // const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  // svg.style.position = 'absolute';
+  // svg.style.pointerEvents = 'none';
+  // svg.style.overflow = 'visible';
+  // svg.style.left = '-1000px';
+  // svg.style.top = '-1000px';
+  // svg.style.width = '2000px';
+  // svg.style.height = '2000px';
   
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line.setAttribute('stroke', config.style.borderColor);
-  line.setAttribute('stroke-width', '2');
-  line.setAttribute('stroke-dasharray', '4,4');
-  line.setAttribute('opacity', '0.4');
-  svg.appendChild(line);
+  // const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  // line.setAttribute('stroke', config.style.borderColor);
+  // line.setAttribute('stroke-width', '2');
+  // line.setAttribute('stroke-dasharray', '4,4');
+  // line.setAttribute('opacity', '0.4');
+  // svg.appendChild(line);
   
   
   // 팀 마커 요소
@@ -108,12 +112,12 @@ export const createTeamMarkerWithAnchor = ({
     // 영국 팀은 항상 리더 라인 표시
     
     // 실제 위치와 표시 위치 계산
-    const actualPoint = map.project([team.headquarters.lng, team.headquarters.lat]);
-    const displayPoint = map.project([currentDisplayPosition.lng, currentDisplayPosition.lat]);
+    // const actualPoint = map.project([team.headquarters.lng, team.headquarters.lat]);
+    // const displayPoint = map.project([currentDisplayPosition.lng, currentDisplayPosition.lat]);
     
     // 리더 라인의 방향: 표시 위치(0,0)에서 실제 위치로
-    const dx = actualPoint.x - displayPoint.x;
-    const dy = actualPoint.y - displayPoint.y;
+    // const dx = actualPoint.x - displayPoint.x;
+    // const dy = actualPoint.y - displayPoint.y;
     
     // 팀 마커는 컨테이너 중심에 위치
     markerContainer.style.left = '0px';
@@ -124,21 +128,21 @@ export const createTeamMarkerWithAnchor = ({
     teamElement.style.transform = `translate(-50%, -50%)`;
     
     // 리더 라인 업데이트 - 표시 위치(0,0)에서 실제 위치로
-    line.setAttribute('x1', '1000');  // 표시 위치 (마커 중심)
-    line.setAttribute('y1', '1000');
-    line.setAttribute('x2', `${1000 + dx}`);  // 실제 팀 위치
-    line.setAttribute('y2', `${1000 + dy}`);
+    // line.setAttribute('x1', '1000');  // 표시 위치 (마커 중심)
+    // line.setAttribute('y1', '1000');
+    // line.setAttribute('x2', `${1000 + dx}`);  // 실제 팀 위치
+    // line.setAttribute('y2', `${1000 + dy}`);
     
-    line.style.opacity = '0.4';
+    // line.style.opacity = '0.4';
     markerContainer.style.display = 'block';
-    svg.style.display = 'block';
+    // svg.style.display = 'block';
     
     // 줌 5 이하에서 점으로 변경
     updateTeamDisplay(teamElement, config, zoom);
   };
   
   // 컨테이너에 요소들 추가
-  markerContainer.appendChild(svg);
+  // markerContainer.appendChild(svg);
   markerContainer.appendChild(teamElement);
   container.appendChild(markerContainer);
   
@@ -158,8 +162,9 @@ export const createTeamMarkerWithAnchor = ({
   updateActualLocationDot();
   
   // 맵 이동 시 실제 위치 점 업데이트
-  map.on('move', updateActualLocationDot);
-  map.on('zoom', updateActualLocationDot);
+  // 리더라인 제거로 불필요 - 주석 처리
+  // map.on('move', updateActualLocationDot);
+  // map.on('zoom', updateActualLocationDot);
   
   // 마커 생성 - 분산된 위치에 배치
   const marker = new mapboxgl.Marker(container, {
@@ -230,7 +235,21 @@ export const createTeamMarkerWithAnchor = ({
     onMarkerCreated(marker);
   }
   
-  return { marker };
+  // cleanup 함수 정의
+  const cleanup = () => {
+    // 이벤트 리스너 제거
+    map.off('zoom', updateVisibility);
+    map.off('move', updateVisibility);
+    map.off('rotate', updateVisibility);
+    map.off('pitch', updateVisibility);
+    // map.off('move', updateActualLocationDot); // 주석 처리됨
+    // map.off('zoom', updateActualLocationDot); // 주석 처리됨
+    
+    // 마커 제거
+    marker.remove();
+  };
+  
+  return { marker, cleanup };
 };
 
 // 팀 요소 생성 함수

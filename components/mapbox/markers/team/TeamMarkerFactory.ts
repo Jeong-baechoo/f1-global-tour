@@ -22,6 +22,12 @@ interface TeamMarkerStyle {
   mobileBoxHeight: string;
 }
 
+// 마커와 cleanup 함수를 포함하는 인터페이스
+export interface TeamMarkerWithCleanup {
+  marker: mapboxgl.Marker;
+  cleanup: () => void;
+}
+
 // 기본 팀 마커 스타일 상수
 const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = {
   width: '80px',
@@ -42,8 +48,9 @@ const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = {
 export class TeamMarkerFactory {
   /**
    * 팀 마커 생성
+   * @returns 마커와 cleanup 함수를 포함한 객체
    */
-  static create({ map, team, onMarkerClick }: TeamMarkerFactoryProps): mapboxgl.Marker | null {
+  static create({ map, team, onMarkerClick }: TeamMarkerFactoryProps): TeamMarkerWithCleanup | null {
     const config = getTeamMarkerConfig(team.id);
     if (!config) {
       console.warn(`No marker config found for team: ${team.id}`);
@@ -63,21 +70,26 @@ export class TeamMarkerFactory {
     // 마커 엘리먼트 생성
     const el = TeamMarkerFactory.createMarkerElement(config, mobile);
     
-    // 클릭 이벤트 설정
-    TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, onMarkerClick);
-
-    // Mapbox 마커 생성 및 반환
+    // Mapbox 마커 생성
     const marker = new mapboxgl.Marker(el, { 
-      anchor: 'top-left',
-      offset: [0, 0]
+      anchor: 'center'  // 중앙 정렬로 변경
     })
       .setLngLat(teamHQ.coordinates)
       .addTo(map);
     
-    // 줌 레벨에 따른 표시 변경
-    TeamMarkerFactory.setupZoomHandler(map, el, config);
+    // 클릭 이벤트 설정 (marker를 전달)
+    TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, marker, onMarkerClick);
     
-    return marker;
+    // 줌 레벨에 따른 표시 변경 및 cleanup 함수 반환
+    const zoomCleanup = TeamMarkerFactory.setupZoomHandler(map, el, config);
+    
+    // cleanup 함수 정의
+    const cleanup = () => {
+      zoomCleanup();
+      marker.remove();
+    };
+    
+    return { marker, cleanup };
   }
 
   /**
@@ -98,25 +110,21 @@ export class TeamMarkerFactory {
       position: 'absolute',
       width: mobile ? markerStyle.mobileWidth : markerStyle.width,
       height: mobile ? markerStyle.mobileHeight : markerStyle.height,
-      cursor: 'pointer',
-      transform: 'translate(-50%, -50%)',
-      transformOrigin: 'center center'
+      cursor: 'pointer'
+      // transform 제거 - anchor: 'center' 사용으로 불필요
     });
 
     // 메인 박스
     const box = document.createElement('div');
     
-    // 박스 스타일 적용
+    // 박스 스타일 적용 - 공통 메서드 사용
+    TeamMarkerFactory.applyMarkerStyle(el, box, config, mobile);
+    
+    // 추가 스타일
     Object.assign(box.style, {
-      width: mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth,
-      height: mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight,
-      backgroundImage: `url(${config.style.logoUrl})`,
       backgroundSize: config.style.backgroundSize || 'contain',
       backgroundPosition: config.style.backgroundPosition || 'center',
       backgroundRepeat: 'no-repeat',
-      backgroundColor: config.style.backgroundColor,
-      borderRadius: markerStyle.borderRadius,
-      border: `2px solid ${config.style.borderColor}`,
       boxShadow: `0 2px 10px ${config.style.shadowColor}`,
       transition: 'all 0.3s ease'
     });
@@ -134,10 +142,35 @@ export class TeamMarkerFactory {
 
   /**
    * 줌 레벨에 따른 표시 변경
+   * @returns cleanup 함수
    */
-  private static setupZoomHandler(map: mapboxgl.Map, el: HTMLDivElement, config: TeamMarkerConfig): void {
+  /**
+   * 마커 스타일을 적용하는 헬퍼 메서드
+   */
+  private static applyMarkerStyle(
+    el: HTMLDivElement,
+    box: HTMLDivElement,
+    config: TeamMarkerConfig,
+    mobile: boolean
+  ): void {
+    const markerStyle = DEFAULT_TEAM_MARKER_STYLE;
+    
+    // 컨테이너 스타일
+    el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
+    el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
+    
+    // 박스 스타일
+    box.style.width = mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth;
+    box.style.height = mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight;
+    box.style.borderRadius = markerStyle.borderRadius;
+    box.style.backgroundImage = `url(${config.style.logoUrl})`;
+    box.style.backgroundColor = config.style.backgroundColor;
+    box.style.border = `2px solid ${config.style.borderColor}`;
+  }
+
+  private static setupZoomHandler(map: mapboxgl.Map, el: HTMLDivElement, config: TeamMarkerConfig): () => void {
     const box = el.firstElementChild as HTMLDivElement;
-    if (!box) return;
+    if (!box) return () => {};
     
     const updateDisplay = () => {
       const zoom = map.getZoom();
@@ -155,28 +188,21 @@ export class TeamMarkerFactory {
         el.style.width = '12px';
         el.style.height = '12px';
       } else {
-        // 줌 5 초과: 원래 로고 표시
-        const mobile = isMobile();
-        const markerStyle = DEFAULT_TEAM_MARKER_STYLE;
-        
-        box.style.width = mobile ? markerStyle.mobileBoxWidth : markerStyle.boxWidth;
-        box.style.height = mobile ? markerStyle.mobileBoxHeight : markerStyle.boxHeight;
-        box.style.borderRadius = markerStyle.borderRadius;
-        box.style.backgroundImage = `url(${config.style.logoUrl})`;
-        box.style.backgroundColor = config.style.backgroundColor;
-        box.style.border = `2px solid ${config.style.borderColor}`;
-        
-        // 컨테이너 크기 복원
-        el.style.width = mobile ? markerStyle.mobileWidth : markerStyle.width;
-        el.style.height = mobile ? markerStyle.mobileHeight : markerStyle.height;
+        // 줌 5 초과: 원래 로고 표시 - 헬퍼 메서드 사용
+        TeamMarkerFactory.applyMarkerStyle(el, box, config, isMobile());
       }
     };
     
     // 초기 설정
     updateDisplay();
     
-    // 줌 이벤트 리스너
+    // 줌 이벤트 리스너 등록
     map.on('zoom', updateDisplay);
+    
+    // cleanup 함수 반환
+    return () => {
+      map.off('zoom', updateDisplay);
+    };
   }
   
   /**
@@ -216,6 +242,7 @@ export class TeamMarkerFactory {
     config: TeamMarkerConfig,
     map: mapboxgl.Map,
     teamHQ: { coordinates: [number, number] },
+    marker: mapboxgl.Marker,
     onMarkerClick?: (item: MarkerData) => void
   ): void {
     el.addEventListener('click', () => {
@@ -262,9 +289,9 @@ export class TeamMarkerFactory {
       zoom: mobileConfig ? mobileConfig.zoom : (flyToConfig.zoom || 15.68),
       pitch: mobileConfig ? mobileConfig.pitch : (flyToConfig.pitch || 45),
       bearing: mobileConfig ? mobileConfig.bearing : (flyToConfig.bearing || 0),
-      speed: flyToConfig.speed || 0.4,
+      speed: flyToConfig.speed || 0.25,  // 0.4에서 0.25로 감소 (더 느리게)
       curve: flyToConfig.curve || 0.8,
-      duration: flyToConfig.duration || 6000,
+      duration: flyToConfig.duration || 8000,  // 6초에서 8초로 증가
       essential: true
     });
   }
@@ -274,31 +301,31 @@ export class TeamMarkerFactory {
    * 
    * @example
    * ```typescript
-   * const markers = TeamMarkerFactory.createMultiple(map, teams, onMarkerClick);
+   * const markerCleanups = TeamMarkerFactory.createMultiple(map, teams, onMarkerClick);
    * ```
    */
   static createMultiple(
     map: mapboxgl.Map,
     teams: Team[],
     onMarkerClick?: (item: MarkerData) => void
-  ): mapboxgl.Marker[] {
-    const markers: mapboxgl.Marker[] = [];
+  ): TeamMarkerWithCleanup[] {
+    const markerCleanups: TeamMarkerWithCleanup[] = [];
     
     teams.forEach(team => {
-      const marker = TeamMarkerFactory.create({ map, team, onMarkerClick });
-      if (marker) {
-        markers.push(marker);
+      const markerWithCleanup = TeamMarkerFactory.create({ map, team, onMarkerClick });
+      if (markerWithCleanup) {
+        markerCleanups.push(markerWithCleanup);
       }
     });
 
-    return markers;
+    return markerCleanups;
   }
 
   /**
-   * 모든 마커 제거
+   * 모든 마커 제거 및 cleanup 실행
    */
-  static removeAll(markers: mapboxgl.Marker[]): void {
-    markers.forEach(marker => marker.remove());
-    markers.length = 0;
+  static removeAll(markerCleanups: TeamMarkerWithCleanup[]): void {
+    markerCleanups.forEach(({ cleanup }) => cleanup());
+    markerCleanups.length = 0;
   }
 }

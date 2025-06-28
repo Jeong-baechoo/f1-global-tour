@@ -68,24 +68,24 @@ interface CircuitMarkerProps {
 // 레이스 시간 포맷팅 함수
 const formatRaceTime = (raceDate: string | null): string => {
   if (!raceDate) return '';
-  
+
   const date = new Date(raceDate);
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  
+
   // 간단한 시간 표시 (예: 08:00 CST)
   return `${hours}:${minutes} GMT`;
 };
 
-export const createCircuitMarker = ({ 
-  map, 
-  circuit, 
-  isNextRace = false, 
+export const createCircuitMarker = ({
+  map,
+  circuit,
+  isNextRace = false,
   onMarkerClick,
-  onMarkerCreated 
+  onMarkerCreated
 }: CircuitMarkerProps): mapboxgl.Marker => {
   const mobile = isMobile();
-  
+
   // 메인 컨테이너 - 점과 라벨을 포함
   const el = document.createElement('div');
   el.className = 'marker circuit-marker';
@@ -98,7 +98,7 @@ export const createCircuitMarker = ({
   el.style.display = 'flex';
   el.style.alignItems = 'center';
   el.style.gap = '0';
-  
+
   // 초기 opacity 설정
   el.style.opacity = '1';
   el.style.transition = 'opacity 0.3s ease';
@@ -111,7 +111,7 @@ export const createCircuitMarker = ({
   dotContainer.style.display = 'flex';
   dotContainer.style.alignItems = 'center';
   dotContainer.style.justifyContent = 'center';
-  
+
   const dot = document.createElement('div');
   dot.style.width = mobile ? '8px' : '10px';
   dot.style.height = mobile ? '8px' : '10px';
@@ -143,8 +143,8 @@ export const createCircuitMarker = ({
   labelContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
   labelContainer.style.borderRadius = '4px';
   labelContainer.style.border = isNextRace ? '2px solid #FF1801' : '1px solid rgba(255, 255, 255, 0.2)';
-  labelContainer.style.boxShadow = isNextRace 
-    ? '0 4px 15px rgba(255, 24, 1, 0.6)' 
+  labelContainer.style.boxShadow = isNextRace
+    ? '0 4px 15px rgba(255, 24, 1, 0.6)'
     : '0 2px 8px rgba(0, 0, 0, 0.5)';
   labelContainer.style.transition = 'all 0.3s ease';
   labelContainer.style.whiteSpace = 'nowrap';
@@ -152,14 +152,14 @@ export const createCircuitMarker = ({
   labelContainer.style.overflow = 'visible';
   labelContainer.style.marginLeft = mobile ? '20px' : '30px';
 
-  
+
   // 텍스트 컨테이너
   const textContainer = document.createElement('div');
   textContainer.style.display = 'flex';
   textContainer.style.flexDirection = 'column';
   textContainer.style.alignItems = 'flex-start';
   textContainer.style.gap = '2px';
-  
+
   // 도시 이름
   const cityName = document.createElement('div');
   cityName.style.color = '#FFFFFF';
@@ -168,7 +168,7 @@ export const createCircuitMarker = ({
   cityName.style.letterSpacing = '0.5px';
   cityName.style.textTransform = 'uppercase';
   cityName.textContent = circuit.location.city;
-  
+
   // 시간 정보 (레이스 날짜가 있을 경우)
   if (circuit.raceDate2025) {
     const timeInfo = document.createElement('div');
@@ -181,10 +181,10 @@ export const createCircuitMarker = ({
   } else {
     textContainer.appendChild(cityName);
   }
-  
+
   // 요소 조립
   labelContainer.appendChild(textContainer);
-  
+
   // Next Race 인 경우 추가 스타일
   if (isNextRace) {
     const nextRaceLabel = document.createElement('div');
@@ -215,15 +215,15 @@ export const createCircuitMarker = ({
   el.addEventListener('mouseenter', () => {
     // 라벨 효과
     labelContainer.style.transform = 'scale(1.05) translateZ(0)';
-    labelContainer.style.boxShadow = isNextRace 
-      ? '0 6px 20px rgba(255, 24, 1, 0.8)' 
+    labelContainer.style.boxShadow = isNextRace
+      ? '0 6px 20px rgba(255, 24, 1, 0.8)'
       : '0 4px 12px rgba(0, 0, 0, 0.7)';
     labelContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
-    
+
     // 점 효과
     dot.style.transform = 'scale(1.2) translateZ(0)';
     dot.style.boxShadow = '0 0 20px rgba(220, 38, 38, 0.8)';
-    
+
     // 선 효과
     line.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
     line.style.width = mobile ? '25px' : '35px';
@@ -232,15 +232,15 @@ export const createCircuitMarker = ({
   el.addEventListener('mouseleave', () => {
     // 라벨 효과
     labelContainer.style.transform = 'scale(1) translateZ(0)';
-    labelContainer.style.boxShadow = isNextRace 
-      ? '0 4px 15px rgba(255, 24, 1, 0.6)' 
+    labelContainer.style.boxShadow = isNextRace
+      ? '0 4px 15px rgba(255, 24, 1, 0.6)'
       : '0 2px 8px rgba(0, 0, 0, 0.5)';
     labelContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
-    
+
     // 점 효과
     dot.style.transform = 'scale(1) translateZ(0)';
     dot.style.boxShadow = '0 0 10px rgba(220, 38, 38, 0.6)';
-    
+
     // 선 효과
     line.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
     line.style.width = mobile ? '20px' : '30px';
@@ -265,11 +265,50 @@ export const createCircuitMarker = ({
   }
 
   // 마커 추가 - anchor를 'left'로 설정하여 점이 정확한 위치에 오도록 함
-  const marker = new mapboxgl.Marker(el, { 
+  const marker = new mapboxgl.Marker(el, {
     anchor: 'left'
   })
     .setLngLat([circuit.location.lng, circuit.location.lat])
     .addTo(map);
+
+  // 줌 레벨에 따른 라벨 표시/숨김 처리
+  const updateLabelVisibility = () => {
+    const zoom = map.getZoom();
+    
+    if (zoom <= 5) {
+      // 줌 5 이하: 라벨과 연결선 숨기기
+      labelContainer.style.display = 'none';
+      line.style.display = 'none';
+      
+      // 점 크기 축소
+      dot.style.width = '6px';
+      dot.style.height = '6px';
+      dotContainer.style.width = '8px';
+      dotContainer.style.height = '8px';
+      
+      // 컨테이너 크기 조정
+      el.style.gap = '0';
+    } else {
+      // 줌 5 초과: 라벨과 연결선 표시
+      labelContainer.style.display = 'flex';
+      line.style.display = 'block';
+      
+      // 점 크기 복원
+      dot.style.width = mobile ? '8px' : '10px';
+      dot.style.height = mobile ? '8px' : '10px';
+      dotContainer.style.width = mobile ? '10px' : '12px';
+      dotContainer.style.height = mobile ? '10px' : '12px';
+      
+      // 컨테이너 gap 복원
+      el.style.gap = '0';
+    }
+  };
+  
+  // 초기 설정
+  updateLabelVisibility();
+  
+  // 줌 이벤트 리스너
+  map.on('zoom', updateLabelVisibility);
 
   if (onMarkerCreated) {
     onMarkerCreated(marker);

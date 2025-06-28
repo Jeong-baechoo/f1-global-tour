@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import circuitsData from '@/data/circuits.json';
-import { createCircuitMarkerWithLeader } from './CircuitMarkerWithLeader';
+import { createCircuitMarker } from './CircuitMarker';
 import { MarkerData } from '../../types';
 import { F1_2025_CIRCUITS } from '../../utils/data/circuitMapping';
 
@@ -26,29 +26,29 @@ export const addAllCircuits = ({
   circuits2025.forEach(circuit => {
     const isNextRace = circuit.id === nextRaceId;
     
-    createCircuitMarkerWithLeader({
+    const marker = createCircuitMarker({
       map,
       circuit,
       isNextRace,
-      onMarkerClick,
-      onMarkerCreated: (m) => {
-        markers.push(m);
-      }
+      onMarkerClick
     });
+    if (marker) {
+      markers.push(marker);
+    }
   });
   
   // 추가로 뉘르부르크링 추가 (데모용)
   const nurburgring = circuitsData.circuits.find(c => c.id === 'nurburgring');
   if (nurburgring) {
-    createCircuitMarkerWithLeader({
+    const marker = createCircuitMarker({
       map,
       circuit: nurburgring,
       isNextRace: false,
-      onMarkerClick,
-      onMarkerCreated: (m) => {
-        markers.push(m);
-      }
+      onMarkerClick
     });
+    if (marker) {
+      markers.push(marker);
+    }
   }
 };
 
