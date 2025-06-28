@@ -253,15 +253,50 @@ npm run type-check   # Run TypeScript compiler
 - **v0.2.0** - Full circuit data integration, component modularization
 - **v0.1.0** - Basic 3D globe with team headquarters
 
-## 🤝 Contributing
+## 🌳 Branch Strategy
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We follow a structured Git flow for development:
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Main Branches
+- **`master`** - Production-ready code (protected)
+- **`develop`** - Active development branch (default)
+
+### Branch Types
+- **`feature/*`** - New features (`feature/team-stats`)
+- **`fix/*`** - Bug fixes (`fix/marker-drag-issue`)
+- **`hotfix/*`** - Urgent production fixes (`hotfix/critical-bug`)
+
+### Workflow
+1. All development work happens on `develop` branch
+2. Create feature branches from `develop`
+3. Submit PR to merge back into `develop`
+4. When ready for release, merge `develop` into `master`
+5. Hotfixes branch from `master` and merge to both `master` and `develop`
+
+### Development Guide for Team
+```bash
+# 1. 최신 develop 브랜치 가져오기
+git checkout develop
+git pull origin develop
+
+# 2. 기능 브랜치 생성
+git checkout -b feature/your-feature
+
+# 3. 작업 후 커밋 (아래 형식 참고)
+git commit -m "feat: 새로운 기능 추가"
+
+# 4. develop에 PR 생성
+git push origin feature/your-feature
+```
+
+### Commit Message Format
+- `feat:` 새로운 기능
+- `fix:` 버그 수정
+- `docs:` 문서 수정
+- `style:` 코드 스타일 변경
+- `refactor:` 코드 리팩토링
+- `test:` 테스트 추가/수정
+- `chore:` 빌드, 설정 변경
 
 ## 📄 License
 
