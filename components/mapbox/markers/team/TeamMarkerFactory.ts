@@ -3,6 +3,7 @@ import { Team, MarkerData } from '../../types';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
 import { isMobile } from '../../utils/viewport';
 import { MOBILE_TEAM_CONFIGS } from '../../../../configs/mobile-team-configs';
+import { DEFAULT_TEAM_MARKER_STYLE, ZOOM_MARKER_STYLES } from './teamMarkerStyles';
 
 interface TeamMarkerFactoryProps {
   map: mapboxgl.Map;
@@ -10,36 +11,11 @@ interface TeamMarkerFactoryProps {
   onMarkerClick?: (item: MarkerData) => void;
 }
 
-interface TeamMarkerStyle {
-  width: string;
-  height: string;
-  boxWidth: string;
-  boxHeight: string;
-  borderRadius: string;
-  mobileWidth: string;
-  mobileHeight: string;
-  mobileBoxWidth: string;
-  mobileBoxHeight: string;
-}
-
 // 마커와 cleanup 함수를 포함하는 인터페이스
 export interface TeamMarkerWithCleanup {
   marker: mapboxgl.Marker;
   cleanup: () => void;
 }
-
-// 기본 팀 마커 스타일 상수
-const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = {
-  width: '80px',
-  height: '95px',
-  boxWidth: '80px',
-  boxHeight: '80px',
-  borderRadius: '4px',
-  mobileWidth: '60px',
-  mobileHeight: '71px',
-  mobileBoxWidth: '60px',
-  mobileBoxHeight: '60px'
-};
 
 /**
  * 통합된 팀 마커 생성 팩토리
@@ -177,16 +153,16 @@ export class TeamMarkerFactory {
       
       if (zoom <= 5) {
         // 줌 5 이하: 점으로 표시
-        box.style.width = '12px';
-        box.style.height = '12px';
-        box.style.borderRadius = '50%';
+        box.style.width = ZOOM_MARKER_STYLES.dot.width;
+        box.style.height = ZOOM_MARKER_STYLES.dot.height;
+        box.style.borderRadius = ZOOM_MARKER_STYLES.dot.borderRadius;
         box.style.backgroundImage = 'none';
         box.style.backgroundColor = config.style.backgroundColor;
         box.style.border = `2px solid ${config.style.borderColor}`;
         
         // 컨테이너 크기도 조정
-        el.style.width = '12px';
-        el.style.height = '12px';
+        el.style.width = ZOOM_MARKER_STYLES.dot.width;
+        el.style.height = ZOOM_MARKER_STYLES.dot.height;
       } else {
         // 줌 5 초과: 원래 로고 표시 - 헬퍼 메서드 사용
         TeamMarkerFactory.applyMarkerStyle(el, box, config, isMobile());
