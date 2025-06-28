@@ -13,6 +13,7 @@ const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround
 // 퍼센티지 기반 DRS 존 정의
 const DRS_ZONES_PERCENTAGE: { [key: string]: Array<{ startPercent: number; endPercent: number; name?: string; wrapAround?: boolean }> } = {
   // 2025 F1 Calendar Circuits
+  //todo: 추후 geojson으로 분리
   'au-1953': [ // Australia - Albert Park
     { startPercent: 0.92, endPercent: 0.055, name: 'Main Straight', wrapAround: true },
     { startPercent: 0.1, endPercent: 0.18, name: 'Back Straight' },
@@ -148,11 +149,9 @@ const drawDRSZones = (
   trackCoordinates: number[][],
   circuitId: string
 ) => {
-  console.log(`[DEBUG] drawDRSZones 호출됨 - circuitId: ${circuitId}`);
   
   // Circuit ID 매핑 (austria -> at-1969)
   const mappedCircuitId = CIRCUIT_ID_MAPPING[circuitId] || circuitId;
-  console.log(`[DEBUG] Circuit ID 매핑: ${circuitId} -> ${mappedCircuitId}`);
   
   let drsZones = DRS_ZONES[mappedCircuitId];
   
@@ -176,9 +175,6 @@ const drawDRSZones = (
     });
     
     drsZones = newDrsZones;
-    
-    console.log(`[DRS] ${mappedCircuitId} 퍼센티지 기반 DRS 존 ${drsZones.length}개 생성:`, drsZones);
-    // 퍼센티지 기반 설정이 있으면 기존 DRS 로직 사용
   }
   
   // 3순위: 기존 DRS_ZONES 또는 dynamic 방식
@@ -239,7 +235,7 @@ const drawDRSZones = (
     
     // DRS 포인트 생성 (Symbol용)
     const features = [];
-    const pointInterval = 5; // 2포인트마다 하나의 쉐브론 (더 촘촘하게)
+    const pointInterval = 5;
     
     for (let i = 0; i < drsLineCoordinates.length - 1; i += pointInterval) {
       const coordIndex = Math.floor(i);
