@@ -2,11 +2,135 @@ import mapboxgl from 'mapbox-gl';
 import { interpolateCoordinates } from '../animations/globeAnimation';
 import { TrackDrawOptions } from '../../types';
 import { ANIMATION_CONFIG } from '../../constants';
+import { CIRCUIT_ID_MAPPING } from '../data/circuitMapping';
 
 // DRS 존 인덱스 정의 - 동적으로 계산
-const DRS_ZONES: { [key: string]: Array<{ start: number; end: number }> | 'dynamic' } = {
+const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround?: boolean }> | 'dynamic' } = {
   'nurburgring': 'dynamic',  // 전체 트랙의 초반 10%를 DRS 존으로 설정
   // 다른 서킷들의 DRS 존 추가 가능
+};
+
+// 퍼센티지 기반 DRS 존 정의
+const DRS_ZONES_PERCENTAGE: { [key: string]: Array<{ startPercent: number; endPercent: number; name?: string; wrapAround?: boolean }> } = {
+  // 2025 F1 Calendar Circuits
+  'au-1953': [ // Australia - Albert Park
+    { startPercent: 0.92, endPercent: 0.055, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.1, endPercent: 0.18, name: 'Back Straight' },
+    { startPercent: 0.5, endPercent: 0.6, name: 'Back Straight' },
+    { startPercent: 0.67, endPercent: 0.76, name: 'Back Straight' }
+  ],
+  'cn-2004': [ // China - Shanghai
+    { startPercent: 0.9, endPercent: 0.02, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.65, endPercent: 0.8, name: 'Back Straight' }
+  ],
+  'jp-1962': [ // Japan - Suzuka
+    { startPercent: 0.95, endPercent: 0.065, name: 'Main Straight', wrapAround: true }
+  ],
+  'bh-2002': [ // Bahrain
+    { startPercent: 0.94, endPercent: 0.09, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.15, endPercent: 0.245, name: 'Back Straight' },
+    { startPercent: 0.49, endPercent: 0.605, name: 'Sector 3' }
+  ],
+  'sa-2021': [ // Saudi Arabia - Jeddah
+    { startPercent: 0.93, endPercent: 0.065, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.575, endPercent: 0.69, name: 'Sector 1' },
+    { startPercent: 0.75, endPercent: 0.875, name: 'Sector 3' }
+  ],
+  'us-2022': [ // Miami
+    { startPercent: 0.85, endPercent: 0.94, name: 'Main Straight'},
+    { startPercent: 0.3, endPercent: 0.45, name: 'Back Straight' },
+    { startPercent: 0.62, endPercent: 0.78, name: 'Back Straight' }
+  ],
+  'it-1953': [ // Imola
+    { startPercent: 0.82, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.4, endPercent: 0.55, name: 'Back Straight' }
+  ],
+  'mc-1929': [ // Monaco
+    { startPercent: 0.15, endPercent: 0.3, name: 'Tunnel Section' }
+  ],
+  'es-1991': [ // Spain - Barcelona
+    { startPercent: 0.85, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.4, endPercent: 0.55, name: 'Back Straight' }
+  ],
+  'ca-1978': [ // Canada - Montreal
+    { startPercent: 0.82, endPercent: 0.08, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Back Straight' }
+  ],
+  'at-1969': [ // Austria - Red Bull Ring
+    { startPercent: 0.1, endPercent: 0.25, name: 'Main Straight' },
+    { startPercent: 0.3, endPercent: 0.45, name: 'Back Straight' },
+    { startPercent: 0.91, endPercent: 0.07, name: 'Sector 3', wrapAround: true }
+  ],
+  'gb-1948': [ // Britain - Silverstone
+    { startPercent: 0.82, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Wellington Straight' },
+    { startPercent: 0.65, endPercent: 0.75, name: 'Hangar Straight' }
+  ],
+  'be-1925': [ // Belgium - Spa
+    { startPercent: 0.8, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Kemmel Straight' },
+    { startPercent: 0.65, endPercent: 0.75, name: 'Back Section' }
+  ],
+  'hu-1986': [ // Hungary - Hungaroring
+    { startPercent: 0.85, endPercent: 0.08, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.4, endPercent: 0.55, name: 'Back Section' }
+  ],
+  'nl-1948': [ // Netherlands - Zandvoort
+    { startPercent: 0.82, endPercent: 0.08, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.4, endPercent: 0.55, name: 'Back Straight' }
+  ],
+  'it-1922': [ // Italy - Monza
+    { startPercent: 0.8, endPercent: 0.15, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Back Straight' },
+    { startPercent: 0.65, endPercent: 0.75, name: 'Lesmo Section' }
+  ],
+  'az-2016': [ // Azerbaijan - Baku
+    { startPercent: 0.75, endPercent: 0.15, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.3, endPercent: 0.45, name: 'Castle Section' }
+  ],
+  'sg-2008': [ // Singapore
+    { startPercent: 0.8, endPercent: 0.05, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.25, endPercent: 0.4, name: 'Esplanade' },
+    { startPercent: 0.6, endPercent: 0.7, name: 'Marina Bay' }
+  ],
+  'us-2012': [ // USA - Austin (COTA)
+    { startPercent: 0.82, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.4, endPercent: 0.55, name: 'Back Straight' }
+  ],
+  'mx-1962': [ // Mexico
+    { startPercent: 0.8, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Back Straight' },
+    { startPercent: 0.65, endPercent: 0.75, name: 'Stadium Section' }
+  ],
+  'br-1940': [ // Brazil - Interlagos
+    { startPercent: 0.8, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.4, endPercent: 0.55, name: 'Back Straight' }
+  ],
+  'us-2023': [ // Las Vegas
+    { startPercent: 0.75, endPercent: 0.15, name: 'Las Vegas Boulevard', wrapAround: true },
+    { startPercent: 0.3, endPercent: 0.45, name: 'Koval Zone' },
+    { startPercent: 0.6, endPercent: 0.7, name: 'Harmon Zone' }
+  ],
+  'qa-2004': [ // Qatar - Losail
+    { startPercent: 0.82, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Back Straight' },
+    { startPercent: 0.65, endPercent: 0.75, name: 'Sector 3' }
+  ],
+  'ae-2009': [ // Abu Dhabi - Yas Marina
+    { startPercent: 0.8, endPercent: 0.1, name: 'Main Straight', wrapAround: true },
+    { startPercent: 0.35, endPercent: 0.5, name: 'Back Straight' },
+    { startPercent: 0.65, endPercent: 0.75, name: 'Marina Section' }
+  ],
+  
+  // Historic/Demo Circuits
+  'nurburgring': [
+    { startPercent: 0.05, endPercent: 0.25, name: 'Start/Finish Straight' },
+    { startPercent: 0.5, endPercent: 0.7, name: 'Döttinger Höhe' }
+  ],
+  'de-1927': [ // Nurburgring (mapped ID)
+    { startPercent: 0.05, endPercent: 0.25, name: 'Start/Finish Straight' },
+    { startPercent: 0.5, endPercent: 0.7, name: 'Döttinger Höhe' }
+  ]
 };
 
 // SVG 쉐브론 생성 함수
@@ -16,6 +140,7 @@ const createChevronSVG = (color: string = '#00FF00', opacity: number = 1): strin
   </svg>`;
 };
 
+
 // DRS 존 그리기 함수 (Symbol 기반)
 const drawDRSZones = (
   map: mapboxgl.Map,
@@ -23,17 +148,52 @@ const drawDRSZones = (
   trackCoordinates: number[][],
   circuitId: string
 ) => {
-  let drsZones = DRS_ZONES[circuitId];
-  // DRS_ZONES에 정의되지 않은 서킷은 기본적으로 dynamic 사용
-  if (!drsZones) {
-    drsZones = 'dynamic';
-  }
-
-  // 'dynamic'인 경우 트랙의 초반 10%를 DRS 존으로 설정
-  if (drsZones === 'dynamic') {
+  console.log(`[DEBUG] drawDRSZones 호출됨 - circuitId: ${circuitId}`);
+  
+  // Circuit ID 매핑 (austria -> at-1969)
+  const mappedCircuitId = CIRCUIT_ID_MAPPING[circuitId] || circuitId;
+  console.log(`[DEBUG] Circuit ID 매핑: ${circuitId} -> ${mappedCircuitId}`);
+  
+  let drsZones = DRS_ZONES[mappedCircuitId];
+  
+  // 1순위: 퍼센티지 기반 DRS 존 확인
+  const percentageDrsZones = DRS_ZONES_PERCENTAGE[mappedCircuitId];
+  if (percentageDrsZones) {
     const totalPoints = trackCoordinates.length;
-    const drsEndIndex = Math.floor(totalPoints * 0.1); // 10%
-    drsZones = [{ start: 0, end: drsEndIndex }];
+    const newDrsZones: Array<{ start: number; end: number; wrapAround?: boolean }> = [];
+    
+    percentageDrsZones.forEach(zone => {
+      const startIndex = Math.floor(totalPoints * zone.startPercent);
+      const endIndex = Math.floor(totalPoints * zone.endPercent);
+      
+      if (zone.wrapAround && endIndex < startIndex) {
+        // 랩어라운드: 특별 표시로 처리 (나중에 특별 로직 적용)
+        newDrsZones.push({ start: startIndex, end: endIndex, wrapAround: true });
+      } else {
+        // 일반적인 경우
+        newDrsZones.push({ start: startIndex, end: endIndex });
+      }
+    });
+    
+    drsZones = newDrsZones;
+    
+    console.log(`[DRS] ${mappedCircuitId} 퍼센티지 기반 DRS 존 ${drsZones.length}개 생성:`, drsZones);
+    // 퍼센티지 기반 설정이 있으면 기존 DRS 로직 사용
+  }
+  
+  // 3순위: 기존 DRS_ZONES 또는 dynamic 방식
+  if (!percentageDrsZones) {
+    // DRS_ZONES에 정의되지 않은 서킷은 기본적으로 dynamic 사용
+    if (!drsZones) {
+      drsZones = 'dynamic';
+    }
+
+    // 'dynamic'인 경우 트랙의 초반 10%를 DRS 존으로 설정
+    if (drsZones === 'dynamic') {
+      const totalPoints = trackCoordinates.length;
+      const drsEndIndex = Math.floor(totalPoints * 0.1); // 10%
+      drsZones = [{ start: 0, end: drsEndIndex }];
+    }
   }
 
   // SVG 이미지 로드 (여러 색상/투명도)
@@ -60,17 +220,31 @@ const drawDRSZones = (
     }
   });
 
-  drsZones.forEach((zone, index) => {
-    const drsLineCoordinates = trackCoordinates.slice(zone.start, zone.end + 1);
+  // drsZones가 배열인지 확인 후 처리
+  if (Array.isArray(drsZones)) {
+    drsZones.forEach((zone, index) => {
+    let drsLineCoordinates;
+    
+    if (zone.wrapAround) {
+      // 랩어라운드: start부터 끝까지 + 시작부터 end까지 연결
+      const endPart = trackCoordinates.slice(zone.start);
+      const startPart = trackCoordinates.slice(0, zone.end + 1);
+      drsLineCoordinates = [...endPart, ...startPart];
+    } else {
+      // 일반적인 경우
+      drsLineCoordinates = trackCoordinates.slice(zone.start, zone.end + 1);
+    }
+    
     const drsId = `${trackId}-drs-${index}`;
     
     // DRS 포인트 생성 (Symbol용)
     const features = [];
-    const pointInterval = 5; // 5포인트마다 하나의 쉐브론
+    const pointInterval = 5; // 2포인트마다 하나의 쉐브론 (더 촘촘하게)
     
     for (let i = 0; i < drsLineCoordinates.length - 1; i += pointInterval) {
-      const coord = drsLineCoordinates[i];
-      const nextCoord = drsLineCoordinates[Math.min(i + 1, drsLineCoordinates.length - 1)];
+      const coordIndex = Math.floor(i);
+      const coord = drsLineCoordinates[coordIndex];
+      const nextCoord = drsLineCoordinates[Math.min(coordIndex + 1, drsLineCoordinates.length - 1)];
       
       // 방향 계산 (도 단위) - 트랙 진행 방향
       const dx = nextCoord[0] - coord[0];
@@ -119,7 +293,8 @@ const drawDRSZones = (
         }
       });
     }
-  });
+    });
+  }
 };
 
 // 범용 트랙 그리기 함수
@@ -262,16 +437,21 @@ export const drawTrack = (
 const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
   const animationDuration = 2000; // 2초
   const startTime = performance.now();
-  const drsId = `${trackId}-drs-0`;
   
   const animate = () => {
     const elapsed = performance.now() - startTime;
     const totalProgress = (elapsed / animationDuration) % 1;
     
-    // Symbol 레이어의 icon-image를 표현식으로 업데이트
-    if (map.getLayer(`${drsId}-symbols`)) {
-      // 각 포인트의 인덱스와 진행도에 따라 다른 이미지 표시
-      map.setLayoutProperty(`${drsId}-symbols`, 'icon-image', [
+    // 모든 DRS 존에 애니메이션 적용
+    let drsIndex = 0;
+    while (true) {
+      const drsId = `${trackId}-drs-${drsIndex}`;
+      const layerId = `${drsId}-symbols`;
+      
+      if (!map.getLayer(layerId)) break; // 더 이상 DRS 존이 없으면 종료
+      
+      // Symbol 레이어의 icon-image를 표현식으로 업데이트
+      map.setLayoutProperty(layerId, 'icon-image', [
         'case',
         ['<', 
           ['%', 
@@ -305,6 +485,8 @@ const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
         ], 'chevron-bright',
         'chevron-max'
       ]);
+      
+      drsIndex++; // 다음 DRS 존으로 이동
     }
     
     requestAnimationFrame(animate);
