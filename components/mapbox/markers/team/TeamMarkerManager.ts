@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import teamsData from '@/data/teams.json';
 import { TeamMarkerFactory } from './TeamMarkerFactory';
-import { MarkerData } from '../../types';
+import { MarkerData, Team } from '../../types';
 import { getUKTeamAdjustedPosition, isUKTeam } from './UKTeamLayout';
 import { getItalyTeamAdjustedPosition, isItalyTeam } from './ItalyTeamLayout';
 
@@ -20,8 +20,7 @@ interface AddAllTeamsOptions {
 // 특별 레이아웃 팀 마커 생성 함수 (영국, 이탈리아)
 const createSpecialLayoutTeamMarker = (
   map: mapboxgl.Map,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  team: any,
+  team: Team,
   onMarkerClick: ((item: MarkerData) => void) | undefined,
   markersWithCleanup: MarkerWithCleanup[],
   layoutType: 'uk' | 'italy'
