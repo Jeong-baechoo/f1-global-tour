@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&display=swap');
+@import 'mapbox-gl/dist/mapbox-gl.css';
 
 @tailwind base;
 @tailwind components;
@@ -58,7 +59,7 @@
 
 /* 양끝 페이드 마스크 효과 */
 .fade-edges {
-  -webkit-mask-image: linear-gradient(
+  -webkit-mask-image: -webkit-linear-gradient(
     to right,
     transparent 0%,
     black 20%,
@@ -73,7 +74,26 @@
     transparent 100%
   );
 }
-@import 'mapbox-gl/dist/mapbox-gl.css';
+
+/* 모바일 세로 페이드 마스크 효과 */
+@media (max-width: 639px) {
+  .fade-edges {
+    -webkit-mask-image: -webkit-linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 20%,
+      black 80%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 20%,
+      black 80%,
+      transparent 100%
+    );
+  }
+}
 
 :root {
   --background: #1A1A1A;

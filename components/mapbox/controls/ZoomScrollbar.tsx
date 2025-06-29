@@ -249,7 +249,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
               setInteractionTimeout();
             }
           }}
-          className="w-9 h-9 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 shadow-lg rounded-t-lg flex items-center justify-center text-lg font-bold text-gray-200 hover:text-white transition-all duration-200 border border-red-500/30 hover:border-red-400"
+          className="w-9 h-9 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 rounded-t border border-[#FF1801]/20 hover:border-[#FF1801]/40 flex items-center justify-center text-lg font-bold text-white transition-all duration-300"
         >
           +
         </button>
@@ -258,7 +258,7 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
         <div
           ref={scrollbarRef}
           onClick={handleScrollbarClick}
-          className="w-9 h-28 bg-gradient-to-b from-gray-800 via-gray-900 to-gray-800 shadow-lg border-l border-r border-red-500/40 relative cursor-pointer backdrop-blur-sm"
+          className="w-9 h-28 bg-[#1A1A1A]/60 backdrop-blur-sm border-l border-r border-[#FF1801]/20 relative cursor-pointer"
         >
           {/* 스크롤바 썸 */}
           <div
@@ -270,9 +270,9 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
                 handleTouchStart(e);
               }
             }}
-            className={`absolute w-full h-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 cursor-grab ${
-              isDragging ? 'cursor-grabbing from-red-400 to-red-500 shadow-red-500/50 shadow-md' : ''
-            } transition-all duration-200 rounded-sm select-none border border-red-400/50`}
+            className={`absolute w-full h-4 bg-[#FF1801] hover:bg-[#FF1801]/90 cursor-grab ${
+              isDragging ? 'cursor-grabbing bg-[#FF1801]/90' : ''
+            } transition-all duration-300 rounded select-none border border-[#FF1801]/40`}
             style={{
               top: `${thumbPosition}%`,
               transform: 'translateY(-50%)',
@@ -286,13 +286,13 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className={`w-full h-px ${i === 2 ? 'bg-red-400/60' : 'bg-red-500/20'}`}
+                className={`w-full h-px ${i === 2 ? 'bg-[#FF1801]/60' : 'bg-[#FF1801]/20'}`}
               />
             ))}
           </div>
           
           {/* 중앙 표시 */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-400/40 rounded-full" />
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-[#FF1801]/40 rounded-full" />
         </div>
 
         {/* 줌 아웃 버튼 */}
@@ -308,13 +308,13 @@ const ZoomScrollbar = ({ map, className = '' }: ZoomScrollbarProps) => {
               setInteractionTimeout();
             }
           }}
-          className="w-9 h-9 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 shadow-lg rounded-b-lg flex items-center justify-center text-lg font-bold text-gray-200 hover:text-white transition-all duration-200 border border-red-500/30 hover:border-red-400"
+          className="w-9 h-9 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 rounded-b border border-[#FF1801]/20 hover:border-[#FF1801]/40 flex items-center justify-center text-lg font-bold text-white transition-all duration-300"
         >
           −
         </button>
 
         {/* 줌 레벨 표시 */}
-        <div className="mt-2 px-2 py-1 bg-gradient-to-r from-gray-900 to-black border border-red-500/30 text-red-400 text-xs rounded font-mono shadow-md backdrop-blur-sm">
+        <div className="mt-2 px-2 py-1 bg-[#1A1A1A]/60 backdrop-blur-sm border border-[#FF1801]/20 text-[#FF1801] text-xs rounded font-mono">
           {zoomLevel.toFixed(1)}x
         </div>
       </div>
