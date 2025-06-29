@@ -5,7 +5,8 @@ export interface MobileTeamConfig {
   bearing: number;
 }
 
-export const MOBILE_TEAM_CONFIGS: Record<string, MobileTeamConfig> = {
+// Team['id'] 타입을 사용하여 타입 안정성 강화
+export const MOBILE_TEAM_CONFIGS: Partial<Record<string, MobileTeamConfig>> = {
   'red-bull': {
     center: [-0.6913, 52.0086],
     zoom: 15.41,

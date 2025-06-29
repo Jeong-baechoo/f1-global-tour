@@ -22,9 +22,15 @@ if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
 }
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
+// cleanup 함수를 포함하는 마커 타입
+interface MarkerWithCleanup {
+  marker: mapboxgl.Marker;
+  cleanup: () => void;
+}
+
 const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange, onUserInteraction }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
+  const markers = useRef<MarkerWithCleanup[]>([]);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const isCircuitViewRef = useRef(false);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
@@ -190,7 +196,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         addAllTeams({
           map: map.current,
           onMarkerClick: propsRef.current.onMarkerClick,
-          markers: markers.current
+          markersWithCleanup: markers.current
         });
         
         // 다음 레이스 찾기
@@ -201,7 +207,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           map: map.current,
           onMarkerClick: propsRef.current.onMarkerClick,
           nextRaceId: nextRace || undefined,
-          markers: markers.current
+          markers: markers.current.map(mc => mc.marker)  // 서킷은 아직 기존 방식 사용
         });
         
       }, TIMEOUTS.markerDelay);
@@ -213,10 +219,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       map.current.once('load', setupMap);
     }
 
-    // cleanup 함수
+    // cleanup 함수 - cleanup 메서드 호출
     return () => {
-      markers.current.forEach(marker => {
-        marker.remove();
+      markers.current.forEach(({ cleanup }) => {
+        cleanup();
       });
       markers.current = [];
     };

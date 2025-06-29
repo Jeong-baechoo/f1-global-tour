@@ -72,3 +72,4 @@ export const getTrackCoordinates = async (circuitId: string): Promise<number[][]
     return null;
   }
 };
+
