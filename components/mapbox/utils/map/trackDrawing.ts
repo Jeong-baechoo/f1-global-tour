@@ -338,14 +338,32 @@ export const drawTrack = (
         id: `${trackId}-outline`,
         type: 'line',
         source: trackId,
+        minzoom: 8,  // 줌 8 이상에서만 표시
+        maxzoom: 18, // 줌 18까지만 표시
         layout: {
           'line-join': 'round',
           'line-cap': 'round'
         },
         paint: {
           'line-color': '#FFFFFF',
-          'line-width': 8,
-          'line-blur': 1
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 6,   // 줌 8에서 얇게
+            12, 8,  // 줌 12에서 기본
+            16, 10  // 줌 16에서 두껍게
+          ],
+          'line-blur': 1,
+          'line-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 0.6,   // 줌 8에서 반투명
+            10, 1,    // 줌 10 이상에서 불투명
+            16, 1,    // 줌 16까지 불투명
+            18, 0     // 줌 18에서 완전히 사라짐
+          ]
         }
       });
     }
@@ -356,13 +374,31 @@ export const drawTrack = (
         id: `${trackId}-main`,
         type: 'line',
         source: trackId,
+        minzoom: 8,  // 줌 8 이상에서만 표시
+        maxzoom: 18, // 줌 18까지만 표시
         layout: {
           'line-join': 'round',
           'line-cap': 'round'
         },
         paint: {
           'line-color': color,
-          'line-width': 5
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 3,   // 줌 8에서 얇게
+            12, 5,  // 줌 12에서 기본
+            16, 7   // 줌 16에서 두껍게
+          ],
+          'line-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 0.7,   // 줌 8에서 반투명
+            10, 1,    // 줌 10 이상에서 불투명
+            16, 1,    // 줌 16까지 불투명
+            18, 0     // 줌 18에서 완전히 사라짐
+          ]
         }
       });
     }
