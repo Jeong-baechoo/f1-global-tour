@@ -3,6 +3,7 @@ import { interpolateCoordinates } from '../animations/globeAnimation';
 import { TrackDrawOptions } from '../../types';
 import { ANIMATION_CONFIG } from '../../constants';
 import { CIRCUIT_ID_MAPPING } from '../data/circuitMapping';
+import { trackManager } from './trackManager';
 
 // DRS 존 인덱스 정의 - 동적으로 계산
 const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround?: boolean }> | 'dynamic' } = {
@@ -149,6 +150,8 @@ const drawDRSZones = (
   trackCoordinates: number[][],
   circuitId: string
 ) => {
+  // DRS ID 목록 수집용
+  const drsIds: string[] = [];
   
   // Circuit ID 매핑 (austria -> at-1969)
   const mappedCircuitId = CIRCUIT_ID_MAPPING[circuitId] || circuitId;
@@ -232,6 +235,7 @@ const drawDRSZones = (
     }
     
     const drsId = `${trackId}-drs-${index}`;
+    drsIds.push(drsId);
     
     // DRS 포인트 생성 (Symbol용)
     const features = [];
@@ -299,6 +303,11 @@ const drawDRSZones = (
     }
     });
   }
+  
+  // TrackManager에 DRS 정보 추가
+  if (drsIds.length > 0) {
+    trackManager.addDRSElements(circuitId, drsIds);
+  }
 };
 
 // 범용 트랙 그리기 함수
@@ -309,10 +318,22 @@ export const drawTrack = (
   setTimeout(() => {
     if (!map) return;
 
+    // 서킷 ID 추출 (trackId는 보통 'circuitId-track' 형식)
+    const circuitId = trackId.replace('-track', '');
+
+    // 줌 레벨 확인
+    if (!trackManager.canShowTrack()) {
+      console.log(`Zoom level too low to show track for ${circuitId}`);
+      return;
+    }
+
     // 이미 트랙이 그려져 있으면 스킵
     if (map.getLayer(`${trackId}-main`)) {
       return;
     }
+
+    // TrackManager에 등록
+    trackManager.registerTrack(circuitId, trackId);
 
     // 좌표 보간
     const smoothCoordinates = interpolateCoordinates(trackCoordinates);
@@ -330,6 +351,7 @@ export const drawTrack = (
           }
         }
       });
+      trackManager.addTrackSource(circuitId, trackId);
     }
 
     // 트랙 아웃라인 레이어
@@ -364,6 +386,7 @@ export const drawTrack = (
           ]
         }
       });
+      trackManager.addTrackLayer(circuitId, `${trackId}-outline`);
     }
 
     // 메인 트랙 레이어
@@ -397,10 +420,8 @@ export const drawTrack = (
           ]
         }
       });
+      trackManager.addTrackLayer(circuitId, `${trackId}-main`);
     }
-
-    // 서킷 ID 추출 (trackId는 보통 'circuitId-track' 형식)
-    const circuitId = trackId.replace('-track', '');
 
     // 트랙 애니메이션
     const startTime = performance.now();
