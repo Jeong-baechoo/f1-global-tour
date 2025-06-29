@@ -1,9 +1,10 @@
 import mapboxgl from 'mapbox-gl';
+import { MultiLanguageText } from '@/utils/i18n';
 
 // 공통 위치 타입
 export interface Location {
-  city: string;
-  country: string;
+  city: string | MultiLanguageText;
+  country: string | MultiLanguageText;
 }
 
 export interface Headquarters extends Location {
@@ -27,10 +28,10 @@ export interface Car {
 
 // 마커 데이터 (InteractivePanel과 호환)
 export interface MarkerData {
-  type: string;
+  type?: string;
   id?: string;
-  name?: string;
-  principal?: string;
+  name?: string | MultiLanguageText;
+  principal?: string | MultiLanguageText;
   location?: string | Location;
   headquarters?: Headquarters;
   color?: string;
@@ -41,12 +42,17 @@ export interface MarkerData {
     totalPoints: number;
     raceResults: { race: string; points: number }[];
   };
-  grandPrix?: string;
+  grandPrix?: string | MultiLanguageText;
   length?: number;
   laps?: number;
   corners?: number;
   totalDistance?: number;
   raceDate?: string;
+  lapRecord?: {
+    time: string;
+    driver: string;
+    year: number;
+  };
 }
 
 export interface MapAPI {
@@ -82,10 +88,10 @@ export interface MarkerCreationOptions {
 // 팀 정보
 export interface Team {
   id: string;
-  name: string;
-  fullName: string;
-  description: string;
-  teamPrincipal: string;
+  name: MultiLanguageText;
+  fullName: MultiLanguageText;
+  description: MultiLanguageText;
+  teamPrincipal: MultiLanguageText;
   foundingYear: number;
   headquarters: Headquarters;
   colors: {

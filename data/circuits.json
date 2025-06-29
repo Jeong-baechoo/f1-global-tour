@@ -2,16 +2,31 @@
   "circuits": [
     {
       "id": "bahrain",
-      "name": "Bahrain International Circuit",
-      "officialName": "Bahrain International Circuit",
-      "grandPrix": "Bahrain Grand Prix",
+      "name": {
+        "en": "Bahrain International Circuit",
+        "ko": "바레인 인터내셔널 서킷"
+      },
+      "officialName": {
+        "en": "Bahrain International Circuit",
+        "ko": "바레인 인터내셔널 서킷"
+      },
+      "grandPrix": {
+        "en": "Bahrain Grand Prix",
+        "ko": "바레인 그랑프리"
+      },
       "country": "Bahrain",
       "city": "Sakhir",
       "location": {
         "lat": 26.0319,
         "lng": 50.5122,
-        "city": "Sakhir",
-        "country": "Bahrain"
+        "city": {
+          "en": "Sakhir",
+          "ko": "사키르"
+        },
+        "country": {
+          "en": "Bahrain",
+          "ko": "바레인"
+        }
       },
       "length": 5.412,
       "laps": 57,
@@ -27,16 +42,31 @@
     },
     {
       "id": "saudi-arabia",
-      "name": "Jeddah Corniche Circuit",
-      "officialName": "Jeddah Corniche Circuit",
-      "grandPrix": "Saudi Arabian Grand Prix",
+      "name": {
+        "en": "Jeddah Corniche Circuit",
+        "ko": "제다 코르니체 서킷"
+      },
+      "officialName": {
+        "en": "Jeddah Corniche Circuit",
+        "ko": "제다 코르니체 서킷"
+      },
+      "grandPrix": {
+        "en": "Saudi Arabian Grand Prix",
+        "ko": "사우디아라비아 그랑프리"
+      },
       "country": "Saudi Arabia",
       "city": "Jeddah",
       "location": {
         "lat": 21.6374,
         "lng": 39.1035,
-        "city": "Jeddah",
-        "country": "Saudi Arabia"
+        "city": {
+          "en": "Jeddah",
+          "ko": "제다"
+        },
+        "country": {
+          "en": "Saudi Arabia",
+          "ko": "사우디아라비아"
+        }
       },
       "length": 6.174,
       "laps": 50,
@@ -52,16 +82,31 @@
     },
     {
       "id": "australia",
-      "name": "Albert Park Circuit",
-      "officialName": "Albert Park Grand Prix Circuit",
-      "grandPrix": "Australian Grand Prix",
+      "name": {
+        "en": "Albert Park Circuit",
+        "ko": "앨버트 파크 서킷"
+      },
+      "officialName": {
+        "en": "Albert Park Grand Prix Circuit",
+        "ko": "앨버트 파크 그랑프리 서킷"
+      },
+      "grandPrix": {
+        "en": "Australian Grand Prix",
+        "ko": "호주 그랑프리"
+      },
       "country": "Australia",
       "city": "Melbourne",
       "location": {
         "lat": -37.8498,
         "lng": 144.9747,
-        "city": "Melbourne",
-        "country": "Australia"
+        "city": {
+          "en": "Melbourne",
+          "ko": "멜버른"
+        },
+        "country": {
+          "en": "Australia",
+          "ko": "호주"
+        }
       },
       "length": 5.278,
       "laps": 58,
@@ -77,16 +122,31 @@
     },
     {
       "id": "japan",
-      "name": "Suzuka Circuit",
-      "officialName": "Suzuka International Racing Course",
-      "grandPrix": "Japanese Grand Prix",
+      "name": {
+        "en": "Suzuka Circuit",
+        "ko": "스즈카 서킷"
+      },
+      "officialName": {
+        "en": "Suzuka International Racing Course",
+        "ko": "스즈카 국제 레이싱 코스"
+      },
+      "grandPrix": {
+        "en": "Japanese Grand Prix",
+        "ko": "일본 그랑프리"
+      },
       "country": "Japan",
       "city": "Suzuka",
       "location": {
         "lat": 34.8458,
         "lng": 136.5382,
-        "city": "Suzuka",
-        "country": "Japan"
+        "city": {
+          "en": "Suzuka",
+          "ko": "스즈카"
+        },
+        "country": {
+          "en": "Japan",
+          "ko": "일본"
+        }
       },
       "length": 5.807,
       "laps": 53,
@@ -102,16 +162,31 @@
     },
     {
       "id": "china",
-      "name": "Shanghai International Circuit",
-      "officialName": "Shanghai International Circuit",
-      "grandPrix": "Chinese Grand Prix",
+      "name": {
+        "en": "Shanghai International Circuit",
+        "ko": "상하이 인터내셔널 서킷"
+      },
+      "officialName": {
+        "en": "Shanghai International Circuit",
+        "ko": "상하이 인터내셔널 서킷"
+      },
+      "grandPrix": {
+        "en": "Chinese Grand Prix",
+        "ko": "중국 그랑프리"
+      },
       "country": "China",
       "city": "Shanghai",
       "location": {
         "lat": 31.3389,
         "lng": 121.2208,
-        "city": "Shanghai",
-        "country": "China"
+        "city": {
+          "en": "Shanghai",
+          "ko": "상하이"
+        },
+        "country": {
+          "en": "China",
+          "ko": "중국"
+        }
       },
       "length": 5.451,
       "laps": 56,
@@ -128,16 +203,31 @@
     },
     {
       "id": "miami",
-      "name": "Miami International Autodrome",
-      "officialName": "Miami International Autodrome",
-      "grandPrix": "Miami Grand Prix",
+      "name": {
+        "en": "Miami International Autodrome",
+        "ko": "마이애미 인터내셔널 오토드롬"
+      },
+      "officialName": {
+        "en": "Miami International Autodrome",
+        "ko": "마이애미 인터내셔널 오토드롬"
+      },
+      "grandPrix": {
+        "en": "Miami Grand Prix",
+        "ko": "마이애미 그랑프리"
+      },
       "country": "United States",
       "city": "Miami",
       "location": {
         "lat": 25.961,
         "lng": -80.2337,
-        "city": "Miami",
-        "country": "United States"
+        "city": {
+          "en": "Miami",
+          "ko": "마이애미"
+        },
+        "country": {
+          "en": "United States",
+          "ko": "미국"
+        }
       },
       "length": 5.412,
       "laps": 57,
@@ -154,16 +244,31 @@
     },
     {
       "id": "imola",
-      "name": "Autodromo Enzo e Dino Ferrari",
-      "officialName": "Autodromo Enzo e Dino Ferrari",
-      "grandPrix": "Emilia Romagna Grand Prix",
+      "name": {
+        "en": "Autodromo Enzo e Dino Ferrari",
+        "ko": "아우토드로모 엔조 에 디노 페라리"
+      },
+      "officialName": {
+        "en": "Autodromo Enzo e Dino Ferrari",
+        "ko": "아우토드로모 엔조 에 디노 페라리"
+      },
+      "grandPrix": {
+        "en": "Emilia Romagna Grand Prix",
+        "ko": "에밀리아 로마냐 그랑프리"
+      },
       "country": "Italy",
       "city": "Imola",
       "location": {
         "lat": 44.3469,
         "lng": 11.719,
-        "city": "Imola",
-        "country": "Italy"
+        "city": {
+          "en": "Imola",
+          "ko": "이몰라"
+        },
+        "country": {
+          "en": "Italy",
+          "ko": "이탈리아"
+        }
       },
       "length": 4.909,
       "laps": 63,
@@ -179,16 +284,31 @@
     },
     {
       "id": "monaco",
-      "name": "Circuit de Monaco",
-      "officialName": "Circuit de Monaco",
-      "grandPrix": "Monaco Grand Prix",
+      "name": {
+        "en": "Circuit de Monaco",
+        "ko": "모나코 서킷"
+      },
+      "officialName": {
+        "en": "Circuit de Monaco",
+        "ko": "모나코 서킷"
+      },
+      "grandPrix": {
+        "en": "Monaco Grand Prix",
+        "ko": "모나코 그랑프리"
+      },
       "country": "Monaco",
       "city": "Monte Carlo",
       "location": {
         "lat": 43.7382,
         "lng": 7.4272,
-        "city": "Monte Carlo",
-        "country": "Monaco"
+        "city": {
+          "en": "Monte Carlo",
+          "ko": "몬테카를로"
+        },
+        "country": {
+          "en": "Monaco",
+          "ko": "모나코"
+        }
       },
       "length": 3.337,
       "laps": 78,
@@ -204,16 +324,31 @@
     },
     {
       "id": "canada",
-      "name": "Circuit Gilles Villeneuve",
-      "officialName": "Circuit Gilles Villeneuve",
-      "grandPrix": "Canadian Grand Prix",
+      "name": {
+        "en": "Circuit Gilles Villeneuve",
+        "ko": "질 빌뇌브 서킷"
+      },
+      "officialName": {
+        "en": "Circuit Gilles Villeneuve",
+        "ko": "질 빌뇌브 서킷"
+      },
+      "grandPrix": {
+        "en": "Canadian Grand Prix",
+        "ko": "캐나다 그랑프리"
+      },
       "country": "Canada",
       "city": "Montreal",
       "location": {
         "lat": 45.5000,
         "lng": -73.5228,
-        "city": "Montreal",
-        "country": "Canada"
+        "city": {
+          "en": "Montreal",
+          "ko": "몬트리올"
+        },
+        "country": {
+          "en": "Canada",
+          "ko": "캐나다"
+        }
       },
       "length": 4.361,
       "laps": 70,
@@ -229,16 +364,31 @@
     },
     {
       "id": "spain",
-      "name": "Circuit de Barcelona-Catalunya",
-      "officialName": "Circuit de Barcelona-Catalunya",
-      "grandPrix": "Spanish Grand Prix",
+      "name": {
+        "en": "Circuit de Barcelona-Catalunya",
+        "ko": "바르셀로나-카탈루냐 서킷"
+      },
+      "officialName": {
+        "en": "Circuit de Barcelona-Catalunya",
+        "ko": "바르셀로나-카탈루냐 서킷"
+      },
+      "grandPrix": {
+        "en": "Spanish Grand Prix",
+        "ko": "스페인 그랑프리"
+      },
       "country": "Spain",
       "city": "Barcelona",
       "location": {
         "lat": 41.5700,
         "lng": 2.2611,
-        "city": "Barcelona",
-        "country": "Spain"
+        "city": {
+          "en": "Barcelona",
+          "ko": "바르셀로나"
+        },
+        "country": {
+          "en": "Spain",
+          "ko": "스페인"
+        }
       },
       "length": 4.657,
       "laps": 66,
@@ -254,16 +404,31 @@
     },
     {
       "id": "austria",
-      "name": "Red Bull Ring",
-      "officialName": "Red Bull Ring",
-      "grandPrix": "Austrian Grand Prix",
+      "name": {
+        "en": "Red Bull Ring",
+        "ko": "레드불 링"
+      },
+      "officialName": {
+        "en": "Red Bull Ring",
+        "ko": "레드불 링"
+      },
+      "grandPrix": {
+        "en": "Austrian Grand Prix",
+        "ko": "오스트리아 그랑프리"
+      },
       "country": "Austria",
       "city": "Spielberg",
       "location": {
         "lat": 47.2224,
         "lng": 14.7651,
-        "city": "Spielberg",
-        "country": "Austria"
+        "city": {
+          "en": "Spielberg",
+          "ko": "슈필베르크"
+        },
+        "country": {
+          "en": "Austria",
+          "ko": "오스트리아"
+        }
       },
       "length": 4.318,
       "laps": 71,
@@ -279,16 +444,31 @@
     },
     {
       "id": "britain",
-      "name": "Silverstone Circuit",
-      "officialName": "Silverstone Circuit",
-      "grandPrix": "British Grand Prix",
+      "name": {
+        "en": "Silverstone Circuit",
+        "ko": "실버스톤 서킷"
+      },
+      "officialName": {
+        "en": "Silverstone Circuit",
+        "ko": "실버스톤 서킷"
+      },
+      "grandPrix": {
+        "en": "British Grand Prix",
+        "ko": "영국 그랑프리"
+      },
       "country": "United Kingdom",
       "city": "Silverstone",
       "location": {
         "lat": 52.074,
         "lng": -1.0191,
-        "city": "Silverstone",
-        "country": "United Kingdom"
+        "city": {
+          "en": "Silverstone",
+          "ko": "실버스톤"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        }
       },
       "length": 5.891,
       "laps": 52,
@@ -304,16 +484,31 @@
     },
     {
       "id": "hungary",
-      "name": "Hungaroring",
-      "officialName": "Hungaroring",
-      "grandPrix": "Hungarian Grand Prix",
+      "name": {
+        "en": "Hungaroring",
+        "ko": "헝가로링"
+      },
+      "officialName": {
+        "en": "Hungaroring",
+        "ko": "헝가로링"
+      },
+      "grandPrix": {
+        "en": "Hungarian Grand Prix",
+        "ko": "헝가리 그랑프리"
+      },
       "country": "Hungary",
       "city": "Budapest",
       "location": {
         "lat": 47.5836,
         "lng": 19.2526,
-        "city": "Budapest",
-        "country": "Hungary"
+        "city": {
+          "en": "Budapest",
+          "ko": "부다페스트"
+        },
+        "country": {
+          "en": "Hungary",
+          "ko": "헝가리"
+        }
       },
       "length": 4.381,
       "laps": 70,
@@ -329,16 +524,31 @@
     },
     {
       "id": "belgium",
-      "name": "Circuit de Spa-Francorchamps",
-      "officialName": "Circuit de Spa-Francorchamps",
-      "grandPrix": "Belgian Grand Prix",
+      "name": {
+        "en": "Circuit de Spa-Francorchamps",
+        "ko": "스파-프랑코르샹 서킷"
+      },
+      "officialName": {
+        "en": "Circuit de Spa-Francorchamps",
+        "ko": "스파-프랑코르샹 서킷"
+      },
+      "grandPrix": {
+        "en": "Belgian Grand Prix",
+        "ko": "벨기에 그랑프리"
+      },
       "country": "Belgium",
       "city": "Spa",
       "location": {
         "lat": 50.437,
         "lng": 5.9726,
-        "city": "Spa",
-        "country": "Belgium"
+        "city": {
+          "en": "Spa",
+          "ko": "스파"
+        },
+        "country": {
+          "en": "Belgium",
+          "ko": "벨기에"
+        }
       },
       "length": 7.004,
       "laps": 44,
@@ -355,16 +565,31 @@
     },
     {
       "id": "netherlands",
-      "name": "Circuit Zandvoort",
-      "officialName": "Circuit Zandvoort",
-      "grandPrix": "Dutch Grand Prix",
+      "name": {
+        "en": "Circuit Zandvoort",
+        "ko": "잔드보르트 서킷"
+      },
+      "officialName": {
+        "en": "Circuit Zandvoort",
+        "ko": "잔드보르트 서킷"
+      },
+      "grandPrix": {
+        "en": "Dutch Grand Prix",
+        "ko": "네덜란드 그랑프리"
+      },
       "country": "Netherlands",
       "city": "Zandvoort",
       "location": {
         "lat": 52.3858,
         "lng": 4.5461,
-        "city": "Zandvoort",
-        "country": "Netherlands"
+        "city": {
+          "en": "Zandvoort",
+          "ko": "잔드보르트"
+        },
+        "country": {
+          "en": "Netherlands",
+          "ko": "네덜란드"
+        }
       },
       "length": 4.259,
       "laps": 72,
@@ -380,16 +605,31 @@
     },
     {
       "id": "italy",
-      "name": "Autodromo Nazionale Monza",
-      "officialName": "Autodromo Nazionale Monza",
-      "grandPrix": "Italian Grand Prix",
+      "name": {
+        "en": "Autodromo Nazionale Monza",
+        "ko": "아우토드로모 나치오날레 몬자"
+      },
+      "officialName": {
+        "en": "Autodromo Nazionale Monza",
+        "ko": "아우토드로모 나치오날레 몬자"
+      },
+      "grandPrix": {
+        "en": "Italian Grand Prix",
+        "ko": "이탈리아 그랑프리"
+      },
       "country": "Italy",
       "city": "Monza",
       "location": {
         "lat": 45.6179,
         "lng": 9.2846,
-        "city": "Monza",
-        "country": "Italy"
+        "city": {
+          "en": "Monza",
+          "ko": "몬자"
+        },
+        "country": {
+          "en": "Italy",
+          "ko": "이탈리아"
+        }
       },
       "length": 5.793,
       "laps": 53,
@@ -405,16 +645,31 @@
     },
     {
       "id": "azerbaijan",
-      "name": "Baku City Circuit",
-      "officialName": "Baku City Circuit",
-      "grandPrix": "Azerbaijan Grand Prix",
+      "name": {
+        "en": "Baku City Circuit",
+        "ko": "바쿠 시티 서킷"
+      },
+      "officialName": {
+        "en": "Baku City Circuit",
+        "ko": "바쿠 시티 서킷"
+      },
+      "grandPrix": {
+        "en": "Azerbaijan Grand Prix",
+        "ko": "아제르바이잔 그랑프리"
+      },
       "country": "Azerbaijan",
       "city": "Baku",
       "location": {
         "lat": 40.3711,
         "lng": 49.8422,
-        "city": "Baku",
-        "country": "Azerbaijan"
+        "city": {
+          "en": "Baku",
+          "ko": "바쿠"
+        },
+        "country": {
+          "en": "Azerbaijan",
+          "ko": "아제르바이잔"
+        }
       },
       "length": 6.003,
       "laps": 51,
@@ -430,16 +685,31 @@
     },
     {
       "id": "singapore",
-      "name": "Marina Bay Street Circuit",
-      "officialName": "Marina Bay Street Circuit",
-      "grandPrix": "Singapore Grand Prix",
+      "name": {
+        "en": "Marina Bay Street Circuit",
+        "ko": "마리나 베이 스트리트 서킷"
+      },
+      "officialName": {
+        "en": "Marina Bay Street Circuit",
+        "ko": "마리나 베이 스트리트 서킷"
+      },
+      "grandPrix": {
+        "en": "Singapore Grand Prix",
+        "ko": "싱가포르 그랑프리"
+      },
       "country": "Singapore",
       "city": "Singapore",
       "location": {
         "lat": 1.2943,
         "lng": 103.8593,
-        "city": "Singapore",
-        "country": "Singapore"
+        "city": {
+          "en": "Singapore",
+          "ko": "싱가포르"
+        },
+        "country": {
+          "en": "Singapore",
+          "ko": "싱가포르"
+        }
       },
       "length": 4.940,
       "laps": 62,
@@ -455,16 +725,31 @@
     },
     {
       "id": "usa",
-      "name": "Circuit of the Americas",
-      "officialName": "Circuit of the Americas",
-      "grandPrix": "United States Grand Prix",
+      "name": {
+        "en": "Circuit of the Americas",
+        "ko": "서킷 오브 디 아메리카스"
+      },
+      "officialName": {
+        "en": "Circuit of the Americas",
+        "ko": "서킷 오브 디 아메리카스"
+      },
+      "grandPrix": {
+        "en": "United States Grand Prix",
+        "ko": "미국 그랑프리"
+      },
       "country": "United States",
       "city": "Austin",
       "location": {
         "lat": 30.1359,
         "lng": -97.6307,
-        "city": "Austin",
-        "country": "United States"
+        "city": {
+          "en": "Austin",
+          "ko": "오스틴"
+        },
+        "country": {
+          "en": "United States",
+          "ko": "미국"
+        }
       },
       "length": 5.513,
       "laps": 56,
@@ -481,16 +766,31 @@
     },
     {
       "id": "mexico",
-      "name": "Autódromo Hermanos Rodríguez",
-      "officialName": "Autódromo Hermanos Rodríguez",
-      "grandPrix": "Mexican Grand Prix",
+      "name": {
+        "en": "Autódromo Hermanos Rodríguez",
+        "ko": "아우토드로모 에르마노스 로드리게스"
+      },
+      "officialName": {
+        "en": "Autódromo Hermanos Rodríguez",
+        "ko": "아우토드로모 에르마노스 로드리게스"
+      },
+      "grandPrix": {
+        "en": "Mexican Grand Prix",
+        "ko": "멕시코 그랑프리"
+      },
       "country": "Mexico",
       "city": "Mexico City",
       "location": {
         "lat": 19.4049,
         "lng": -99.0866,
-        "city": "Mexico City",
-        "country": "Mexico"
+        "city": {
+          "en": "Mexico City",
+          "ko": "멕시코시티"
+        },
+        "country": {
+          "en": "Mexico",
+          "ko": "멕시코"
+        }
       },
       "length": 4.304,
       "laps": 71,
@@ -506,16 +806,31 @@
     },
     {
       "id": "brazil",
-      "name": "Autódromo José Carlos Pace",
-      "officialName": "Autódromo José Carlos Pace",
-      "grandPrix": "Brazilian Grand Prix",
+      "name": {
+        "en": "Autódromo José Carlos Pace",
+        "ko": "아우토드로모 호세 카를로스 파세"
+      },
+      "officialName": {
+        "en": "Autódromo José Carlos Pace",
+        "ko": "아우토드로모 호세 카를로스 파세"
+      },
+      "grandPrix": {
+        "en": "Brazilian Grand Prix",
+        "ko": "브라질 그랑프리"
+      },
       "country": "Brazil",
       "city": "São Paulo",
       "location": {
         "lat": -23.7039,
         "lng": -46.6956,
-        "city": "São Paulo",
-        "country": "Brazil"
+        "city": {
+          "en": "São Paulo",
+          "ko": "상파울로"
+        },
+        "country": {
+          "en": "Brazil",
+          "ko": "브라질"
+        }
       },
       "length": 4.309,
       "laps": 71,
@@ -532,16 +847,31 @@
     },
     {
       "id": "las-vegas",
-      "name": "Las Vegas Street Circuit",
-      "officialName": "Las Vegas Street Circuit",
-      "grandPrix": "Las Vegas Grand Prix",
+      "name": {
+        "en": "Las Vegas Street Circuit",
+        "ko": "라스베이거스 스트리트 서킷"
+      },
+      "officialName": {
+        "en": "Las Vegas Street Circuit",
+        "ko": "라스베이거스 스트리트 서킷"
+      },
+      "grandPrix": {
+        "en": "Las Vegas Grand Prix",
+        "ko": "라스베이거스 그랑프리"
+      },
       "country": "United States",
       "city": "Las Vegas",
       "location": {
         "lat": 36.115,
         "lng": -115.1635,
-        "city": "Las Vegas",
-        "country": "United States"
+        "city": {
+          "en": "Las Vegas",
+          "ko": "라스베이거스"
+        },
+        "country": {
+          "en": "United States",
+          "ko": "미국"
+        }
       },
       "length": 6.201,
       "laps": 50,
@@ -557,16 +887,31 @@
     },
     {
       "id": "qatar",
-      "name": "Losail International Circuit",
-      "officialName": "Losail International Circuit",
-      "grandPrix": "Qatar Grand Prix",
+      "name": {
+        "en": "Lusail International Circuit",
+        "ko": "루사일 인터내셔널 서킷"
+      },
+      "officialName": {
+        "en": "Lusail International Circuit",
+        "ko": "루사일 인터내셔널 서킷"
+      },
+      "grandPrix": {
+        "en": "Qatar Grand Prix",
+        "ko": "카타르 그랑프리"
+      },
       "country": "Qatar",
       "city": "Lusail",
       "location": {
         "lat": 25.4900,
         "lng": 51.4542,
-        "city": "Lusail",
-        "country": "Qatar"
+        "city": {
+          "en": "Lusail",
+          "ko": "루사일"
+        },
+        "country": {
+          "en": "Qatar",
+          "ko": "카타르"
+        }
       },
       "length": 5.380,
       "laps": 57,
@@ -583,16 +928,31 @@
     },
     {
       "id": "abu-dhabi",
-      "name": "Yas Marina Circuit",
-      "officialName": "Yas Marina Circuit",
-      "grandPrix": "Abu Dhabi Grand Prix",
+      "name": {
+        "en": "Yas Marina Circuit",
+        "ko": "야스 마리나 서킷"
+      },
+      "officialName": {
+        "en": "Yas Marina Circuit",
+        "ko": "야스 마리나 서킷"
+      },
+      "grandPrix": {
+        "en": "Abu Dhabi Grand Prix",
+        "ko": "아부다비 그랑프리"
+      },
       "country": "United Arab Emirates",
       "city": "Abu Dhabi",
       "location": {
         "lat": 24.4695,
         "lng": 54.6073,
-        "city": "Abu Dhabi",
-        "country": "United Arab Emirates"
+        "city": {
+          "en": "Abu Dhabi",
+          "ko": "아부다비"
+        },
+        "country": {
+          "en": "United Arab Emirates",
+          "ko": "아랍에미리트"
+        }
       },
       "length": 5.281,
       "laps": 58,
@@ -608,16 +968,31 @@
     },
     {
       "id": "nurburgring",
-      "name": "Nürburgring",
-      "officialName": "Nürburgring Grand Prix Circuit",
-      "grandPrix": "German Grand Prix",
+      "name": {
+        "en": "Nürburgring",
+        "ko": "뉘르부르크링"
+      },
+      "officialName": {
+        "en": "Nürburgring Grand Prix Circuit",
+        "ko": "뉘르부르크링 그랑프리 서킷"
+      },
+      "grandPrix": {
+        "en": "German Grand Prix",
+        "ko": "독일 그랑프리"
+      },
       "country": "Germany",
       "city": "Nürburg",
       "location": {
         "lat": 50.3352,
         "lng": 6.9434,
-        "city": "Nürburg",
-        "country": "Germany"
+        "city": {
+          "en": "Nürburg",
+          "ko": "뉘르부르크"
+        },
+        "country": {
+          "en": "Germany",
+          "ko": "독일"
+        }
       },
       "length": 5.148,
       "laps": 60,
