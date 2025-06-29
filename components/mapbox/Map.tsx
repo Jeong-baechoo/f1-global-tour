@@ -15,6 +15,7 @@ import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
 import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
+import { trackManager } from './utils/map/trackManager';
 
 // Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
@@ -171,7 +172,9 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
       // map instance를 state에 저장
       setMapInstance(map.current);
-
+      
+      // TrackManager 초기화
+      trackManager.setMap(map.current);
 
       // 줌 레벨 변경 감지 핸들러
       const handleZoomChange = () => {
