@@ -283,10 +283,10 @@ export const createCircuitMarker = ({
       
       // 컨테이너 크기 조정
       el.style.gap = '0';
-    } else if (zoom >= 15) {
-      // 줌 15-17: 서서히 사라지기
-      const fadeStart = 15;
-      const fadeEnd = 17;
+    } else if (zoom >= 13) {
+      // 줌 13-15: 서서히 사라지기
+      const fadeStart = 13;
+      const fadeEnd = 15;
       const opacity = Math.max(0, 1 - (zoom - fadeStart) / (fadeEnd - fadeStart));
       
       el.style.display = 'flex';
@@ -299,7 +299,7 @@ export const createCircuitMarker = ({
         el.style.display = 'none';
       }
     } else {
-      // 줌 5 초과 ~ 15 미만: 모든 요소 표시
+      // 줌 5 초과 ~ 13 미만: 모든 요소 표시
       el.style.display = 'flex';
       el.style.opacity = '1';
       labelContainer.style.display = 'flex';
