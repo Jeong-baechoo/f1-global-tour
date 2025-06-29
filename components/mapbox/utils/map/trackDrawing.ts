@@ -272,15 +272,23 @@ const drawDRSZones = (
       });
     }
     
-    // Symbol 레이어 추가
+    // Symbol 레이어 추가 (줌 레벨 14 이상에서만 표시)
     if (!map.getLayer(`${drsId}-symbols`)) {
       map.addLayer({
         id: `${drsId}-symbols`,
         type: 'symbol',
         source: drsId,
+        minzoom: 14, // 줌 레벨 14 이상에서만 표시
         layout: {
           'icon-image': 'chevron-dim', // 초기 상태
-          'icon-size': 0.8,
+          'icon-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            14, 0.6,  // 줌 14에서 작게 시작
+            16, 0.8,  // 줌 16에서 기본 크기
+            18, 1.0   // 줌 18에서 크게
+          ],
           'icon-rotate': ['get', 'bearing'],
           'icon-rotation-alignment': 'map', // 맵에 고정 (카메라 회전과 무관)
           'icon-pitch-alignment': 'map',    // 피치에도 맵 고정
@@ -435,6 +443,18 @@ const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
   const startTime = performance.now();
   
   const animate = () => {
+    // 줌 레벨 확인 - 14 미만이면 애니메이션 중지
+    const currentZoom = map.getZoom();
+    if (currentZoom < 14) {
+      // 1초 후에 다시 체크
+      setTimeout(() => {
+        if (map.getZoom() >= 14) {
+          animateDRSSequentialSignal(map, trackId);
+        }
+      }, 1000);
+      return;
+    }
+    
     const elapsed = performance.now() - startTime;
     const totalProgress = (elapsed / animationDuration) % 1;
     
