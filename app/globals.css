@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Circuit Marker styles */
+@import '../styles/circuit-marker.css';
+
 /* Safe area support for mobile devices */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0);
@@ -140,14 +143,6 @@ body {
   filter: drop-shadow(0 0 12px rgba(255, 24, 1, 0.6));
 }
 
-.circuit-marker {
-  @apply cursor-pointer transition-all duration-300 hover:scale-110;
-  filter: drop-shadow(0 0 6px rgba(192, 192, 192, 0.4));
-}
-
-.circuit-marker:hover {
-  filter: drop-shadow(0 0 10px rgba(255, 24, 1, 0.5));
-}
 
 /* GPU 가속 최적화 */
 .mapboxgl-canvas {

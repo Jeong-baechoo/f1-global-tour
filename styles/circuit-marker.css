@@ -1,0 +1,199 @@
+/* Circuit Marker Styles */
+
+/* Base styles */
+.circuit-marker {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  transform-origin: left center;
+}
+
+.circuit-marker[data-next-race="true"] {
+  z-index: 11;
+}
+
+.circuit-marker[data-next-race="false"] {
+  z-index: 10;
+}
+
+/* Hover states */
+.circuit-marker[data-hover="true"] {
+  transform: scale(1.1) translateZ(0);
+  z-index: 20;
+}
+
+/* Zoom-based visibility */
+.circuit-marker[data-zoom-level="low"] {
+  opacity: 1;
+}
+
+.circuit-marker[data-zoom-level="low"] .circuit-marker__label,
+.circuit-marker[data-zoom-level="low"] .circuit-marker__line {
+  display: none;
+}
+
+.circuit-marker[data-zoom-level="high"] {
+  display: none;
+}
+
+.circuit-marker[data-zoom-level="fade"] {
+  display: flex;
+}
+
+/* Dot styles */
+.circuit-marker__dot {
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: rgb(220, 38, 38);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6), inset 0 0 2px rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.8) translateZ(0);
+  will-change: transform, box-shadow;
+  position: relative;
+  z-index: 3;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.circuit-marker__dot--mobile {
+  width: 8px;
+  height: 8px;
+}
+
+.circuit-marker__dot--desktop {
+  width: 10px;
+  height: 10px;
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__dot {
+  transform: scale(1) translateZ(0);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
+}
+
+/* Line styles */
+.circuit-marker__line {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  will-change: width, background-color;
+}
+
+.circuit-marker__line--mobile {
+  width: 15px;
+}
+
+.circuit-marker__line--desktop {
+  width: 20px;
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__line {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__line--mobile {
+  width: 20px;
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__line--desktop {
+  width: 30px;
+}
+
+/* Label styles */
+.circuit-marker__label {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(17, 24, 39, 0.85);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  will-change: transform, background-color, border-color, box-shadow;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.circuit-marker__label--mobile {
+  padding: 4px 8px;
+}
+
+.circuit-marker__label--desktop {
+  padding: 6px 12px;
+}
+
+.circuit-marker__label[data-next-race="true"] {
+  border: 1px solid rgba(239, 68, 68, 0.6);
+}
+
+.circuit-marker__label[data-next-race="false"] {
+  border: 1px solid rgba(55, 65, 81, 0.8);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__label {
+  background-color: rgba(17, 24, 39, 0.9);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__label[data-next-race="true"] {
+  border-color: rgba(239, 68, 68, 0.8);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__label[data-next-race="false"] {
+  border-color: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+}
+
+/* Text styles */
+.circuit-marker__city {
+  font-weight: 600;
+  color: rgb(243, 244, 246);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.circuit-marker__city--mobile {
+  font-size: 11px;
+}
+
+.circuit-marker__city--desktop {
+  font-size: 12px;
+}
+
+.circuit-marker__country {
+  color: rgb(156, 163, 175);
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.circuit-marker__country--mobile {
+  font-size: 9px;
+}
+
+.circuit-marker__country--desktop {
+  font-size: 10px;
+}
+
+/* Pulse animation for next race */
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+}
+
+.circuit-marker__pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(239, 68, 68, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s infinite;
+}
