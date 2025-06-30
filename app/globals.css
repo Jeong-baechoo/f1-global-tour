@@ -61,13 +61,6 @@
 
 /* 양끝 페이드 마스크 효과 */
 .fade-edges {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 20%,
-    black 80%,
-    transparent 100%
-  );
   mask-image: linear-gradient(
     to right,
     transparent 0%,

@@ -44,35 +44,23 @@
   display: flex;
 }
 
-/* Dot styles */
+/* Dot styles - ultraThin style from develop branch */
 .circuit-marker__dot {
-  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background-color: rgb(220, 38, 38);
-  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6), inset 0 0 2px rgba(255, 255, 255, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(0.8) translateZ(0);
-  will-change: transform, box-shadow;
+  background-color: #DC2626;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
+  transition: all 0.3s ease;
   position: relative;
   z-index: 3;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
-.circuit-marker__dot--mobile {
-  width: 8px;
-  height: 8px;
+.circuit-marker[data-next-race="true"] .circuit-marker__dot {
+  background-color: #FF1801;
 }
 
-.circuit-marker__dot--desktop {
-  width: 10px;
-  height: 10px;
-}
-
-.circuit-marker[data-hover="true"] .circuit-marker__dot {
-  transform: scale(1) translateZ(0);
-  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
-}
 
 /* Line styles */
 .circuit-marker__line {

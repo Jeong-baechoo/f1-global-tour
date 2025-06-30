@@ -192,7 +192,7 @@ export class CircuitMarkerManager {
 
     // 점 요소
     const dot = document.createElement('div');
-    dot.className = `circuit-marker__dot circuit-marker__dot--${mobile ? 'mobile' : 'desktop'}`;
+    dot.className = 'circuit-marker__dot';
 
     // 다음 레이스 표시 (펄스 효과)
     if (isNextRace) {

@@ -316,7 +316,10 @@ export const drawTrack = (
   { trackId, trackCoordinates, color = '#FF1801', delay = 0, onComplete }: TrackDrawOptions
 ) => {
   setTimeout(() => {
-    if (!map) return;
+    if (!map || !map.loaded()) {
+      console.warn(`Map not ready for track ${trackId}`);
+      return;
+    }
 
     // 서킷 ID 추출 (trackId는 보통 'circuitId-track' 형식)
     const circuitId = trackId.replace('-track', '');
@@ -461,14 +464,20 @@ export const drawTrack = (
       }
 
       if (animatedCoordinates.length > 1) {
-        (map.getSource(trackId) as mapboxgl.GeoJSONSource).setData({
-          type: 'Feature' as const,
-          properties: {},
-          geometry: {
-            type: 'LineString' as const,
-            coordinates: animatedCoordinates
-          }
-        });
+        const source = map.getSource(trackId) as mapboxgl.GeoJSONSource;
+        if (source) {
+          source.setData({
+            type: 'Feature' as const,
+            properties: {},
+            geometry: {
+              type: 'LineString' as const,
+              coordinates: animatedCoordinates
+            }
+          });
+        } else {
+          console.warn(`Source ${trackId} not found during animation`);
+          return; // 애니메이션 중단
+        }
       }
 
       if (progress < 1) {

@@ -32,6 +32,7 @@ export interface Circuit {
   };
   length: number; // in kilometers
   laps: number;
+  corners: number;
   lapRecord: {
     time: string;
     driver: string;

@@ -248,29 +248,11 @@ export const createCircuitMarker = ({
       // 줌 5 이하: 라벨과 연결선 숨기기
       labelContainer.style.display = 'none';
       line.style.display = 'none';
-      el.style.opacity = '1';
       
       // 컨테이너 크기 조정
       el.style.gap = '0';
-    } else if (zoom >= 13) {
-      // 줌 13-15: 서서히 사라지기
-      const fadeStart = 13;
-      const fadeEnd = 15;
-      const opacity = Math.max(0, 1 - (zoom - fadeStart) / (fadeEnd - fadeStart));
-      
-      el.style.display = 'flex';
-      el.style.opacity = opacity.toString();
-      labelContainer.style.display = 'flex';
-      line.style.display = 'block';
-      
-      // 완전히 투명해지면 숨기기
-      if (opacity === 0) {
-        el.style.display = 'none';
-      }
     } else {
-      // 줌 5 초과 ~ 13 미만: 모든 요소 표시
-      el.style.display = 'flex';
-      el.style.opacity = '1';
+      // 줌 5 초과: 라벨과 연결선 표시
       labelContainer.style.display = 'flex';
       line.style.display = 'block';
       
