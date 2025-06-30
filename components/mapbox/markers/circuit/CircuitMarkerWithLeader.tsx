@@ -10,6 +10,7 @@ interface CircuitMarkerProps {
   isNextRace?: boolean;
   onMarkerClick?: (item: MarkerData) => void;
   onMarkerCreated?: (marker: mapboxgl.Marker) => void;
+  language?: 'en' | 'ko';
 }
 
 export const createCircuitMarkerWithLeader = ({ 
@@ -17,7 +18,8 @@ export const createCircuitMarkerWithLeader = ({
   circuit, 
   isNextRace = false, 
   onMarkerClick,
-  onMarkerCreated
+  onMarkerCreated,
+  language = 'en'
 }: CircuitMarkerProps): { marker: mapboxgl.Marker } => {
   const mobile = isMobile();
   
@@ -85,7 +87,7 @@ export const createCircuitMarkerWithLeader = ({
   label.style.cursor = 'pointer';
   label.style.pointerEvents = 'auto';
   label.style.transition = 'opacity 0.3s ease';
-  label.textContent = getText(circuit.name, 'en'); // Use English for marker labels for consistency
+  label.textContent = getText(circuit.name, language);
   
   // NEXT RACE 뱃지
   if (isNextRace) {

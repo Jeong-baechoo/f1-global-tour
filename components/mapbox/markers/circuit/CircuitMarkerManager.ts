@@ -4,18 +4,26 @@ import { createCircuitMarker } from './CircuitMarker';
 import { MarkerData } from '../../types';
 import { F1_2025_CIRCUITS } from '../../utils/data/circuitMapping';
 
+// cleanup 함수를 포함하는 마커 타입
+interface MarkerWithCleanup {
+  marker: mapboxgl.Marker;
+  cleanup: () => void;
+}
+
 interface AddAllCircuitsOptions {
   map: mapboxgl.Map;
   onMarkerClick?: (item: MarkerData) => void;
   nextRaceId?: string;
-  markers: mapboxgl.Marker[];
+  markersWithCleanup: MarkerWithCleanup[];
+  language?: 'en' | 'ko';
 }
 
 export const addAllCircuits = ({ 
   map, 
   onMarkerClick, 
   nextRaceId,
-  markers 
+  markersWithCleanup,
+  language = 'en'
 }: AddAllCircuitsOptions) => {
   // 2025 시즌 서킷만 필터링
   const circuits2025 = circuitsData.circuits.filter(circuit => 
@@ -30,10 +38,14 @@ export const addAllCircuits = ({
       map,
       circuit,
       isNextRace,
-      onMarkerClick
+      onMarkerClick,
+      language
     });
     if (marker) {
-      markers.push(marker);
+      markersWithCleanup.push({
+        marker,
+        cleanup: () => marker.remove()
+      });
     }
   });
   
@@ -44,10 +56,14 @@ export const addAllCircuits = ({
       map,
       circuit: nurburgring,
       isNextRace: false,
-      onMarkerClick
+      onMarkerClick,
+      language
     });
     if (marker) {
-      markers.push(marker);
+      markersWithCleanup.push({
+        marker,
+        cleanup: () => marker.remove()
+      });
     }
   }
 };

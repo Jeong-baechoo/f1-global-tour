@@ -271,21 +271,29 @@ export default function InteractivePanel({
 
             <div className="bg-[#1A1A1A]/60 backdrop-blur-sm rounded border border-[#FF1801]/20 p-4 sm:p-6">
               <div className="text-center mb-4">
-                <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">RACE STARTS IN</div>
+                <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">
+                  {language === 'ko' ? '레이스 시작까지' : 'RACE STARTS IN'}
+                </div>
                 <div className="flex justify-center gap-2 sm:gap-4">
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{countdown.days}</div>
-                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Days</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">
+                      {language === 'ko' ? '일' : 'Days'}
+                    </div>
                   </div>
                   <div className="text-2xl sm:text-3xl text-[#FF1801]">:</div>
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{String(countdown.hours).padStart(2, '0')}</div>
-                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Hours</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">
+                      {language === 'ko' ? '시간' : 'Hours'}
+                    </div>
                   </div>
                   <div className="text-2xl sm:text-3xl text-[#FF1801]">:</div>
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{String(countdown.minutes).padStart(2, '0')}</div>
-                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Minutes</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">
+                      {language === 'ko' ? '분' : 'Minutes'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -301,12 +309,12 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-3">
                   <Calendar className="w-4 h-4 text-[#C0C0C0]" />
                   <div className="text-sm text-white">
-                    {data?.raceDate ? new Date(data.raceDate).toLocaleDateString('en-US', {
+                    {data?.raceDate ? new Date(data.raceDate).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
-                    }) : 'June 29, 2025'}
+                    }) : (language === 'ko' ? '2025년 6월 29일' : 'June 29, 2025')}
                   </div>
                 </div>
               </div>
@@ -316,7 +324,7 @@ export default function InteractivePanel({
               onClick={onExploreCircuit}
               className="w-full bg-[#FF1801] hover:bg-[#FF1801]/90 text-white font-bold py-3 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"
             >
-              Explore Circuit
+              {language === 'ko' ? '서킷 탐색' : 'Explore Circuit'}
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -608,14 +616,14 @@ export default function InteractivePanel({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-white font-semibold text-base">
-                    {module === 'circuit-detail' ? (getText(data?.name || 'Circuit', language)) :
-                     module === 'team-hq' ? (getText(data?.name || 'Team HQ', language)) :
+                    {module === 'circuit-detail' ? (data?.name ? getText(data.name, language) : (language === 'ko' ? '레드불 링' : 'Red Bull Ring')) :
+                     module === 'team-hq' ? (data?.name ? getText(data.name, language) : (language === 'ko' ? '메르세데스-AMG 페트로나스 F1 팀' : 'Mercedes-AMG Petronas F1 Team')) :
                      (language === 'ko' ? '다음 레이스' : 'Next Race')}
                   </h3>
                   {module === 'circuit-detail' && (
                     <p className="text-xs text-[#C0C0C0] mt-0.5">
                       {typeof data?.location === 'string' ? data.location :
-                       `${data?.location?.city ? getText(data.location.city, language) : ''}, ${data?.location?.country ? getText(data.location.country, language) : ''}`}
+                       `${data?.location?.city ? getText(data.location.city, language) : (language === 'ko' ? '슈필베르크' : 'Spielberg')}, ${data?.location?.country ? getText(data.location.country, language) : (language === 'ko' ? '오스트리아' : 'Austria')}`}
                     </p>
                   )}
                 </div>

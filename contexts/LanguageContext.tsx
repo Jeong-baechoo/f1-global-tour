@@ -30,13 +30,14 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
           return;
         }
 
-        // 개발 중 임시로 US 기준으로 고정
-        setLanguage('en');
-        
-        // 브라우저 언어 감지 (개발 중 주석처리)
-        // const browserLanguage = navigator.language.toLowerCase();
-        // const detectedLanguage: Language = browserLanguage.startsWith('ko') ? 'ko' : 'en';
-        // setLanguage(detectedLanguage);
+        // 개발 환경에서는 영어로 고정, 프로덕션에서는 브라우저 언어 감지
+        if (process.env.NODE_ENV === 'development') {
+          setLanguage('en');
+        } else {
+          const browserLanguage = navigator.language.toLowerCase();
+          const detectedLanguage: Language = browserLanguage.startsWith('ko') ? 'ko' : 'en';
+          setLanguage(detectedLanguage);
+        }
         
       } catch (error) {
         // localStorage 접근 실패 시 기본값 사용

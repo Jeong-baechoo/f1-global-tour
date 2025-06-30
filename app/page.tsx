@@ -49,6 +49,7 @@ export default function Home() {
   const initialFocusTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
 
 
   // 드래그 스크롤을 위한 상태
@@ -72,13 +73,24 @@ export default function Home() {
     }
     if (!item.type) return; // type이 없으면 처리하지 않음
     
+    // 현재 패널 상태 확인 (토글 로직 실행 전)
+    const currentModule = item.type === 'team' ? 'team-hq' : 'circuit-detail';
+    const isSameModule = panelModule === currentModule;
+    const isSameItem = panelData?.id === item.id;
+    
+    // 언어 변경 후 첫 클릭에서는 토글하지 않음
+    const shouldToggle = panelOpen && isSameModule && isSameItem && !languageChangedFlag;
+    
+    // 언어 변경 플래그 리셋
+    if (languageChangedFlag) {
+      setLanguageChangedFlag(false);
+    }
+    
     if (item.type === 'team') {
       setPanelModule('team-hq');
-      setPanelData({
-        ...item
-      });
+      setPanelData(item);
     } else if (item.type === 'circuit') {
-      setPanelModule('circuit-detail');
+      setPanelModule('circuit-detail');  
       setPanelData(item);
 
       // 서킷 클릭 시 지도 줌인 및 트랙 그리기
@@ -87,8 +99,8 @@ export default function Home() {
       }
     }
 
-    // 패널이 이미 열려있고 같은 모듈인 경우 토글
-    if (panelOpen && panelModule === (item.type === 'team' ? 'team-hq' : 'circuit-detail')) {
+    // 토글 로직: 같은 마커를 다시 클릭했을 때만 토글 (언어 변경 후 제외)
+    if (shouldToggle) {
       // 최소화 상태라면 펼치기, 펼쳐진 상태라면 닫기
       if (panelMinimized) {
         setPanelMinimized(false);
@@ -96,10 +108,11 @@ export default function Home() {
         setPanelOpen(false);
       }
     } else {
+      // 다른 마커이거나 첫 클릭이면 패널 열기
       setPanelOpen(true);
       setPanelMinimized(false);
     }
-  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized]);
+  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData, languageChangedFlag]);
 
   const handleUserInteraction = useCallback(() => {
     if (initialFocusTimerRef.current && !hasUserInteracted) {
@@ -108,6 +121,11 @@ export default function Home() {
       setHasUserInteracted(true);
     }
   }, [hasUserInteracted]);
+
+  // 언어 변경 감지
+  useEffect(() => {
+    setLanguageChangedFlag(true);
+  }, [language]);
 
   const handleExploreCircuit = () => {
     setPanelModule('circuit-detail');
@@ -457,9 +475,14 @@ export default function Home() {
                   if (window.innerWidth < MOBILE_BREAKPOINT) {
                     setTimelineOpen(false);
                   }
+                  // 언어 변경 플래그 리셋 (타임라인 클릭 시)
+                  if (languageChangedFlag) {
+                    setLanguageChangedFlag(false);
+                  }
+                  
                   // 서킷 상세 패널 열기
                   setPanelModule('circuit-detail');
-                  setPanelData({
+                  const circuitPanelData: PanelData = {
                     type: 'circuit',
                     id: circuit.id,
                     name: circuit.name,
@@ -467,8 +490,16 @@ export default function Home() {
                     grandPrix: circuit.grandPrix,
                     length: circuit.length,
                     corners: circuit.corners,
-                    laps: circuit.laps
-                  });
+                    laps: circuit.laps,
+                    lapRecord: circuit.lapRecord,
+                    totalDistance: circuit.totalDistance
+                  };
+                  
+                  if ('schedule' in circuit && circuit.schedule && typeof circuit.schedule === 'object' && 'race' in circuit.schedule) {
+                    circuitPanelData.schedule = circuit.schedule as PanelData['schedule'];
+                  }
+                  
+                  setPanelData(circuitPanelData);
                   setPanelOpen(true);
                   setPanelMinimized(false);
                 }}

@@ -1,6 +1,8 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../../types';
 import { isMobile } from '../../utils/viewport';
+import type { Circuit } from '@/types/f1';
+import { getText } from '@/utils/i18n';
 
 
 // 실제 F1 서킷 코너 정보
@@ -34,28 +36,6 @@ const CIRCUIT_CORNERS: Record<string, number> = {
   'nurburgring': 15  // 정확한 GP 서킷 코너 수
 };
 
-interface Circuit {
-  id: string;
-  name: string;
-  grandPrix: string;
-  officialName: string;
-  country: string;
-  location: {
-    lng: number;
-    lat: number;
-    city: string;
-    country: string;
-  };
-  length: number;
-  laps?: number;
-  corners?: number;
-  raceDate2025?: string | null;
-  lapRecord?: {
-    time: string;
-    driver: string;
-    year: number;
-  };
-}
 
 interface CircuitMarkerProps {
   map: mapboxgl.Map;
@@ -63,6 +43,7 @@ interface CircuitMarkerProps {
   isNextRace?: boolean;
   onMarkerClick?: (item: MarkerData) => void;
   onMarkerCreated?: (marker: mapboxgl.Marker) => void;
+  language?: 'en' | 'ko';
 }
 
 // 레이스 시간 포맷팅 함수
@@ -82,7 +63,8 @@ export const createCircuitMarker = ({
   circuit,
   isNextRace = false,
   onMarkerClick,
-  onMarkerCreated
+  onMarkerCreated,
+  language = 'en'
 }: CircuitMarkerProps): mapboxgl.Marker => {
   const mobile = isMobile();
 
@@ -167,7 +149,7 @@ export const createCircuitMarker = ({
   cityName.style.fontWeight = '600';
   cityName.style.letterSpacing = '0.5px';
   cityName.style.textTransform = 'uppercase';
-  cityName.textContent = circuit.location.city;
+  cityName.textContent = getText(circuit.location.city, language);
 
   // 시간 정보 (레이스 날짜가 있을 경우)
   if (circuit.raceDate2025) {
@@ -258,7 +240,8 @@ export const createCircuitMarker = ({
         laps: circuit.laps,
         corners: CIRCUIT_CORNERS[circuit.id] || 10,
         totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
-        location: `${circuit.location.city}, ${circuit.location.country}`
+        location: circuit.location,
+        lapRecord: circuit.lapRecord
       };
       onMarkerClick(markerData);
     });

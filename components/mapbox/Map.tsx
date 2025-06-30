@@ -5,6 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 import {MapProps, MapAPI} from './types';
 import {addAllCircuits, findNextRace} from './markers/circuit/CircuitMarkerManager';
@@ -38,6 +39,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   // Custom hooks 사용
   const { map, globeSpinner } = useMapInitialization({ mapContainer, onUserInteraction });
   const { handleCinematicModeToggle } = useCinematicMode({ map, onCinematicModeChange });
+  const { language } = useLanguage();
   
   // Props를 ref로 저장하여 re-render 시에도 최신 값 유지
   const propsRef = useRef({ onMarkerClick, onCinematicModeChange });
@@ -161,7 +163,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
     toggleCinematicMode: handleCinematicModeToggle
   }), [map, globeSpinner, setIsCircuitView, handleCinematicModeToggle]);
 
-  // 마커 추가 및 지도 상태 업데이트
+  // 마커 추가 및 지도 상태 업데이트 (초기 설정)
   useEffect(() => {
     if (!map.current) return;
 
@@ -172,7 +174,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       // map instance를 state에 저장
       setMapInstance(map.current);
 
-
       // 줌 레벨 변경 감지 핸들러
       const handleZoomChange = () => {
         if (!map.current) return;
@@ -182,7 +183,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         if (zoom <= ZOOM_LEVELS.region) {
           setIsCircuitView(false);
         }
-        
       };
 
       // 이벤트 리스너 등록
@@ -207,7 +207,8 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           map: map.current,
           onMarkerClick: propsRef.current.onMarkerClick,
           nextRaceId: nextRace || undefined,
-          markers: markers.current.map(mc => mc.marker)  // 서킷은 아직 기존 방식 사용
+          markersWithCleanup: markers.current,
+          language
         });
         
       }, TIMEOUTS.markerDelay);
@@ -227,7 +228,46 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       markers.current = [];
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 빈 의존성 배열 - 마커는 한 번만 생성
+  }, []); // 초기 설정은 한 번만 실행
+
+  // 언어 변경 시 마커 텍스트만 업데이트
+  useEffect(() => {
+    if (!map.current || markers.current.length === 0) return;
+
+    // 기존 마커들을 제거하고 새로운 언어로 재생성
+    markers.current.forEach(({ cleanup }) => {
+      cleanup();
+    });
+    markers.current = [];
+
+    // 새로운 언어로 마커 재생성 (부드러운 전환을 위해 짧은 딜레이)
+    const timeoutId = setTimeout(() => {
+      if (!map.current) return;
+      
+      // 팀 마커 추가
+      addAllTeams({
+        map: map.current,
+        onMarkerClick: propsRef.current.onMarkerClick,
+        markersWithCleanup: markers.current
+      });
+      
+      // 다음 레이스 찾기
+      const nextRace = findNextRace();
+      
+      // 모든 서킷 마커 추가
+      addAllCircuits({
+        map: map.current,
+        onMarkerClick: propsRef.current.onMarkerClick,
+        nextRaceId: nextRace || undefined,
+        markersWithCleanup: markers.current,
+        language
+      });
+      
+    }, 50); // 최소한의 딜레이로 빠른 업데이트
+
+    return () => clearTimeout(timeoutId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]); // language가 변경될 때만 마커 재생성 (map은 ref이므로 의존성에서 제외)
 
   return (
     <>

@@ -21,16 +21,16 @@ export interface Team {
 
 export interface Circuit {
   id: string;
-  name: string | MultiLanguageText;
-  officialName: string | MultiLanguageText;
-  grandPrix: string | MultiLanguageText;
+  name: MultiLanguageText;
+  officialName: MultiLanguageText;
+  grandPrix: MultiLanguageText;
   country: string;
   city: string;
   location: {
     lat: number;
     lng: number;
-    city: string | MultiLanguageText;
-    country: string | MultiLanguageText;
+    city: MultiLanguageText;
+    country: MultiLanguageText;
   };
   length: number; // in kilometers
   laps: number;
