@@ -36,14 +36,19 @@
   display: none;
 }
 
-.circuit-marker[data-zoom-level="high"] {
-  display: none;
+.circuit-marker[data-zoom-level="normal"] {
+  opacity: 1;
 }
 
 .circuit-marker[data-zoom-level="fade"] {
   display: flex;
+  opacity: var(--zoom-opacity, 1);
+  transition: opacity 0.3s ease;
 }
 
+.circuit-marker[data-zoom-level="high"] {
+  display: none;
+}
 /* Dot styles - ultraThin style from develop branch */
 .circuit-marker__dot {
   width: 12px;

@@ -130,22 +130,21 @@ export class CircuitMarkerManager {
     if (zoom <= 5) {
       // 줌 5 이하
       element.setAttribute('data-zoom-level', 'low');
-    } else if (zoom >= 13) {
-      // 줌 13-15: 서서히 사라지기
-      const fadeStart = 13;
-      const fadeEnd = 15;
-      const opacity = Math.max(0, 1 - (zoom - fadeStart) / (fadeEnd - fadeStart));
-      
-      if (opacity === 0) {
-        element.setAttribute('data-zoom-level', 'high');
-      } else {
-        element.setAttribute('data-zoom-level', 'fade');
-        element.style.opacity = opacity.toString();
-      }
+      element.style.removeProperty('--zoom-opacity');
+    } else if (zoom >= 13 && zoom < 15) {
+      // 줌 13-15: 페이드
+      element.setAttribute('data-zoom-level', 'fade');
+      // CSS 변수로 opacity 계산값 전달
+      const opacity = Math.max(0, 1 - (zoom - 13) / 2);
+      element.style.setProperty('--zoom-opacity', opacity.toString());
+    } else if (zoom >= 15) {
+      // 줌 15 이상: 완전히 숨김
+      element.setAttribute('data-zoom-level', 'high');
+      element.style.removeProperty('--zoom-opacity');
     } else {
       // 줌 5 초과 ~ 13 미만: 정상 표시
       element.setAttribute('data-zoom-level', 'normal');
-      element.style.opacity = '1';
+      element.style.removeProperty('--zoom-opacity');
     }
   }
 
