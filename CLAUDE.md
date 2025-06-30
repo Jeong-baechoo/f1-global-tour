@@ -1,6 +1,6 @@
-# CLAUDE.md
+# PROJECT DOCUMENTATION
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides project documentation and architecture guidance for developers working with this repository.
 
 ## Project Overview
 
@@ -78,7 +78,6 @@ Requires Mapbox access token:
 
 ## Git Workflow
 
-Current git status shows:
-- Modified: `app/globals.css`, `components/Map.tsx`
-- Branch: master
 - Use commit format: `<type>: <description>` (feat, fix, docs, style, refactor, test, chore)
+- Branch naming: `feature/<name>`, `fix/<name>`, `chore/<name>`
+- PR workflow: Create feature branch → Develop → Review → Merge to master

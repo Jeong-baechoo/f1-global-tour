@@ -1,7 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../../types';
 import { isMobile } from '../../utils/viewport';
-import { CIRCUIT_CORNERS } from '../../utils/data/circuitCorners';
 
 
 interface Circuit {
@@ -226,7 +225,7 @@ export const createCircuitMarker = ({
         grandPrix: circuit.grandPrix,
         length: circuit.length,
         laps: circuit.laps,
-        corners: CIRCUIT_CORNERS[circuit.id] || 10,
+        corners: circuit.corners || 10,
         totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
         location: `${circuit.location.city}, ${circuit.location.country}`
       };

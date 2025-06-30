@@ -1,7 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { Circuit } from '@/types/f1';
 import { MarkerData } from '../types';
-import { CIRCUIT_CORNERS } from '../utils/data/circuitCorners';
 
 interface CircuitMarkerData {
   element: HTMLElement;
@@ -109,7 +108,7 @@ export class CircuitMarkerManager {
       grandPrix: data.circuit.grandPrix,
       length: data.circuit.length,
       laps: data.circuit.laps,
-      corners: CIRCUIT_CORNERS[data.circuit.id] || 10,
+      corners: data.circuit.corners || 10,
       totalDistance: data.circuit.laps && data.circuit.length 
         ? Math.round((data.circuit.laps * data.circuit.length) * 10) / 10 
         : 0,
