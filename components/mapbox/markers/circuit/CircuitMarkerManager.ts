@@ -1,74 +1,7 @@
-import mapboxgl from 'mapbox-gl';
 import circuitsData from '@/data/circuits.json';
-import { createCircuitMarker } from './CircuitMarker';
-import { MarkerData } from '../../types';
+import { CircuitMarkerManager } from '../../managers/CircuitMarkerManager';
 import { F1_2025_CIRCUITS } from '../../utils/data/circuitMapping';
 import type { Language } from '@/utils/i18n';
-
-// cleanup 함수를 포함하는 마커 타입
-interface MarkerWithCleanup {
-  marker: mapboxgl.Marker;
-  cleanup: () => void;
-}
-
-interface AddAllCircuitsOptions {
-  map: mapboxgl.Map;
-  onMarkerClick?: (item: MarkerData) => void;
-  nextRaceId?: string;
-  markersWithCleanup: MarkerWithCleanup[];
-  language?: Language;
-}
-
-export const addAllCircuits = ({ 
-  map, 
-  onMarkerClick, 
-  nextRaceId,
-  markersWithCleanup,
-  language = 'en'
-}: AddAllCircuitsOptions) => {
-  // 2025 시즌 서킷만 필터링
-  const circuits2025 = circuitsData.circuits.filter(circuit => 
-    F1_2025_CIRCUITS.includes(circuit.id)
-  );
-  
-  // 2025년 서킷에 대해 마커 추가
-  circuits2025.forEach(circuit => {
-    const isNextRace = circuit.id === nextRaceId;
-    
-    const marker = createCircuitMarker({
-      map,
-      circuit,
-      isNextRace,
-      language,
-      onMarkerClick
-    });
-    if (marker) {
-      markersWithCleanup.push({
-        marker,
-        cleanup: () => marker.remove()
-      });
-    }
-  });
-  
-  // 추가로 뉘르부르크링 추가 (데모용)
-  const nurburgring = circuitsData.circuits.find(c => c.id === 'nurburgring');
-  if (nurburgring) {
-    const marker = createCircuitMarker({
-      map,
-      circuit: nurburgring,
-      isNextRace: false,
-      language,
-      onMarkerClick
-    });
-    if (marker) {
-      markersWithCleanup.push({
-        marker,
-        cleanup: () => marker.remove()
-      });
-    }
-  }
-};
-
 // 다음 레이스 찾기
 export const findNextRace = () => {
   const today = new Date();
@@ -86,4 +19,32 @@ export const findNextRace = () => {
   const nextRace = sortedCircuits.find(circuit => circuit.raceDate >= today);
   
   return nextRace ? nextRace.id : null;
+};
+
+// 모든 서킷 추가 (CircuitMarkerManager 사용)
+export const addAllCircuitsWithManager = (
+  manager: CircuitMarkerManager,
+  nextRaceId?: string,
+  language?: Language
+) => {
+  // Set language if provided
+  if (language) {
+    manager.setLanguage(language);
+  }
+  // 2025 시즌 서킷만 필터링
+  const circuits2025 = circuitsData.circuits.filter(circuit => 
+    F1_2025_CIRCUITS.includes(circuit.id)
+  );
+  
+  // 2025년 서킷에 대해 마커 추가
+  circuits2025.forEach(circuit => {
+    const isNextRace = circuit.id === nextRaceId;
+    manager.addCircuitMarker(circuit, isNextRace);
+  });
+  
+  // 추가로 뉘르부르크링 추가 (데모용)
+  const nurburgring = circuitsData.circuits.find(c => c.id === 'nurburgring');
+  if (nurburgring) {
+    manager.addCircuitMarker(nurburgring, false);
+  }
 };

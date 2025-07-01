@@ -3,6 +3,7 @@ import { interpolateCoordinates } from '../animations/globeAnimation';
 import { TrackDrawOptions } from '../../types';
 import { ANIMATION_CONFIG } from '../../constants';
 import { CIRCUIT_ID_MAPPING } from '../data/circuitMapping';
+import { trackManager } from './trackManager';
 
 // DRS 존 인덱스 정의 - 동적으로 계산
 const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround?: boolean }> | 'dynamic' } = {
@@ -149,6 +150,8 @@ const drawDRSZones = (
   trackCoordinates: number[][],
   circuitId: string
 ) => {
+  // DRS ID 목록 수집용
+  const drsIds: string[] = [];
   
   // Circuit ID 매핑 (austria -> at-1969)
   const mappedCircuitId = CIRCUIT_ID_MAPPING[circuitId] || circuitId;
@@ -232,6 +235,7 @@ const drawDRSZones = (
     }
     
     const drsId = `${trackId}-drs-${index}`;
+    drsIds.push(drsId);
     
     // DRS 포인트 생성 (Symbol용)
     const features = [];
@@ -272,15 +276,23 @@ const drawDRSZones = (
       });
     }
     
-    // Symbol 레이어 추가
+    // Symbol 레이어 추가 (줌 레벨 14 이상에서만 표시)
     if (!map.getLayer(`${drsId}-symbols`)) {
       map.addLayer({
         id: `${drsId}-symbols`,
         type: 'symbol',
         source: drsId,
+        minzoom: 14, // 줌 레벨 14 이상에서만 표시
         layout: {
           'icon-image': 'chevron-dim', // 초기 상태
-          'icon-size': 0.8,
+          'icon-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            14, 0.6,  // 줌 14에서 작게 시작
+            16, 0.8,  // 줌 16에서 기본 크기
+            18, 1.0   // 줌 18에서 크게
+          ],
           'icon-rotate': ['get', 'bearing'],
           'icon-rotation-alignment': 'map', // 맵에 고정 (카메라 회전과 무관)
           'icon-pitch-alignment': 'map',    // 피치에도 맵 고정
@@ -291,6 +303,11 @@ const drawDRSZones = (
     }
     });
   }
+  
+  // TrackManager에 DRS 정보 추가
+  if (drsIds.length > 0) {
+    trackManager.addDRSElements(circuitId, drsIds);
+  }
 };
 
 // 범용 트랙 그리기 함수
@@ -299,12 +316,27 @@ export const drawTrack = (
   { trackId, trackCoordinates, color = '#FF1801', delay = 0, onComplete }: TrackDrawOptions
 ) => {
   setTimeout(() => {
-    if (!map) return;
+    if (!map || !map.loaded()) {
+      console.warn(`Map not ready for track ${trackId}`);
+      return;
+    }
+
+    // 서킷 ID 추출 (trackId는 보통 'circuitId-track' 형식)
+    const circuitId = trackId.replace('-track', '');
+
+    // 줌 레벨 확인
+    if (!trackManager.canShowTrack()) {
+      console.log(`Zoom level too low to show track for ${circuitId}`);
+      return;
+    }
 
     // 이미 트랙이 그려져 있으면 스킵
     if (map.getLayer(`${trackId}-main`)) {
       return;
     }
+
+    // TrackManager에 등록
+    trackManager.registerTrack(circuitId, trackId);
 
     // 좌표 보간
     const smoothCoordinates = interpolateCoordinates(trackCoordinates);
@@ -322,6 +354,7 @@ export const drawTrack = (
           }
         }
       });
+      trackManager.addTrackSource(circuitId, trackId);
     }
 
     // 트랙 아웃라인 레이어
@@ -330,16 +363,33 @@ export const drawTrack = (
         id: `${trackId}-outline`,
         type: 'line',
         source: trackId,
+        minzoom: 10,  // 줌 10 이상에서만 표시 (가까이 있을 때만)
         layout: {
           'line-join': 'round',
           'line-cap': 'round'
         },
         paint: {
           'line-color': '#FFFFFF',
-          'line-width': 8,
-          'line-blur': 1
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 6,   // 줌 10에서 얇게
+            12, 8,   // 줌 12에서 기본
+            16, 10   // 줌 16에서 두껍게
+          ],
+          'line-blur': 1,
+          'line-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 0.3,  // 줌 10에서 희미하게 시작
+            11, 0.7,  // 줌 11에서 더 진해짐
+            12, 1     // 줌 12 이상에서 완전히 불투명
+          ]
         }
       });
+      trackManager.addTrackLayer(circuitId, `${trackId}-outline`);
     }
 
     // 메인 트랙 레이어
@@ -348,19 +398,33 @@ export const drawTrack = (
         id: `${trackId}-main`,
         type: 'line',
         source: trackId,
+        minzoom: 10,  // 줌 10 이상에서만 표시 (가까이 있을 때만)
         layout: {
           'line-join': 'round',
           'line-cap': 'round'
         },
         paint: {
           'line-color': color,
-          'line-width': 5
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 3,   // 줌 10에서 얇게
+            12, 5,   // 줌 12에서 기본
+            16, 7    // 줌 16에서 두껍게
+          ],
+          'line-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 0.4,  // 줌 10에서 희미하게 시작
+            11, 0.8,  // 줌 11에서 더 진해짐
+            12, 1     // 줌 12 이상에서 완전히 불투명
+          ]
         }
       });
+      trackManager.addTrackLayer(circuitId, `${trackId}-main`);
     }
-
-    // 서킷 ID 추출 (trackId는 보통 'circuitId-track' 형식)
-    const circuitId = trackId.replace('-track', '');
 
     // 트랙 애니메이션
     const startTime = performance.now();
@@ -400,14 +464,20 @@ export const drawTrack = (
       }
 
       if (animatedCoordinates.length > 1) {
-        (map.getSource(trackId) as mapboxgl.GeoJSONSource).setData({
-          type: 'Feature' as const,
-          properties: {},
-          geometry: {
-            type: 'LineString' as const,
-            coordinates: animatedCoordinates
-          }
-        });
+        const source = map.getSource(trackId) as mapboxgl.GeoJSONSource;
+        if (source) {
+          source.setData({
+            type: 'Feature' as const,
+            properties: {},
+            geometry: {
+              type: 'LineString' as const,
+              coordinates: animatedCoordinates
+            }
+          });
+        } else {
+          console.warn(`Source ${trackId} not found during animation`);
+          return; // 애니메이션 중단
+        }
       }
 
       if (progress < 1) {
@@ -435,6 +505,18 @@ const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
   const startTime = performance.now();
   
   const animate = () => {
+    // 줌 레벨 확인 - 14 미만이면 애니메이션 중지
+    const currentZoom = map.getZoom();
+    if (currentZoom < 14) {
+      // 1초 후에 다시 체크
+      setTimeout(() => {
+        if (map.getZoom() >= 14) {
+          animateDRSSequentialSignal(map, trackId);
+        }
+      }, 1000);
+      return;
+    }
+    
     const elapsed = performance.now() - startTime;
     const totalProgress = (elapsed / animationDuration) % 1;
     

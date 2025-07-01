@@ -3,19 +3,22 @@
 import {useEffect, useRef, useState, memo, forwardRef, useImperativeHandle} from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import '@/styles/circuit-marker.css';
 import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import {MapProps, MapAPI} from './types';
-import {addAllCircuits, findNextRace} from './markers/circuit/CircuitMarkerManager';
+import {addAllCircuitsWithManager, findNextRace} from './markers/circuit/CircuitMarkerManager';
 import {addAllTeams} from './markers/team/TeamMarkerManager';
+import { CircuitMarkerManager } from './managers/CircuitMarkerManager';
 import CinematicModeButton from './controls/CinematicModeButton';
 import ZoomScrollbar from './controls/ZoomScrollbar';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
 import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
+import { trackManager } from './utils/map/trackManager';
 
 // Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
@@ -33,6 +36,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   const { language } = useLanguage();
   const mapContainer = useRef<HTMLDivElement>(null);
   const markers = useRef<MarkerWithCleanup[]>([]);
+  const circuitMarkerManager = useRef<CircuitMarkerManager | null>(null);
   const [isCircuitView, setIsCircuitView] = useState(false);
   const isCircuitViewRef = useRef(false);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
@@ -173,7 +177,18 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
       // map instance를 state에 저장
       setMapInstance(map.current);
-
+      
+      // TrackManager 초기화
+      trackManager.setMap(map.current);
+      
+      // CircuitMarkerManager 초기화
+      if (!circuitMarkerManager.current) {
+        circuitMarkerManager.current = new CircuitMarkerManager();
+        circuitMarkerManager.current.setMap(map.current);
+        if (propsRef.current.onMarkerClick) {
+          circuitMarkerManager.current.setOnMarkerClick(propsRef.current.onMarkerClick);
+        }
+      }
 
       // 줌 레벨 변경 감지 핸들러
       const handleZoomChange = () => {
@@ -205,14 +220,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         // 다음 레이스 찾기
         const nextRace = findNextRace();
         
-        // 모든 서킷 마커 추가
-        addAllCircuits({
-          map: map.current,
-          onMarkerClick: propsRef.current.onMarkerClick,
-          nextRaceId: nextRace || undefined,
-          markersWithCleanup: markers.current,
-          language
-        });
+        // 모든 서킷 마커 추가 (CircuitMarkerManager 사용)
+        if (circuitMarkerManager.current) {
+          addAllCircuitsWithManager(circuitMarkerManager.current, nextRace || undefined, language);
+        }
         
       }, TIMEOUTS.markerDelay);
     };
@@ -225,27 +236,49 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
     // cleanup 함수 - cleanup 메서드 호출
     return () => {
+      // 팀 마커 cleanup
       markers.current.forEach(({ cleanup }) => {
         cleanup();
       });
       markers.current = [];
+      
+      // 서킷 마커 매니저 cleanup
+      if (circuitMarkerManager.current) {
+        circuitMarkerManager.current.cleanup();
+        circuitMarkerManager.current = null;
+      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 초기 설정은 한 번만 실행
 
   // 언어 변경 시 마커 텍스트만 업데이트
   useEffect(() => {
-    if (!map.current || markers.current.length === 0) return;
+    if (!map.current) return;
 
     // 기존 마커들을 제거하고 새로운 언어로 재생성
     markers.current.forEach(({ cleanup }) => {
       cleanup();
     });
     markers.current = [];
+    
+    // 서킷 마커 매니저도 정리
+    if (circuitMarkerManager.current) {
+      circuitMarkerManager.current.cleanup();
+      circuitMarkerManager.current = null;
+    }
 
     // 새로운 언어로 마커 재생성 (부드러운 전환을 위해 짧은 딘레이)
     const timeoutId = setTimeout(() => {
       if (!map.current) return;
+      
+      // CircuitMarkerManager 재초기화
+      if (!circuitMarkerManager.current) {
+        circuitMarkerManager.current = new CircuitMarkerManager();
+        circuitMarkerManager.current.setMap(map.current);
+        if (propsRef.current.onMarkerClick) {
+          circuitMarkerManager.current.setOnMarkerClick(propsRef.current.onMarkerClick);
+        }
+      }
       
       // 팀 마커 추가
       addAllTeams({
@@ -258,14 +291,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       // 다음 레이스 찾기
       const nextRace = findNextRace();
       
-      // 모든 서킷 마커 추가
-      addAllCircuits({
-        map: map.current,
-        onMarkerClick: propsRef.current.onMarkerClick,
-        nextRaceId: nextRace || undefined,
-        markersWithCleanup: markers.current,
-        language
-      });
+      // 모든 서킷 마커 추가 (CircuitMarkerManager 사용)
+      if (circuitMarkerManager.current) {
+        addAllCircuitsWithManager(circuitMarkerManager.current, nextRace || undefined, language);
+      }
       
     }, 50); // 최소한의 딘레이로 빠른 업데이트
 

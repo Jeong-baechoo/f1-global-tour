@@ -4,8 +4,8 @@ import { isMobile } from '../../utils/viewport';
 import type { Circuit } from '@/types/f1';
 import { getText, type Language } from '@/utils/i18n';
 
-
 // 실제 F1 서킷 코너 정보
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CIRCUIT_CORNERS: Record<string, number> = {
   'bahrain': 15,
   'saudi-arabia': 27,
@@ -35,7 +35,6 @@ const CIRCUIT_CORNERS: Record<string, number> = {
   'abu-dhabi': 16,
   'nurburgring': 15  // 정확한 GP 서킷 코너 수
 };
-
 
 interface CircuitMarkerProps {
   map: mapboxgl.Map;
@@ -238,7 +237,7 @@ export const createCircuitMarker = ({
         grandPrix: circuit.grandPrix, // LocalizedText 객체를 그대로 전달
         length: circuit.length,
         laps: circuit.laps,
-        corners: CIRCUIT_CORNERS[circuit.id] || 10,
+        corners: circuit.corners || 10,
         totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
         location: circuit.location, // LocalizedText 객체를 그대로 전달
         lapRecord: circuit.lapRecord ? {

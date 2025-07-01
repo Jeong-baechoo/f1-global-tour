@@ -38,6 +38,7 @@ export interface Circuit {
   };
   length: number; // in kilometers
   laps: number;
+  corners: number;
   lapRecord: {
     time: string;
     driver: string;
@@ -46,7 +47,6 @@ export interface Circuit {
   raceDate2025: string | null; // ISO date string
   round: number | null;
   sprint?: boolean;
-  corners: number;
   totalDistance: number;
   elevation?: {
     highest: number;
