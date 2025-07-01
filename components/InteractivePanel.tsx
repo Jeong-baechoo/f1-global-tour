@@ -92,19 +92,15 @@ export default function InteractivePanel({
 
   // 드래그 핸들러들을 useCallback으로 최적화
   const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    // 터치 이벤트의 경우 기본 동작 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
   }, []);
 
-  const handleDragMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+  const handleDragMove = useCallback((e: React.TouchEvent | React.MouseEvent | TouchEvent) => {
     if (!isDragging || !sheetRef.current) return;
 
-    // 터치 이벤트의 경우 기본 동작 방지
+    // 터치 이벤트에서 기본 동작 방지
     if ('touches' in e) {
       e.preventDefault();
     }
@@ -164,6 +160,20 @@ export default function InteractivePanel({
     else if (sheetState === 'half') setSheetState('full');
   }, [sheetState]);
 
+  // 드래그 중일 때 글로벌 이벤트 리스너 추가
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalTouchMove = (e: TouchEvent) => {
+        handleDragMove(e as React.TouchEvent | React.MouseEvent | TouchEvent);
+      };
+
+      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+      
+      return () => {
+        document.removeEventListener('touchmove', handleGlobalTouchMove);
+      };
+    }
+  }, [isDragging, handleDragMove]);
 
   useEffect(() => {
     if (module === 'next-race' && data?.raceDate) {
@@ -522,10 +532,9 @@ export default function InteractivePanel({
         <div className="sticky top-0 z-10 bg-transparent rounded-t-2xl">
           {/* Handle Bar - 드래그 영역을 핸들 바로만 제한 */}
           <div 
-            className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
+            className="handle-bar flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
             style={{ touchAction: 'none' }}
             onTouchStart={handleDragStart}
-            onTouchMove={handleDragMove}
             onTouchEnd={handleDragEnd}
             onMouseDown={handleDragStart}
             onMouseMove={isDragging ? handleDragMove : undefined}
