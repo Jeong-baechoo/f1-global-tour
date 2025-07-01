@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { ChevronRight, MapPin, Calendar, Camera, CameraOff, Minus } from 'lucide-react';
+import { ChevronRight, MapPin, Calendar, Minus } from 'lucide-react';
 import { ModuleHeader } from './ui/ModuleHeader';
 import { Driver } from './mapbox/types';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/types/panel';
+import CircuitDetailContent from './InteractivePanel/CircuitDetailContent';
 
 // 스타일 상수들을 컴포넌트 외부로 분리
 const MOBILE_CONTENT_STYLE = {
@@ -258,85 +259,13 @@ export default function InteractivePanel({
   );
 
   const renderCircuitDetailContent = () => (
-    <div className={isMobile ? "space-y-4" : "space-y-6"}>
-      {module && (
-        <ModuleHeader 
-          module={module} 
-          data={data} 
-          isMobile={isMobile} 
-          sheetState={sheetState} 
-        />
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-          <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Corners</div>
-          <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.corners || '10'}</div>
-        </div>
-        <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-          <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Circuit Length</div>
-          <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.length || '4.318'} <span className="text-sm text-[#C0C0C0]">km</span></div>
-        </div>
-        <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-          <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Total Laps</div>
-          <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.laps || '71'}</div>
-        </div>
-        <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-          <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Race Distance</div>
-          <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.totalDistance || '306.5'} <span className="text-sm text-[#C0C0C0]">km</span></div>
-        </div>
-      </div>
-
-      <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Race Weekend Schedule (KST)</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between items-center py-2 border-b border-[#1A1A1A]">
-            <span className="text-sm text-[#C0C0C0]">Practice 1</span>
-            <span className="text-sm text-white font-medium">June 27 (Fri) 20:30</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-[#1A1A1A]">
-            <span className="text-sm text-[#C0C0C0]">Qualifying</span>
-            <span className="text-sm text-white font-medium">June 28 (Sat) 23:00</span>
-          </div>
-          <div className="flex justify-between items-center py-2">
-            <span className="text-sm text-[#C0C0C0]">Race</span>
-            <span className="text-sm text-white font-medium">June 29 (Sun) 22:00</span>
-          </div>
-        </div>
-      </div>
-
-      {!isMobile && onToggleCinematicMode && (
-        <button
-          onClick={onToggleCinematicMode}
-          className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wider border ${
-            isCinematicMode
-              ? 'bg-[#FF1801] text-white border-[#FF1801] hover:bg-[#FF1801]/90'
-              : 'bg-[#1A1A1A]/60 backdrop-blur-sm text-white border-[#FF1801]/20 hover:bg-[#1A1A1A]/80'
-          }`}
-        >
-          {isCinematicMode ? (
-            <>
-              <CameraOff className="w-5 h-5" />
-              시네마틱 투어 정지
-            </>
-          ) : (
-            <>
-              <Camera className="w-5 h-5" />
-              시네마틱 투어 시작
-            </>
-          )}
-        </button>
-      )}
-
-      <div className="flex gap-3">
-        <button className="flex-1 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
-          Official Tickets
-        </button>
-        <button className="flex-1 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
-          Local Info
-        </button>
-      </div>
-    </div>
+    <CircuitDetailContent
+      data={data}
+      isMobile={isMobile}
+      sheetState={sheetState}
+      isCinematicMode={isCinematicMode}
+      onToggleCinematicMode={onToggleCinematicMode}
+    />
   );
 
   const renderTeamHQContent = () => (
