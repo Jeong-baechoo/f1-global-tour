@@ -26,7 +26,11 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       ...MAP_CONFIG,
-      zoom: isMobile ? MAP_CONFIG.zoom : MAP_CONFIG.zoom
+      zoom: isMobile ? MAP_CONFIG.zoom : MAP_CONFIG.zoom,
+      // 모바일에서 핀치 줌 시 회전 방지
+      touchPitch: false, // 터치로 피치(기울기) 변경 비활성화
+      dragRotate: !isMobile, // 모바일에서 드래그 회전 비활성화
+      touchZoomRotate: isMobile ? 'center' : true // 모바일에서는 중심점 기준 줌만 허용
     });
 
     // 내비게이션 컨트롤 추가
@@ -72,6 +76,15 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
     // 맵 로드 완료 후 설정
     map.current.on('load', () => {
       if (!map.current) return;
+
+      // 모바일에서 추가 제스처 제어
+      if (isMobile) {
+        // 터치 줌 회전 핸들러 비활성화
+        map.current.touchZoomRotate.disableRotation();
+        
+        // 드래그 회전 핸들러 비활성화
+        map.current.dragRotate.disable();
+      }
 
       // sky 레이어 추가
       try {
