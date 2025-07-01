@@ -88,15 +88,15 @@ export const createCircuitMarker = ({
   // 점 (실제 서킷 위치)
   const dotContainer = document.createElement('div');
   dotContainer.style.position = 'relative';
-  dotContainer.style.width = mobile ? '10px' : '12px';
-  dotContainer.style.height = mobile ? '10px' : '12px';
+  dotContainer.style.width = '12px';
+  dotContainer.style.height = '12px';
   dotContainer.style.display = 'flex';
   dotContainer.style.alignItems = 'center';
   dotContainer.style.justifyContent = 'center';
 
   const dot = document.createElement('div');
-  dot.style.width = mobile ? '8px' : '10px';
-  dot.style.height = mobile ? '8px' : '10px';
+  dot.style.width = '12px';
+  dot.style.height = '12px';
   dot.style.borderRadius = '50%';
   dot.style.backgroundColor = isNextRace ? '#FF1801' : '#DC2626';
   dot.style.border = '2px solid rgba(255, 255, 255, 0.8)';
@@ -266,24 +266,12 @@ export const createCircuitMarker = ({
       labelContainer.style.display = 'none';
       line.style.display = 'none';
       
-      // 점 크기 축소
-      dot.style.width = '6px';
-      dot.style.height = '6px';
-      dotContainer.style.width = '8px';
-      dotContainer.style.height = '8px';
-      
       // 컨테이너 크기 조정
       el.style.gap = '0';
     } else {
       // 줌 5 초과: 라벨과 연결선 표시
       labelContainer.style.display = 'flex';
       line.style.display = 'block';
-      
-      // 점 크기 복원
-      dot.style.width = mobile ? '8px' : '10px';
-      dot.style.height = mobile ? '8px' : '10px';
-      dotContainer.style.width = mobile ? '10px' : '12px';
-      dotContainer.style.height = mobile ? '10px' : '12px';
       
       // 컨테이너 gap 복원
       el.style.gap = '0';
