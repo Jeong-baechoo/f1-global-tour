@@ -5,6 +5,7 @@ import type { Circuit } from '@/types/f1';
 import { getText, type Language } from '@/utils/i18n';
 
 // 실제 F1 서킷 코너 정보
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CIRCUIT_CORNERS: Record<string, number> = {
   'bahrain': 15,
   'saudi-arabia': 27,

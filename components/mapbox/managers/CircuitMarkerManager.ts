@@ -6,7 +6,6 @@ import {
   ZOOM_THRESHOLDS, 
   OCCLUSION_SETTINGS, 
   ANIMATION_TIMINGS,
-  MARKER_DIMENSIONS,
   ZoomLevel,
   MarkerOcclusionState 
 } from './constants';
