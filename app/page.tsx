@@ -343,7 +343,12 @@ export default function Home() {
       </div>
 
       {/* 하단 서킷 타임라인 바 */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 z-50">
+      <div className="absolute bottom-0 left-0 right-0 h-24 z-50"
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 그라데이션 배경 */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
 
@@ -359,9 +364,18 @@ export default function Home() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              handleTouchStart(e);
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+              handleTouchMove(e);
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              handleTouchEnd(e);
+            }}
           >
             <div className="flex items-center gap-12 px-32 py-4 whitespace-nowrap">
               {circuitsData.circuits.map((circuit) => (

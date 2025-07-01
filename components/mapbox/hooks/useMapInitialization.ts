@@ -27,10 +27,10 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
       container: mapContainer.current,
       ...MAP_CONFIG,
       zoom: isMobile ? MAP_CONFIG.zoom : MAP_CONFIG.zoom,
-      // 모바일에서 핀치 줌 시 회전 방지
+      // 모바일 제스처 설정
       touchPitch: false, // 터치로 피치(기울기) 변경 비활성화
-      dragRotate: !isMobile, // 모바일에서 드래그 회전 비활성화
-      touchZoomRotate: isMobile ? 'center' : true // 모바일에서는 중심점 기준 줌만 허용
+      dragRotate: true, // 드래그 회전은 활성화 (두 손가락 회전 제스처용)
+      touchZoomRotate: true // 핀치 줌과 회전 모두 활성화
     });
 
     // 내비게이션 컨트롤 추가
@@ -77,13 +77,77 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
     map.current.on('load', () => {
       if (!map.current) return;
 
-      // 모바일에서 추가 제스처 제어
+      // 모바일에서 제스처 충돌 방지
       if (isMobile) {
-        // 터치 줌 회전 핸들러 비활성화
-        map.current.touchZoomRotate.disableRotation();
+        let touchStartTime = 0;
+        let touchStartDistance = 0;
+        let touchStartBearing = 0;
+        let isPinching = false;
+        let isRotating = false;
         
-        // 드래그 회전 핸들러 비활성화
-        map.current.dragRotate.disable();
+        // 두 손가락 터치 거리 계산
+        const getTouchDistance = (touches: TouchList) => {
+          if (touches.length < 2) return 0;
+          const dx = touches[1].clientX - touches[0].clientX;
+          const dy = touches[1].clientY - touches[0].clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        };
+        
+        // touchstart 이벤트 리스너
+        const handleTouchStart = (e: TouchEvent) => {
+          if (e.touches.length === 2) {
+            touchStartTime = Date.now();
+            touchStartDistance = getTouchDistance(e.touches);
+            touchStartBearing = map.current!.getBearing();
+            isPinching = false;
+            isRotating = false;
+          }
+        };
+        
+        // touchmove 이벤트 리스너
+        const handleTouchMove = (e: TouchEvent) => {
+          if (e.touches.length === 2 && touchStartTime > 0) {
+            const currentDistance = getTouchDistance(e.touches);
+            const distanceChange = Math.abs(currentDistance - touchStartDistance);
+            const currentBearing = map.current!.getBearing();
+            const bearingChange = Math.abs(currentBearing - touchStartBearing);
+            
+            // 거리 변화가 더 크면 핀치 줌으로 판단
+            if (distanceChange > 20 && !isRotating) {
+              isPinching = true;
+              // 핀치 줌 중에는 회전 막기
+              if (bearingChange > 0.5) {
+                map.current!.setBearing(touchStartBearing);
+              }
+            }
+            // 회전 변화가 더 크면 회전으로 판단
+            else if (bearingChange > 5 && !isPinching) {
+              isRotating = true;
+            }
+          }
+        };
+        
+        // touchend 이벤트 리스너
+        const handleTouchEnd = (e: TouchEvent) => {
+          if (e.touches.length < 2) {
+            touchStartTime = 0;
+            isPinching = false;
+            isRotating = false;
+          }
+        };
+        
+        // 이벤트 리스너 등록
+        const mapContainer = map.current.getContainer();
+        mapContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+        mapContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+        mapContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+        
+        // Cleanup 함수에 이벤트 리스너 제거 추가
+        map.current.on('remove', () => {
+          mapContainer.removeEventListener('touchstart', handleTouchStart);
+          mapContainer.removeEventListener('touchmove', handleTouchMove);
+          mapContainer.removeEventListener('touchend', handleTouchEnd);
+        });
       }
 
       // sky 레이어 추가
