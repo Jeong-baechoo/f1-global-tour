@@ -88,12 +88,17 @@ export interface MarkerCreationOptions {
 // 팀 정보
 export interface Team {
   id: string;
-  name: string;
+  name: LocalizedText;
   fullName: string;
   description: string;
-  teamPrincipal: string;
+  teamPrincipal: LocalizedText;
   foundingYear: number;
-  headquarters: Headquarters;
+  headquarters: {
+    city: LocalizedText;
+    country: LocalizedText;
+    lat: number;
+    lng: number;
+  };
   colors: {
     primary: string;
     secondary: string;

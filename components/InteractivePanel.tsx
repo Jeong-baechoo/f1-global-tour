@@ -3,8 +3,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { ChevronRight, MapPin, Calendar, Camera, CameraOff, Minus } from 'lucide-react';
 import { ModuleHeader } from './ui/ModuleHeader';
-import { Driver, Car } from './mapbox/types';
+import { Driver } from './mapbox/types';
 import Image from 'next/image';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getText } from '@/utils/i18n';
+import type { PanelData } from '@/types/panel';
 
 // 스타일 상수들을 컴포넌트 외부로 분리
 const MOBILE_CONTENT_STYLE = {
@@ -45,28 +48,7 @@ interface InteractivePanelProps {
   onMinimize?: () => void;
   isMinimized?: boolean;
   module: 'next-race' | 'circuit-detail' | 'team-hq' | null;
-  data?: {
-    type?: string;
-    id?: string;
-    name?: string;
-    principal?: string;
-    location?: string | { city: string; country: string };
-    headquarters?: { city: string; country: string; lat: number; lng: number };
-    color?: string;
-    drivers?: string[];
-    drivers2025?: Driver[];
-    car2025?: Car;
-    championships2025?: {
-      totalPoints: number;
-      raceResults: { race: string; points: number }[];
-    };
-    grandPrix?: string;
-    length?: number;
-    laps?: number;
-    corners?: number;
-    totalDistance?: number;
-    raceDate?: string;
-  } | null;
+  data?: PanelData | null;
   onExploreCircuit?: () => void;
   isCinematicMode?: boolean;
   onToggleCinematicMode?: () => void;
@@ -83,6 +65,7 @@ export default function InteractivePanel({
   isCinematicMode = false,
   onToggleCinematicMode
 }: InteractivePanelProps) {
+  const { language } = useLanguage();
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [sheetState, setSheetState] = useState<'closed' | 'peek' | 'half' | 'full'>('peek');
@@ -216,7 +199,9 @@ export default function InteractivePanel({
 
       <div className="bg-[#1A1A1A]/60 backdrop-blur-sm rounded border border-[#FF1801]/20 p-4 sm:p-6">
         <div className="text-center mb-4">
-          <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">RACE STARTS IN</div>
+          <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">
+            {language === 'ko' ? '레이스 시작까지' : 'RACE STARTS IN'}
+          </div>
           <div className="flex justify-center gap-2 sm:gap-4">
             <div className="text-center">
               <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{countdown.days}</div>
@@ -239,14 +224,19 @@ export default function InteractivePanel({
           <div className="flex items-center gap-3">
             <MapPin className="w-4 h-4 text-[#C0C0C0]" />
             <div>
-              <div className="text-white font-medium">{data?.name || 'Red Bull Ring'}</div>
-              <div className="text-xs text-[#C0C0C0]">{typeof data?.location === 'string' ? data.location : `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`}</div>
+              <div className="text-white font-medium">{data?.name ? getText(data.name, language) : 'Red Bull Ring'}</div>
+              <div className="text-xs text-[#C0C0C0]">
+                {typeof data?.location === 'string' ? data.location : 
+                 typeof data?.location === 'object' && 'city' in data.location ?
+                 `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
+                 'Spielberg, Austria'}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Calendar className="w-4 h-4 text-[#C0C0C0]" />
             <div className="text-sm text-white">
-              {data?.raceDate ? new Date(data.raceDate).toLocaleDateString('en-US', {
+              {data?.raceDate ? new Date(data.raceDate).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -261,7 +251,7 @@ export default function InteractivePanel({
         onClick={onExploreCircuit}
         className="w-full bg-[#FF1801] hover:bg-[#FF1801]/90 text-white font-bold py-3 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"
       >
-        Explore Circuit
+        {language === 'ko' ? '서킷 탐험' : 'Explore Circuit'}
         <ChevronRight className="w-5 h-5" />
       </button>
     </div>
@@ -362,22 +352,32 @@ export default function InteractivePanel({
 
       <div className="space-y-4">
         <div>
-          <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">Headquarters</h3>
+          <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">
+            {language === 'ko' ? '본부' : 'Headquarters'}
+          </h3>
           <p className="text-white">
-            {(typeof data?.location === 'object' ? data.location.city : null) || data?.headquarters?.city || 'Brackley'},
+            {data?.headquarters?.city ? getText(data.headquarters.city, language) : 
+             (typeof data?.location === 'object' && 'city' in data.location ? getText(data.location.city, language) : 'Brackley')},
             {' '}
-            {(typeof data?.location === 'object' ? data.location.country : null) || data?.headquarters?.country || 'United Kingdom'}
+            {data?.headquarters?.country ? getText(data.headquarters.country, language) : 
+             (typeof data?.location === 'object' && 'country' in data.location ? getText(data.location.country, language) : 'United Kingdom')}
           </p>
         </div>
 
         <div>
-          <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">Team Principal</h3>
-          <p className="text-white font-medium">{data?.principal || 'Toto Wolff'}</p>
+          <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">
+            {language === 'ko' ? '팀 대표' : 'Team Principal'}
+          </h3>
+          <p className="text-white font-medium">
+            {data?.principal ? getText(data.principal, language) : 'Toto Wolff'}
+          </p>
         </div>
 
         {data?.drivers2025 && (
           <div>
-            <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Drivers</h3>
+            <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+              {language === 'ko' ? '2025 드라이버' : '2025 Drivers'}
+            </h3>
             <div className="grid grid-cols-2 gap-3">
               {data.drivers2025.map((driver: Driver, index: number) => (
                 <div key={index} className="text-center bg-[#0F0F0F]/60 rounded-lg p-3 border border-[#FF1801]/10">
@@ -409,7 +409,9 @@ export default function InteractivePanel({
 
         {data?.car2025 && (
           <div>
-            <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Car</h3>
+            <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+              {language === 'ko' ? '2025 머신' : '2025 Car'}
+            </h3>
             <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
               <div className="text-center mb-3">
                 <h4 className="text-white font-bold text-lg mb-2">{data.car2025.name}</h4>
@@ -438,21 +440,29 @@ export default function InteractivePanel({
 
         {data?.championships2025 && (
           <div>
-            <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Championship</h3>
+            <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+              {language === 'ko' ? '2025 챔피언십' : '2025 Championship'}
+            </h3>
             <div className="space-y-4">
               <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
                 <div className="text-center mb-3">
                   <div className="text-2xl font-bold text-white mb-1">{data.championships2025.totalPoints}</div>
-                  <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Total Points</div>
+                  <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">
+                    {language === 'ko' ? '총 포인트' : 'Total Points'}
+                  </div>
                 </div>
               </div>
               <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
-                <h4 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">All Race Results</h4>
+                <h4 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+                  {language === 'ko' ? '모든 레이스 결과' : 'All Race Results'}
+                </h4>
                 <div className="space-y-2 max-h-24 overflow-y-auto scrollbar-hide">
                   {data.championships2025.raceResults.slice().reverse().map((result, index) => (
                     <div key={index} className="flex justify-between items-center py-1">
                       <span className="text-sm text-white">{result.race}</span>
-                      <span className="text-sm font-medium text-[#FF8700]">{result.points} pts</span>
+                      <span className="text-sm font-medium text-[#FF8700]">
+                        {result.points} {language === 'ko' ? '점' : 'pts'}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -463,16 +473,24 @@ export default function InteractivePanel({
       </div>
 
       <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
-        <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">Latest Team News</h3>
+        <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+          {language === 'ko' ? '최신 팀 뉴스' : 'Latest Team News'}
+        </h3>
         <div className="space-y-2">
           <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
-            • New aerodynamic package tested in wind tunnel
+            • {language === 'ko' ? 
+                '새로운 공력 패키지 풍동 테스트 완료' : 
+                'New aerodynamic package tested in wind tunnel'}
           </div>
           <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
-            • Driver contract extension announced
+            • {language === 'ko' ? 
+                '드라이버 계약 연장 발표' : 
+                'Driver contract extension announced'}
           </div>
           <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
-            • Technical partnership renewal confirmed
+            • {language === 'ko' ? 
+                '기술 파트너십 갱신 확정' : 
+                'Technical partnership renewal confirmed'}
           </div>
         </div>
       </div>
@@ -484,7 +502,7 @@ export default function InteractivePanel({
           borderColor: data?.color || '#FF1801'
         }}
       >
-        Official Team Store
+        {language === 'ko' ? '공식 팀 스토어' : 'Official Team Store'}
         <ChevronRight className="w-5 h-5" />
       </button>
     </div>
@@ -530,9 +548,9 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
                   <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
-                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' :
-                     module === 'team-hq' ? 'TEAM HQ' :
-                     'NEXT RACE'}
+                    {module === 'circuit-detail' ? (language === 'ko' ? '서킷 상세' : 'CIRCUIT DETAIL') :
+                     module === 'team-hq' ? (language === 'ko' ? '팀 본부' : 'TEAM HQ') :
+                     (language === 'ko' ? '다음 레이스' : 'NEXT RACE')}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -594,14 +612,16 @@ export default function InteractivePanel({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-white font-semibold text-base">
-                    {module === 'circuit-detail' ? (data?.name || 'Circuit') :
-                     module === 'team-hq' ? (data?.name || 'Team HQ') :
-                     'Next Race'}
+                    {module === 'circuit-detail' ? (getText(data?.name || 'Circuit', language)) :
+                     module === 'team-hq' ? (getText(data?.name || 'Team HQ', language)) :
+                     (language === 'ko' ? '다음 레이스' : 'Next Race')}
                   </h3>
                   {module === 'circuit-detail' && (
                     <p className="text-xs text-[#C0C0C0] mt-0.5">
                       {typeof data?.location === 'string' ? data.location :
-                       `${data?.location?.city || ''}, ${data?.location?.country || ''}`}
+                       typeof data?.location === 'object' && 'city' in data.location ?
+                       `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
+                       ''}
                     </p>
                   )}
                 </div>
@@ -616,9 +636,9 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
                   <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
-                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' :
-                     module === 'team-hq' ? 'TEAM HQ' :
-                     'NEXT RACE'}
+                    {module === 'circuit-detail' ? (language === 'ko' ? '서킷 상세' : 'CIRCUIT DETAIL') :
+                     module === 'team-hq' ? (language === 'ko' ? '팀 본부' : 'TEAM HQ') :
+                     (language === 'ko' ? '다음 레이스' : 'NEXT RACE')}
                   </span>
                 </div>
               </div>
