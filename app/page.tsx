@@ -6,6 +6,10 @@ import Image from 'next/image';
 import InteractivePanel from '@/components/InteractivePanel';
 import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/components/mapbox/types';
+import LanguageSelector from '@/components/ui/LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getText } from '@/utils/i18n';
+import type { PanelData } from '@/types/panel';
 
 // Dynamic import to avoid SSR issues with Mapbox
 const Map = dynamic(
@@ -29,28 +33,16 @@ const Map = dynamic(
 );
 
 export default function Home() {
+  const { language, setLanguage } = useLanguage();
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelModule, setPanelModule] = useState<'next-race' | 'circuit-detail' | 'team-hq' | null>(null);
   const [panelMinimized, setPanelMinimized] = useState(false);
-  const [panelData, setPanelData] = useState<{
-    type?: string;
-    id?: string;
-    name?: string;
-    principal?: string;
-    location?: string | { city: string; country: string };
-    headquarters?: { city: string; country: string; lat: number; lng: number };
-    color?: string;
-    drivers?: string[];
-    grandPrix?: string;
-    length?: number;
-    laps?: number;
-    corners?: number;
-    raceDate?: string;
-  } | null>(null);
+  const [panelData, setPanelData] = useState<PanelData | null>(null);
   const mapRef = useRef<MapAPI | null>(null);
   const [isCinematicMode, setIsCinematicMode] = useState(false);
   const initialFocusTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
 
   // 드래그 스크롤을 위한 상태
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -62,44 +54,36 @@ export default function Home() {
   const lastMoveTime = useRef<number>(0);
   const lastMoveX = useRef<number>(0);
 
-  const handleMarkerClick = useCallback((item: {
-    type: string;
-    id?: string;
-    name?: string;
-    principal?: string;
-    location?: string | { city: string; country: string };
-    headquarters?: { city: string; country: string; lat: number; lng: number };
-    color?: string;
-    drivers?: string[];
-    grandPrix?: string;
-    length?: number;
-    laps?: number;
-    corners?: number;
-  }) => {
-    // 사용자가 마커를 클릭하면 초기 포커싱 중단
+  const handleMarkerClick = useCallback((item: PanelData) => {
+    if (!item.type) return;
+    
+    // 초기 포커싱 중단
     if (initialFocusTimerRef.current && !hasUserInteracted) {
       clearTimeout(initialFocusTimerRef.current);
       initialFocusTimerRef.current = null;
       setHasUserInteracted(true);
     }
-    if (item.type === 'team') {
-      setPanelModule('team-hq');
-      setPanelData({
-        ...item
-      });
-    } else if (item.type === 'circuit') {
-      setPanelModule('circuit-detail');
-      setPanelData(item);
-
-      // 서킷 클릭 시 지도 줌인 및 트랙 그리기
-      if (item.id && mapRef.current) {
-        mapRef.current.flyToCircuit(item.id);
-      }
+    
+    const currentModule = item.type === 'team' ? 'team-hq' : 'circuit-detail';
+    const isSameMarker = panelData?.id === item.id && panelModule === currentModule;
+    const shouldToggle = panelOpen && isSameMarker && !languageChangedFlag;
+    
+    // 언어 변경 플래그 리셋
+    if (languageChangedFlag) {
+      setLanguageChangedFlag(false);
+    }
+    
+    // 패널 데이터 및 모듈 설정
+    setPanelModule(currentModule);
+    setPanelData(item);
+    
+    // 서킷 클릭 시 지도 줌인 및 트랙 그리기
+    if (item.type === 'circuit' && item.id && mapRef.current) {
+      mapRef.current.flyToCircuit(item.id);
     }
 
-    // 패널이 이미 열려있고 같은 모듈인 경우 토글
-    if (panelOpen && panelModule === (item.type === 'team' ? 'team-hq' : 'circuit-detail')) {
-      // 최소화 상태라면 펼치기, 펼쳐진 상태라면 닫기
+    // 토글 로직
+    if (shouldToggle) {
       if (panelMinimized) {
         setPanelMinimized(false);
       } else {
@@ -109,7 +93,7 @@ export default function Home() {
       setPanelOpen(true);
       setPanelMinimized(false);
     }
-  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized]);
+  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData?.id, languageChangedFlag]);
 
   const handleUserInteraction = useCallback(() => {
     if (initialFocusTimerRef.current && !hasUserInteracted) {
@@ -118,6 +102,11 @@ export default function Home() {
       setHasUserInteracted(true);
     }
   }, [hasUserInteracted]);
+
+  // 언어 변경 감지
+  useEffect(() => {
+    setLanguageChangedFlag(true);
+  }, [language]);
 
   const handleExploreCircuit = () => {
     setPanelModule('circuit-detail');
@@ -274,9 +263,9 @@ export default function Home() {
 
       setPanelModule('next-race');
       setPanelData({
-        grandPrix: nextRace.grandPrix.toUpperCase(),
+        grandPrix: nextRace.grandPrix,
         name: nextRace.name,
-        location: `${nextRace.location.city}, ${nextRace.location.country}`,
+        location: nextRace.location,
         raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
       });
       setPanelOpen(true);
@@ -323,6 +312,14 @@ export default function Home() {
         />
       </div>
 
+      {/* 언어 선택 버튼 - 모바일 */}
+      <div className="absolute top-7 right-14 z-10 sm:hidden">
+        <LanguageSelector
+          currentLanguage={language}
+          onLanguageChangeAction={setLanguage}
+        />
+      </div>
+
       {/* F1 로고 - 데스크탑 */}
       <div className="hidden sm:block absolute top-0.5 left-14 z-10">
         <Image
@@ -332,6 +329,14 @@ export default function Home() {
           height={30}
           className="drop-shadow-lg"
           priority
+        />
+      </div>
+
+      {/* 언어 선택 버튼 - 데스크탑 */}
+      <div className="hidden sm:block absolute bottom-32 left-6 z-10">
+        <LanguageSelector
+          currentLanguage={language}
+          onLanguageChangeAction={setLanguage}
         />
       </div>
 
@@ -381,7 +386,13 @@ export default function Home() {
                     grandPrix: circuit.grandPrix,
                     length: circuit.length,
                     corners: circuit.corners,
-                    laps: circuit.laps
+                    laps: circuit.laps,
+                    totalDistance: circuit.totalDistance,
+                    lapRecord: circuit.lapRecord ? {
+                      time: circuit.lapRecord.time,
+                      driver: circuit.lapRecord.driver,
+                      year: circuit.lapRecord.year.toString()
+                    } : undefined
                   });
                   setPanelOpen(true);
                   setPanelMinimized(false);
@@ -397,7 +408,7 @@ export default function Home() {
                 </span>
                 {/* Grand Prix 이름 */}
                 <span className="text-white text-2xl font-black uppercase tracking-tight group-hover:text-white transition-colors pb-4 drop-shadow-lg" style={{ fontFamily: 'Oswald, sans-serif' }}>
-                  {circuit.grandPrix}
+                  {getText(circuit.grandPrix, language)}
                 </span>
               </div>
             ))}

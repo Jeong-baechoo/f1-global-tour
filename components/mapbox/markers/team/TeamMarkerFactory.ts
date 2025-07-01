@@ -1,14 +1,28 @@
 import mapboxgl from 'mapbox-gl';
-import { Team, MarkerData } from '../../types';
+import { MarkerData } from '../../types';
+import { Team } from '@/types/f1';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
 import { isMobile } from '../../utils/viewport';
 import { MOBILE_TEAM_CONFIGS } from '../../../../configs/mobile-team-configs';
-import { DEFAULT_TEAM_MARKER_STYLE, ZOOM_MARKER_STYLES } from './teamMarkerStyles';
+import { getText, type Language } from '@/utils/i18n';
 
 interface TeamMarkerFactoryProps {
   map: mapboxgl.Map;
   team: Team;
+  language?: Language;
   onMarkerClick?: (item: MarkerData) => void;
+}
+
+interface TeamMarkerStyle {
+  width: string;
+  height: string;
+  boxWidth: string;
+  boxHeight: string;
+  borderRadius: string;
+  mobileWidth: string;
+  mobileHeight: string;
+  mobileBoxWidth: string;
+  mobileBoxHeight: string;
 }
 
 // 마커와 cleanup 함수를 포함하는 인터페이스
@@ -16,6 +30,19 @@ export interface TeamMarkerWithCleanup {
   marker: mapboxgl.Marker;
   cleanup: () => void;
 }
+
+// 기본 팀 마커 스타일 상수
+const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = {
+  width: '80px',
+  height: '95px',
+  boxWidth: '80px',
+  boxHeight: '80px',
+  borderRadius: '4px',
+  mobileWidth: '60px',
+  mobileHeight: '71px',
+  mobileBoxWidth: '60px',
+  mobileBoxHeight: '60px'
+};
 
 /**
  * 통합된 팀 마커 생성 팩토리
@@ -26,7 +53,7 @@ export class TeamMarkerFactory {
    * 팀 마커 생성
    * @returns 마커와 cleanup 함수를 포함한 객체
    */
-  static create({ map, team, onMarkerClick }: TeamMarkerFactoryProps): TeamMarkerWithCleanup | null {
+  static create({ map, team, language = 'en', onMarkerClick }: TeamMarkerFactoryProps): TeamMarkerWithCleanup | null {
     const config = getTeamMarkerConfig(team.id);
     if (!config) {
       console.warn(`No marker config found for team: ${team.id}`);
@@ -54,7 +81,7 @@ export class TeamMarkerFactory {
       .addTo(map);
     
     // 클릭 이벤트 설정 (marker를 전달)
-    TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, marker, onMarkerClick);
+    TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, marker, language, onMarkerClick);
     
     // 줌 레벨에 따른 표시 변경 및 cleanup 함수 반환
     const zoomCleanup = TeamMarkerFactory.setupZoomHandler(map, el, config);
@@ -153,16 +180,16 @@ export class TeamMarkerFactory {
       
       if (zoom <= 5) {
         // 줌 5 이하: 점으로 표시
-        box.style.width = ZOOM_MARKER_STYLES.dot.width;
-        box.style.height = ZOOM_MARKER_STYLES.dot.height;
-        box.style.borderRadius = ZOOM_MARKER_STYLES.dot.borderRadius;
+        box.style.width = '12px';
+        box.style.height = '12px';
+        box.style.borderRadius = '50%';
         box.style.backgroundImage = 'none';
         box.style.backgroundColor = config.style.backgroundColor;
         box.style.border = `2px solid ${config.style.borderColor}`;
         
         // 컨테이너 크기도 조정
-        el.style.width = ZOOM_MARKER_STYLES.dot.width;
-        el.style.height = ZOOM_MARKER_STYLES.dot.height;
+        el.style.width = '12px';
+        el.style.height = '12px';
       } else {
         // 줌 5 초과: 원래 로고 표시 - 헬퍼 메서드 사용
         TeamMarkerFactory.applyMarkerStyle(el, box, config, isMobile());
@@ -219,6 +246,7 @@ export class TeamMarkerFactory {
     map: mapboxgl.Map,
     teamHQ: { coordinates: [number, number] },
     marker: mapboxgl.Marker,
+    language: Language,
     onMarkerClick?: (item: MarkerData) => void
   ): void {
     el.addEventListener('click', () => {
@@ -228,8 +256,17 @@ export class TeamMarkerFactory {
           type: 'team',
           id: team.id,
           name: team.fullName,
-          principal: team.teamPrincipal,
-          location: team.headquarters,
+          principal: getText(team.teamPrincipal, language),
+          location: {
+            city: getText(team.headquarters.city, language),
+            country: getText(team.headquarters.country, language)
+          },
+          headquarters: {
+            city: getText(team.headquarters.city, language),
+            country: getText(team.headquarters.country, language),
+            lat: team.headquarters.lat,
+            lng: team.headquarters.lng
+          },
           color: team.colors.primary,
           drivers: config.drivers2025?.map(d => d.name) || [],
           drivers2025: config.drivers2025,

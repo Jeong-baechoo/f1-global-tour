@@ -76,6 +76,32 @@ Requires Mapbox access token:
 - FlyTo animations: Modify speed, curve, duration parameters
 - Marker styles: Update DOM element styles in marker creation
 
+## Critical Guidelines to Prevent Known Issues
+
+### Mapbox Marker Positioning (Issue #15)
+**Problem**: Markers moving/drifting when dragging the map in production environment.
+
+**Root Cause**: Conflict between CSS transforms and Mapbox anchor properties.
+
+**DO NOT**:
+- Never use CSS `transform: translate()` on Mapbox marker elements
+- Never mix CSS positioning with Mapbox anchor properties
+- Avoid `willChange: 'transform'` on marker elements
+
+**DO**:
+- Use only Mapbox's `anchor` option for positioning (e.g., `anchor: 'center'`)
+- Let Mapbox handle all positioning calculations
+- Trust Mapbox's internal positioning system
+
+**Example of correct marker creation**:
+```javascript
+const marker = new mapboxgl.Marker(markerElement, {
+  anchor: 'center' // Use Mapbox anchor, not CSS transforms
+})
+.setLngLat([longitude, latitude])
+.addTo(map);
+```
+
 ## Git Workflow
 
 Current git status shows:

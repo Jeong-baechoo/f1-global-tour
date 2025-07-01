@@ -1,24 +1,11 @@
 import React from 'react';
-
-interface ModuleData {
-  type?: string;
-  id?: string;
-  name?: string;
-  principal?: string;
-  location?: string | { city: string; country: string };
-  headquarters?: { city: string; country: string; lat: number; lng: number };
-  color?: string;
-  drivers?: string[];
-  grandPrix?: string;
-  length?: number;
-  laps?: number;
-  corners?: number;
-  raceDate?: string;
-}
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getText } from '@/utils/i18n';
+import type { PanelData } from '@/types/panel';
 
 interface ModuleHeaderProps {
   module: 'next-race' | 'circuit-detail' | 'team-hq';
-  data: ModuleData | null | undefined;
+  data: PanelData | null | undefined;
   isMobile: boolean;
   sheetState: 'closed' | 'peek' | 'half' | 'full';
 }
@@ -31,25 +18,28 @@ interface ModuleConfig {
 }
 
 export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, data, isMobile, sheetState }) => {
+  const { language } = useLanguage();
   const showFullHeader = !isMobile || sheetState === 'peek';
   const showSimpleHeader = isMobile && (sheetState === 'half' || sheetState === 'full');
 
   const moduleConfig: Record<string, ModuleConfig> = {
     'next-race': {
-      label: 'NEXT RACE',
-      title: data?.grandPrix || 'AUSTRIAN GRAND PRIX',
+      label: language === 'ko' ? '다음 레이스' : 'NEXT RACE',
+      title: data?.grandPrix ? getText(data.grandPrix, language) : 'AUSTRIAN GRAND PRIX',
       color: '#FFFFFF'
     },
     'circuit-detail': {
-      label: 'CIRCUIT DETAIL',
-      title: data?.name || 'Red Bull Ring',
+      label: language === 'ko' ? '서킷 세부사항' : 'CIRCUIT DETAIL',
+      title: data?.name ? getText(data.name, language) : 'Red Bull Ring',
       subtitle: typeof data?.location === 'string' ? data.location : 
-        `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`,
+        typeof data?.location === 'object' && 'city' in data.location ?
+        `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
+        'Spielberg, Austria',
       color: '#FFFFFF'
     },
     'team-hq': {
-      label: 'TEAM HQ',
-      title: data?.name || 'Mercedes-AMG Petronas F1 Team',
+      label: language === 'ko' ? '팀 본부' : 'TEAM HQ',
+      title: data?.name ? getText(data.name, language) : 'Mercedes-AMG Petronas F1 Team',
       color: data?.color || '#FFFFFF'
     }
   };
