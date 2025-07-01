@@ -1,6 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { Circuit } from '@/types/f1';
 import { MarkerData } from '../types';
+import { getText, type Language } from '@/utils/i18n';
 import { 
   ZOOM_THRESHOLDS, 
   OCCLUSION_SETTINGS, 
@@ -18,6 +19,8 @@ interface CircuitMarkerData {
   line: HTMLElement;
   dot: HTMLElement;
   isNextRace: boolean;
+  cityLabel: HTMLElement;
+  countryLabel: HTMLElement;
 }
 
 export class CircuitMarkerManager {
@@ -25,6 +28,7 @@ export class CircuitMarkerManager {
   private markers = new Map<string, CircuitMarkerData>();
   private onMarkerClick?: (item: MarkerData) => void;
   private hoverTimeouts = new Map<string, NodeJS.Timeout>();
+  private language: Language = 'en';
   
   // Event handlers stored for cleanup
   private zoomHandler?: () => void;
@@ -46,6 +50,28 @@ export class CircuitMarkerManager {
 
   setOnMarkerClick(handler: (item: MarkerData) => void) {
     this.onMarkerClick = handler;
+  }
+  
+  setLanguage(language: Language) {
+    this.language = language;
+    // Update existing markers' labels
+    this.markers.forEach((data) => {
+      this.updateMarkerLanguage(data);
+    });
+  }
+  
+  private updateMarkerLanguage(data: CircuitMarkerData) {
+    const { circuit, cityLabel, countryLabel, element } = data;
+    
+    // Update text content
+    cityLabel.textContent = getText(circuit.location.city, this.language);
+    countryLabel.textContent = getText(circuit.location.country, this.language).toUpperCase();
+    
+    // Update aria-label
+    const cityText = getText(circuit.location.city, this.language);
+    const countryText = getText(circuit.location.country, this.language);
+    const nameText = getText(circuit.name, this.language);
+    element.setAttribute('aria-label', `${cityText}, ${countryText} - ${nameText}`);
   }
 
   private setupEventDelegation() {
@@ -184,15 +210,19 @@ export class CircuitMarkerManager {
     const markerData: MarkerData = {
       type: 'circuit',
       id: data.circuit.id,
-      name: data.circuit.name,
-      grandPrix: data.circuit.grandPrix,
+      name: data.circuit.name, // LocalizedText object
+      grandPrix: data.circuit.grandPrix, // LocalizedText object
       length: data.circuit.length,
       laps: data.circuit.laps,
       corners: data.circuit.corners || 10,
       totalDistance: data.circuit.laps && data.circuit.length 
         ? Math.round((data.circuit.laps * data.circuit.length) * 10) / 10 
         : 0,
-      location: `${data.circuit.location.city}, ${data.circuit.location.country}`
+      location: data.circuit.location, // LocalizedText object
+      lapRecord: data.circuit.lapRecord ? {
+        ...data.circuit.lapRecord,
+        year: data.circuit.lapRecord.year.toString()
+      } : undefined
     };
 
     this.onMarkerClick(markerData);
@@ -280,7 +310,7 @@ export class CircuitMarkerManager {
     if (!this.map) return null;
 
     // DOM 요소 생성
-    const { element, labelContainer, line, dot } = this.createMarkerElements(circuit, isNextRace);
+    const { element, labelContainer, line, dot, cityLabel, countryLabel } = this.createMarkerElements(circuit, isNextRace);
 
     // 데이터 속성 추가 (이벤트 위임을 위한 식별자)
     element.setAttribute('data-circuit-id', circuit.id);
@@ -298,7 +328,9 @@ export class CircuitMarkerManager {
       labelContainer,
       line,
       dot,
-      isNextRace
+      isNextRace,
+      cityLabel,
+      countryLabel
     });
 
     // 초기 가시성 설정
@@ -325,7 +357,10 @@ export class CircuitMarkerManager {
     
     // Accessibility attributes
     element.setAttribute('role', 'button');
-    element.setAttribute('aria-label', `${circuit.location.city}, ${circuit.location.country} - ${circuit.name}`);
+    const cityText = getText(circuit.location.city, this.language);
+    const countryText = getText(circuit.location.country, this.language);
+    const nameText = getText(circuit.name, this.language);
+    element.setAttribute('aria-label', `${cityText}, ${countryText} - ${nameText}`);
     element.setAttribute('tabindex', '0');
 
     // 점 컨테이너
@@ -357,12 +392,12 @@ export class CircuitMarkerManager {
     // 도시명
     const cityLabel = document.createElement('div');
     cityLabel.className = `circuit-marker__city circuit-marker__city--${mobile ? 'mobile' : 'desktop'}`;
-    cityLabel.textContent = circuit.location.city;
+    cityLabel.textContent = getText(circuit.location.city, this.language);
 
     // 국가명
     const countryLabel = document.createElement('div');
     countryLabel.className = `circuit-marker__country circuit-marker__country--${mobile ? 'mobile' : 'desktop'}`;
-    countryLabel.textContent = circuit.location.country.toUpperCase();
+    countryLabel.textContent = getText(circuit.location.country, this.language).toUpperCase();
     
     labelContainer.appendChild(cityLabel);
     labelContainer.appendChild(countryLabel);
@@ -372,7 +407,7 @@ export class CircuitMarkerManager {
     element.appendChild(line);
     element.appendChild(labelContainer);
 
-    return { element, labelContainer, line, dot };
+    return { element, labelContainer, line, dot, cityLabel, countryLabel };
   }
 
   removeCircuitMarker(circuitId: string) {

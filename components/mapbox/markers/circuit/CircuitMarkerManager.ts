@@ -1,7 +1,7 @@
 import circuitsData from '@/data/circuits.json';
 import { CircuitMarkerManager } from '../../managers/CircuitMarkerManager';
 import { F1_2025_CIRCUITS } from '../../utils/data/circuitMapping';
-
+import type { Language } from '@/utils/i18n';
 // 다음 레이스 찾기
 export const findNextRace = () => {
   const today = new Date();
@@ -24,8 +24,13 @@ export const findNextRace = () => {
 // 모든 서킷 추가 (CircuitMarkerManager 사용)
 export const addAllCircuitsWithManager = (
   manager: CircuitMarkerManager,
-  nextRaceId?: string
+  nextRaceId?: string,
+  language?: Language
 ) => {
+  // Set language if provided
+  if (language) {
+    manager.setLanguage(language);
+  }
   // 2025 시즌 서킷만 필터링
   const circuits2025 = circuitsData.circuits.filter(circuit => 
     F1_2025_CIRCUITS.includes(circuit.id)

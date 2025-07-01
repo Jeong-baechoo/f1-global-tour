@@ -1,6 +1,6 @@
-# PROJECT DOCUMENTATION
+# CLAUDE.md
 
-This file provides project documentation and architecture guidance for developers working with this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -76,23 +76,35 @@ Requires Mapbox access token:
 - FlyTo animations: Modify speed, curve, duration parameters
 - Marker styles: Update DOM element styles in marker creation
 
-## Code Organization & Architecture
+## Critical Guidelines to Prevent Known Issues
 
-### Component Structure
-- **Separation of Concerns**: Keep hooks and components separate
-  - Custom hooks in `hooks/` directory for business logic
-  - Components focus on presentation and UI
-  - This improves reusability, testability, and maintainability
+### Mapbox Marker Positioning (Issue #15)
+**Problem**: Markers moving/drifting when dragging the map in production environment.
 
-### Styling Strategy
-- **Tailwind CSS**: Primary styling for React components (buttons, panels, layouts)
-- **Regular CSS**: Mapbox-specific elements (markers, WebGL-related styles)
-  - Use BEM naming convention for CSS classes
-  - Place in `styles/` directory
-- **Inline Styles**: Only for truly dynamic values (calculated positions, team colors)
+**Root Cause**: Conflict between CSS transforms and Mapbox anchor properties.
+
+**DO NOT**:
+- Never use CSS `transform: translate()` on Mapbox marker elements
+- Never mix CSS positioning with Mapbox anchor properties
+- Avoid `willChange: 'transform'` on marker elements
+
+**DO**:
+- Use only Mapbox's `anchor` option for positioning (e.g., `anchor: 'center'`)
+- Let Mapbox handle all positioning calculations
+- Trust Mapbox's internal positioning system
+
+**Example of correct marker creation**:
+```javascript
+const marker = new mapboxgl.Marker(markerElement, {
+  anchor: 'center' // Use Mapbox anchor, not CSS transforms
+})
+.setLngLat([longitude, latitude])
+.addTo(map);
+```
 
 ## Git Workflow
 
+Current git status shows:
+- Modified: `app/globals.css`, `components/Map.tsx`
+- Branch: master
 - Use commit format: `<type>: <description>` (feat, fix, docs, style, refactor, test, chore)
-- Branch naming: `feature/<name>`, `fix/<name>`, `chore/<name>`
-- PR workflow: Create feature branch → Develop → Review → Merge to master

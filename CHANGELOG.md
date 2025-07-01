@@ -2,6 +2,31 @@
 
 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
+## [0.6.0] - 2025-06-28
+
+### Added
+- 🏁 **DRS (Drag Reduction System) 존 시각화**
+  - Symbol 기반 SVG 쉐브론 방식으로 DRS 존 표시
+  - 임시로 모든 서킷의 초반 10% 구간에 DRS 존 적용
+  - 4단계 색상 변화를 가진 쉐브론 웨이브 애니메이션
+  - 트랙 애니메이션 완료 후 자동 DRS 존 표시
+
+### Fixed
+- 🗺️ **팀 마커 밀도 문제 해결**
+  - 영국 지역 팀 마커 분산 배치 시스템 구현 (McLaren, Aston Martin, Williams, Alpine)
+  - 이탈리아 지역 팀 마커 분산 배치 시스템 구현 (Ferrari, AlphaTauri)
+  - 줌 레벨에 따른 지능적인 마커 위치 조정
+- 🐛 **배포 환경 마커 드래그 문제 완전 해결**
+  - CSS transform과 Mapbox anchor 충돌 문제 수정
+  - 마커 위치 계산 로직 안정화
+  - willChange 속성 제거로 성능 개선
+
+### Improved
+- ⚡ **마커 시스템 성능 최적화**
+  - Leader line 마커 시스템 제거 및 앵커 기반 시스템으로 통합
+  - 불필요한 SymbolLayer 시스템 제거
+  - 마커 렌더링 성능 향상
+
 ## [0.5.0] - 2025-06-25
 
 ### Added

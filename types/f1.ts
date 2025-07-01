@@ -1,34 +1,40 @@
+import type { LocalizedText } from '@/utils/i18n';
+
 export interface Team {
   id: string;
-  name: string;
+  name: LocalizedText;
   fullName: string;
   colors: {
     primary: string;
     secondary: string;
   };
   headquarters: {
-    city: string;
-    country: string;
+    city: LocalizedText;
+    country: LocalizedText;
     lat: number;
     lng: number;
   };
-  teamPrincipal: string;
+  teamPrincipal: LocalizedText;
   foundingYear: number;
   description: string;
+  championships2025?: {
+    totalPoints: number;
+    raceResults: { race: string; points: number }[];
+  };
 }
 
 export interface Circuit {
   id: string;
-  name: string;
+  name: LocalizedText;
   officialName: string;
-  grandPrix: string;
+  grandPrix: LocalizedText;
   country: string;
   city: string;
   location: {
     lat: number;
     lng: number;
-    city: string;
-    country: string;
+    city: LocalizedText;
+    country: LocalizedText;
   };
   length: number; // in kilometers
   laps: number;
@@ -41,6 +47,8 @@ export interface Circuit {
   raceDate2025: string | null; // ISO date string
   round: number | null;
   sprint?: boolean;
+  corners: number;
+  totalDistance: number;
   elevation?: {
     highest: number;
     lowest: number;
