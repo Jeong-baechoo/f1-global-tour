@@ -76,6 +76,21 @@ Requires Mapbox access token:
 - FlyTo animations: Modify speed, curve, duration parameters
 - Marker styles: Update DOM element styles in marker creation
 
+## Code Organization & Architecture
+
+### Component Structure
+- **Separation of Concerns**: Keep hooks and components separate
+  - Custom hooks in `hooks/` directory for business logic
+  - Components focus on presentation and UI
+  - This improves reusability, testability, and maintainability
+
+### Styling Strategy
+- **Tailwind CSS**: Primary styling for React components (buttons, panels, layouts)
+- **Regular CSS**: Mapbox-specific elements (markers, WebGL-related styles)
+  - Use BEM naming convention for CSS classes
+  - Place in `styles/` directory
+- **Inline Styles**: Only for truly dynamic values (calculated positions, team colors)
+
 ## Git Workflow
 
 - Use commit format: `<type>: <description>` (feat, fix, docs, style, refactor, test, chore)

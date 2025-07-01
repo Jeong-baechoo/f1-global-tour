@@ -13,14 +13,16 @@ const Map = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-screen flex items-center justify-center bg-[#1A1A1A]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-[#FF1801] text-3xl font-bold tracking-wider animate-pulse">F1 GLOBAL TOUR</div>
-          <div className="text-[#C0C0C0] text-sm uppercase tracking-widest">Initializing Race Engineer Console</div>
-          <div className="flex gap-1 mt-2">
-            <div className="w-2 h-2 bg-[#FF1801] rounded-full animate-bounce [animation-delay:0ms]"></div>
-            <div className="w-2 h-2 bg-[#FF1801] rounded-full animate-bounce [animation-delay:150ms]"></div>
-            <div className="w-2 h-2 bg-[#FF1801] rounded-full animate-bounce [animation-delay:300ms]"></div>
+      <div className="fixed inset-0 bg-[#1A1A1A]">
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="text-[#FF1801] text-3xl font-bold tracking-wider">F1 GLOBAL TOUR</div>
+            <div className="text-[#C0C0C0] text-sm uppercase tracking-widest">Initializing Race Engineer Console</div>
+            <div className="flex gap-1 mt-2">
+              <div className="w-2 h-2 bg-[#FF1801] rounded-full animate-bounce [animation-delay:0ms]"></div>
+              <div className="w-2 h-2 bg-[#FF1801] rounded-full animate-bounce [animation-delay:150ms]"></div>
+              <div className="w-2 h-2 bg-[#FF1801] rounded-full animate-bounce [animation-delay:300ms]"></div>
+            </div>
           </div>
         </div>
       </div>

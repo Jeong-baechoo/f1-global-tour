@@ -3,6 +3,7 @@
 import {useEffect, useRef, useState, memo, forwardRef, useImperativeHandle} from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import '@/styles/circuit-marker.css';
 import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
 
