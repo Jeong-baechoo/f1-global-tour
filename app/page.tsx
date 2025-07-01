@@ -374,7 +374,7 @@ export default function Home() {
             }}
             onTouchEnd={(e) => {
               e.stopPropagation();
-              handleTouchEnd(e);
+              handleTouchEnd();
             }}
           >
             <div className="flex items-center gap-12 px-32 py-4 whitespace-nowrap">
