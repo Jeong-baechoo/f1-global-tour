@@ -4,6 +4,7 @@ import { TeamMarkerFactory } from './TeamMarkerFactory';
 import { MarkerData } from '../../types';
 import { getUKTeamAdjustedPosition, isUKTeam } from './UKTeamLayout';
 import { getItalyTeamAdjustedPosition, isItalyTeam } from './ItalyTeamLayout';
+import type { Language } from '@/utils/i18n';
 
 // cleanup 함수를 포함하는 마커 타입
 interface MarkerWithCleanup {
@@ -15,6 +16,7 @@ interface AddAllTeamsOptions {
   map: mapboxgl.Map;
   onMarkerClick?: (item: MarkerData) => void;
   markersWithCleanup: MarkerWithCleanup[];
+  language?: Language;
 }
 
 // 특별 레이아웃 팀 마커 생성 함수 (영국, 이탈리아)
@@ -24,7 +26,8 @@ const createSpecialLayoutTeamMarker = (
   team: any,
   onMarkerClick: ((item: MarkerData) => void) | undefined,
   markersWithCleanup: MarkerWithCleanup[],
-  layoutType: 'uk' | 'italy'
+  layoutType: 'uk' | 'italy',
+  language: Language = 'en'
 ) => {
   // 초기 위치 계산
   const initialZoom = map.getZoom();
@@ -50,6 +53,7 @@ const createSpecialLayoutTeamMarker = (
   const markerWithCleanup = TeamMarkerFactory.create({
     map,
     team: originalTeam,
+    language,
     onMarkerClick
   });
   
@@ -93,22 +97,23 @@ const createSpecialLayoutTeamMarker = (
   markersWithCleanup.push({ marker, cleanup });
 };
 
-export const addAllTeams = ({ map, onMarkerClick, markersWithCleanup }: AddAllTeamsOptions) => {
+export const addAllTeams = ({ map, onMarkerClick, markersWithCleanup, language = 'en' }: AddAllTeamsOptions) => {
   teamsData.teams.forEach((team) => {
     const isUK = isUKTeam(team.id);
     const isItaly = isItalyTeam(team.id);
     
     if (isUK) {
       // 영국 팀은 줌에 따라 위치 변경
-      createSpecialLayoutTeamMarker(map, team, onMarkerClick, markersWithCleanup, 'uk');
+      createSpecialLayoutTeamMarker(map, team, onMarkerClick, markersWithCleanup, 'uk', language);
     } else if (isItaly) {
       // 이탈리아 팀도 줌에 따라 위치 변경
-      createSpecialLayoutTeamMarker(map, team, onMarkerClick, markersWithCleanup, 'italy');
+      createSpecialLayoutTeamMarker(map, team, onMarkerClick, markersWithCleanup, 'italy', language);
     } else {
       // 영국/이탈리아 팀이 아닌 경우 일반 마커
       const markerWithCleanup = TeamMarkerFactory.create({
         map,
         team,
+        language,
         onMarkerClick
       });
       

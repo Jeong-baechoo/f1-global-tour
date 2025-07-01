@@ -2,19 +2,31 @@
   "teams": [
     {
       "id": "red-bull",
-      "name": "Red Bull Racing",
+      "name": {
+        "en": "Red Bull Racing",
+        "ko": "레드불 레이싱"
+      },
       "fullName": "Oracle Red Bull Racing",
       "colors": {
         "primary": "#0600EF",
         "secondary": "#FF0000"
       },
       "headquarters": {
-        "city": "Milton Keynes",
-        "country": "United Kingdom",
+        "city": {
+          "en": "Milton Keynes",
+          "ko": "밀턴 킨스"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        },
         "lat": 52.0082252,
         "lng": -0.6936836
       },
-      "teamPrincipal": "Christian Horner",
+      "teamPrincipal": {
+        "en": "Christian Horner",
+        "ko": "크리스티안 호너"
+      },
       "foundingYear": 2005,
       "description": "Red Bull Racing has dominated recent years of F1, winning multiple constructors' championships with their innovative design philosophy and strong driver lineup.",
       "championships2025": {
@@ -35,19 +47,31 @@
     },
     {
       "id": "ferrari",
-      "name": "Ferrari",
+      "name": {
+        "en": "Ferrari",
+        "ko": "페라리"
+      },
       "fullName": "Scuderia Ferrari",
       "colors": {
         "primary": "#DC0000",
         "secondary": "#FFEB00"
       },
       "headquarters": {
-        "city": "Maranello",
-        "country": "Italy",
+        "city": {
+          "en": "Maranello",
+          "ko": "마라넬로"
+        },
+        "country": {
+          "en": "Italy",
+          "ko": "이탈리아"
+        },
         "lat": 44.5333,
         "lng": 10.8667
       },
-      "teamPrincipal": "Frédéric Vasseur",
+      "teamPrincipal": {
+        "en": "Frédéric Vasseur",
+        "ko": "프레데릭 바수어"
+      },
       "foundingYear": 1950,
       "description": "The most successful and iconic team in F1 history, Ferrari is the oldest surviving team and has won more races and championships than any other constructor.",
       "championships2025": {
@@ -68,19 +92,31 @@
     },
     {
       "id": "mercedes",
-      "name": "Mercedes",
+      "name": {
+        "en": "Mercedes",
+        "ko": "메르세데스"
+      },
       "fullName": "Mercedes-AMG Petronas F1 Team",
       "colors": {
         "primary": "#00D2BE",
         "secondary": "#C6C6C6"
       },
       "headquarters": {
-        "city": "Brackley",
-        "country": "United Kingdom",
+        "city": {
+          "en": "Brackley",
+          "ko": "브래클리"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        },
         "lat": 52.0217,
         "lng": -1.1471
       },
-      "teamPrincipal": "Toto Wolff",
+      "teamPrincipal": {
+        "en": "Toto Wolff",
+        "ko": "토토 볼프"
+      },
       "foundingYear": 2010,
       "description": "Mercedes dominated the turbo-hybrid era from 2014-2020, winning seven consecutive constructors' championships with their superior power unit and aerodynamic excellence.",
       "championships2025": {
@@ -101,19 +137,31 @@
     },
     {
       "id": "mclaren",
-      "name": "McLaren",
+      "name": {
+        "en": "McLaren",
+        "ko": "맥라렌"
+      },
       "fullName": "McLaren F1 Team",
       "colors": {
         "primary": "#FF8700",
         "secondary": "#1E1E1E"
       },
       "headquarters": {
-        "city": "Woking",
-        "country": "United Kingdom",
+        "city": {
+          "en": "Woking",
+          "ko": "워킹"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        },
         "lat": 51.3454,
         "lng": -0.5474
       },
-      "teamPrincipal": "Andrea Stella",
+      "teamPrincipal": {
+        "en": "Andrea Stella",
+        "ko": "안드레아 스텔라"
+      },
       "foundingYear": 1963,
       "description": "One of F1's most successful teams, McLaren has won 12 drivers' championships and 8 constructors' championships, with a rich history of innovation and racing excellence.",
       "championships2025": {
@@ -134,19 +182,31 @@
     },
     {
       "id": "aston-martin",
-      "name": "Aston Martin",
+      "name": {
+        "en": "Aston Martin",
+        "ko": "애스턴 마틴"
+      },
       "fullName": "Aston Martin Aramco F1 Team",
       "colors": {
         "primary": "#006F62",
         "secondary": "#9FA5A4"
       },
       "headquarters": {
-        "city": "Silverstone",
-        "country": "United Kingdom",
+        "city": {
+          "en": "Silverstone",
+          "ko": "실버스톤"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        },
         "lat": 52.0765,
         "lng": -1.0288
       },
-      "teamPrincipal": "Andy Cowell",
+      "teamPrincipal": {
+        "en": "Andy Cowell",
+        "ko": "앤디 코웰"
+      },
       "foundingYear": 2021,
       "description": "Previously known as Racing Point and Force India, the team was rebranded as Aston Martin in 2021, bringing the luxury British marque back to F1 after 60 years.",
       "championships2025": {
@@ -167,19 +227,31 @@
     },
     {
       "id": "alpine",
-      "name": "Alpine",
+      "name": {
+        "en": "Alpine",
+        "ko": "알파인"
+      },
       "fullName": "BWT Alpine F1 Team",
       "colors": {
         "primary": "#0090FF",
         "secondary": "#FF87BC"
       },
       "headquarters": {
-        "city": "Enstone",
-        "country": "United Kingdom",
+        "city": {
+          "en": "Enstone",
+          "ko": "엔스톤"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        },
         "lat": 51.9273,
         "lng": -1.2797
       },
-      "teamPrincipal": "Oliver Oakes",
+      "teamPrincipal": {
+        "en": "Oliver Oakes",
+        "ko": "올리버 오크스"
+      },
       "foundingYear": 2021,
       "description": "The works Renault team, rebranded as Alpine in 2021 to promote the French manufacturer's sports car brand, with a rich history including championship wins as Benetton and Renault.",
       "championships2025": {
@@ -200,19 +272,31 @@
     },
     {
       "id": "williams",
-      "name": "Williams",
+      "name": {
+        "en": "Williams",
+        "ko": "윌리엄스"
+      },
       "fullName": "Williams Racing",
       "colors": {
         "primary": "#005AFF",
         "secondary": "#00A0DE"
       },
       "headquarters": {
-        "city": "Grove",
-        "country": "United Kingdom",
+        "city": {
+          "en": "Grove",
+          "ko": "그로브"
+        },
+        "country": {
+          "en": "United Kingdom",
+          "ko": "영국"
+        },
         "lat": 51.61869248344223,
         "lng": -1.4114207879417222
       },
-      "teamPrincipal": "James Vowles",
+      "teamPrincipal": {
+        "en": "James Vowles",
+        "ko": "제임스 바울스"
+      },
       "foundingYear": 1977,
       "description": "One of the most successful teams in F1 history with 9 constructors' championships, Williams is rebuilding after recent struggles while maintaining their racing heritage.",
       "championships2025": {
@@ -233,19 +317,31 @@
     },
     {
       "id": "racing-bulls",
-      "name": "Racing Bulls",
+      "name": {
+        "en": "Racing Bulls",
+        "ko": "레이싱 불스"
+      },
       "fullName": "Visa Cash App RB Formula One Team",
       "colors": {
         "primary": "#2B4562",
         "secondary": "#FFFFFF"
       },
       "headquarters": {
-        "city": "Faenza",
-        "country": "Italy",
+        "city": {
+          "en": "Faenza",
+          "ko": "파엔차"
+        },
+        "country": {
+          "en": "Italy",
+          "ko": "이탈리아"
+        },
         "lat": 44.30237776250763,
         "lng": 11.859086012910865
       },
-      "teamPrincipal": "Laurent Mekies",
+      "teamPrincipal": {
+        "en": "Laurent Mekies",
+        "ko": "로랑 메키에"
+      },
       "foundingYear": 2024,
       "description": "Red Bull's sister team, previously known as Toro Rosso, serves as a development team for young drivers while competing independently with its own design philosophy.",
       "championships2025": {
@@ -266,19 +362,31 @@
     },
     {
       "id": "alfa-romeo",
-      "name": "Alfa Romeo",
+      "name": {
+        "en": "Alfa Romeo",
+        "ko": "알파 로메오"
+      },
       "fullName": "Stake F1 Team Kick Sauber",
       "colors": {
         "primary": "#57a316",
         "secondary": "#00FF00"
       },
       "headquarters": {
-        "city": "Hinwil",
-        "country": "Switzerland",
+        "city": {
+          "en": "Hinwil",
+          "ko": "힌빌"
+        },
+        "country": {
+          "en": "Switzerland",
+          "ko": "스위스"
+        },
         "lat": 47.30805075558828,
         "lng": 8.817248199241021
       },
-      "teamPrincipal": "Alessandro Alunni Bravi",
+      "teamPrincipal": {
+        "en": "Alessandro Alunni Bravi",
+        "ko": "알레산드로 알루니 브라비"
+      },
       "foundingYear": 2019,
       "description": "Operating from the former Sauber facilities, Alfa Romeo returned to F1 as a constructor in 2019, bringing Italian racing heritage combined with Swiss engineering precision.",
       "championships2025": {
@@ -299,19 +407,31 @@
     },
     {
       "id": "haas",
-      "name": "Haas",
+      "name": {
+        "en": "Haas",
+        "ko": "하스"
+      },
       "fullName": "MoneyGram Haas F1 Team",
       "colors": {
         "primary": "#B6BABD",
         "secondary": "#EC1B23"
       },
       "headquarters": {
-        "city": "Kannapolis",
-        "country": "United States",
+        "city": {
+          "en": "Kannapolis",
+          "ko": "칸나폴리스"
+        },
+        "country": {
+          "en": "United States",
+          "ko": "미국"
+        },
         "lat": 35.44049532264481,
         "lng": -80.67622817560164
       },
-      "teamPrincipal": "Ayao Komatsu",
+      "teamPrincipal": {
+        "en": "Ayao Komatsu",
+        "ko": "아야오 고마츠"
+      },
       "foundingYear": 2016,
       "description": "The first American F1 team in decades, Haas operates with a unique business model utilizing technical partnerships while developing their own competitive package.",
       "championships2025": {

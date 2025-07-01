@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { ChevronRight, MapPin, Calendar, Camera, CameraOff, Minus } from 'lucide-react';
+import { ChevronRight, MapPin, Calendar, Minus } from 'lucide-react';
 import { ModuleHeader } from './ui/ModuleHeader';
-import { Driver, Car } from './mapbox/types';
 import Image from 'next/image';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getText } from '@/utils/i18n';
+import CircuitDetailContent from './InteractivePanel/CircuitDetailContent';
+import type { PanelData } from '@/types/panel';
+import type { Driver } from './mapbox/types';
 
 // 스타일 상수들을 컴포넌트 외부로 분리
 const MOBILE_CONTENT_STYLE = {
@@ -45,28 +49,7 @@ interface InteractivePanelProps {
   onMinimize?: () => void;
   isMinimized?: boolean;
   module: 'next-race' | 'circuit-detail' | 'team-hq' | null;
-  data?: {
-    type?: string;
-    id?: string;
-    name?: string;
-    principal?: string;
-    location?: string | { city: string; country: string };
-    headquarters?: { city: string; country: string; lat: number; lng: number };
-    color?: string;
-    drivers?: string[];
-    drivers2025?: Driver[];
-    car2025?: Car;
-    championships2025?: {
-      totalPoints: number;
-      raceResults: { race: string; points: number }[];
-    };
-    grandPrix?: string;
-    length?: number;
-    laps?: number;
-    corners?: number;
-    totalDistance?: number;
-    raceDate?: string;
-  } | null;
+  data?: PanelData | null | undefined;
   onExploreCircuit?: () => void;
   isCinematicMode?: boolean;
   onToggleCinematicMode?: () => void;
@@ -83,6 +66,7 @@ export default function InteractivePanel({
   isCinematicMode = false,
   onToggleCinematicMode
 }: InteractivePanelProps) {
+  const { language } = useLanguage();
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [sheetState, setSheetState] = useState<'closed' | 'peek' | 'half' | 'full'>('peek');
@@ -91,15 +75,12 @@ export default function InteractivePanel({
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 시트 상태 업데이트 시 높이 조정
   useEffect(() => {
     if (isOpen && isMobile) {
       setSheetState('peek');
@@ -108,10 +89,6 @@ export default function InteractivePanel({
 
   // 드래그 핸들러들을 useCallback으로 최적화
   const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    // 터치 이벤트의 경우 기본 동작 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
@@ -119,11 +96,6 @@ export default function InteractivePanel({
 
   const handleDragMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging || !sheetRef.current) return;
-
-    // 터치 이벤트의 경우 기본 동작 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
 
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = startY - clientY;
@@ -217,21 +189,29 @@ export default function InteractivePanel({
 
             <div className="bg-[#1A1A1A]/60 backdrop-blur-sm rounded border border-[#FF1801]/20 p-4 sm:p-6">
               <div className="text-center mb-4">
-                <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">RACE STARTS IN</div>
+                <div className="text-[#C0C0C0] text-xs tracking-widest mb-2">
+                  {language === 'ko' ? '레이스 시작까지' : 'RACE STARTS IN'}
+                </div>
                 <div className="flex justify-center gap-2 sm:gap-4">
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{countdown.days}</div>
-                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Days</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">
+                      {language === 'ko' ? '일' : 'Days'}
+                    </div>
                   </div>
                   <div className="text-2xl sm:text-3xl text-[#FF1801]">:</div>
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{String(countdown.hours).padStart(2, '0')}</div>
-                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Hours</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">
+                      {language === 'ko' ? '시간' : 'Hours'}
+                    </div>
                   </div>
                   <div className="text-2xl sm:text-3xl text-[#FF1801]">:</div>
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-[#FF1801]">{String(countdown.minutes).padStart(2, '0')}</div>
-                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">Minutes</div>
+                    <div className="text-[10px] sm:text-xs text-[#C0C0C0] uppercase">
+                      {language === 'ko' ? '분' : 'Minutes'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -240,14 +220,19 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-3">
                   <MapPin className="w-4 h-4 text-[#C0C0C0]" />
                   <div>
-                    <div className="text-white font-medium">{data?.name || 'Red Bull Ring'}</div>
-                    <div className="text-xs text-[#C0C0C0]">{typeof data?.location === 'string' ? data.location : `${data?.location?.city || 'Spielberg'}, ${data?.location?.country || 'Austria'}`}</div>
+                    <div className="text-white font-medium">{data?.name ? getText(data.name, language) : 'Red Bull Ring'}</div>
+                    <div className="text-xs text-[#C0C0C0]">
+                      {typeof data?.location === 'string' ? data.location : 
+                       typeof data?.location === 'object' && 'city' in data.location ?
+                       `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
+                       'Spielberg, Austria'}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Calendar className="w-4 h-4 text-[#C0C0C0]" />
                   <div className="text-sm text-white">
-                    {data?.raceDate ? new Date(data.raceDate).toLocaleDateString('en-US', {
+                    {data?.raceDate ? new Date(data.raceDate).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
@@ -262,7 +247,7 @@ export default function InteractivePanel({
               onClick={onExploreCircuit}
               className="w-full bg-[#FF1801] hover:bg-[#FF1801]/90 text-white font-bold py-3 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"
             >
-              Explore Circuit
+              {language === 'ko' ? '서킷 탐험' : 'Explore Circuit'}
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -270,98 +255,13 @@ export default function InteractivePanel({
 
       case 'circuit-detail':
         return (
-          <div className={isMobile ? "space-y-4" : "space-y-6"}>
-            <ModuleHeader 
-              module={module} 
-              data={data} 
-              isMobile={isMobile} 
-              sheetState={sheetState} 
-            />
-
-            {/* Circuit image placeholder - uncomment when images are available
-            {data?.image && (
-              <div className="relative h-48 bg-[#0F0F0F] rounded overflow-hidden border border-[#FF1801]/20">
-                <Image
-                  src={data.image}
-                  alt={data.name || ''}
-                  width={400}
-                  height={192}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )} */}
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-                <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Corners</div>
-                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.corners || '10'}</div>
-              </div>
-              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-                <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Circuit Length</div>
-                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.length || '4.318'} <span className="text-sm text-[#C0C0C0]">km</span></div>
-              </div>
-              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-                <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Total Laps</div>
-                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.laps || '71'}</div>
-              </div>
-              <div className={isMobile ? "bg-[#1A1A1A]/60 backdrop-blur-sm p-3 rounded border border-[#FF1801]/20" : "bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20"}>
-                <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Race Distance</div>
-                <div className={isMobile ? "text-xl font-bold text-white mt-1" : "text-2xl font-bold text-white mt-1"}>{data?.totalDistance || '306.5'} <span className="text-sm text-[#C0C0C0]">km</span></div>
-              </div>
-            </div>
-
-            <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Race Weekend Schedule (KST)</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center py-2 border-b border-[#1A1A1A]">
-                  <span className="text-sm text-[#C0C0C0]">Practice 1</span>
-                  <span className="text-sm text-white font-medium">June 27 (Fri) 20:30</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-[#1A1A1A]">
-                  <span className="text-sm text-[#C0C0C0]">Qualifying</span>
-                  <span className="text-sm text-white font-medium">June 28 (Sat) 23:00</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-sm text-[#C0C0C0]">Race</span>
-                  <span className="text-sm text-white font-medium">June 29 (Sun) 22:00</span>
-                </div>
-              </div>
-            </div>
-
-
-            {/* 시네마틱 모드 버튼 - 데스크탑 패널에만 표시 */}
-            {!isMobile && onToggleCinematicMode && (
-              <button
-                onClick={onToggleCinematicMode}
-                className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wider border ${
-                  isCinematicMode
-                    ? 'bg-[#FF1801] text-white border-[#FF1801] hover:bg-[#FF1801]/90'
-                    : 'bg-[#1A1A1A]/60 backdrop-blur-sm text-white border-[#FF1801]/20 hover:bg-[#1A1A1A]/80'
-                }`}
-              >
-                {isCinematicMode ? (
-                  <>
-                    <CameraOff className="w-5 h-5" />
-                    시네마틱 투어 정지
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-5 h-5" />
-                    시네마틱 투어 시작
-                  </>
-                )}
-              </button>
-            )}
-
-            <div className="flex gap-3">
-              <button className="flex-1 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
-                Official Tickets
-              </button>
-              <button className="flex-1 bg-[#1A1A1A]/60 backdrop-blur-sm hover:bg-[#1A1A1A]/80 text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">
-                Local Info
-              </button>
-            </div>
-          </div>
+          <CircuitDetailContent
+            data={data}
+            isMobile={isMobile}
+            sheetState={sheetState}
+            isCinematicMode={isCinematicMode}
+            onToggleCinematicMode={onToggleCinematicMode}
+          />
         );
 
       case 'team-hq':
@@ -389,22 +289,32 @@ export default function InteractivePanel({
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">Headquarters</h3>
+                <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">
+                  {language === 'ko' ? '본부' : 'Headquarters'}
+                </h3>
                 <p className="text-white">
-                  {(typeof data?.location === 'object' ? data.location.city : null) || data?.headquarters?.city || 'Brackley'},
+                  {data?.headquarters?.city ? getText(data.headquarters.city, language) : 
+                   (typeof data?.location === 'object' && 'city' in data.location ? getText(data.location.city, language) : 'Brackley')},
                   {' '}
-                  {(typeof data?.location === 'object' ? data.location.country : null) || data?.headquarters?.country || 'United Kingdom'}
+                  {data?.headquarters?.country ? getText(data.headquarters.country, language) : 
+                   (typeof data?.location === 'object' && 'country' in data.location ? getText(data.location.country, language) : 'United Kingdom')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">Team Principal</h3>
-                <p className="text-white font-medium">{data?.principal || 'Toto Wolff'}</p>
+                <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-2">
+                  {language === 'ko' ? '팀 대표' : 'Team Principal'}
+                </h3>
+                <p className="text-white font-medium">
+                  {data?.principal ? getText(data.principal, language) : 'Toto Wolff'}
+                </p>
               </div>
 
               {data?.drivers2025 && (
                 <div>
-                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Drivers</h3>
+                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+                    {language === 'ko' ? '2025 드라이버' : '2025 Drivers'}
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {data.drivers2025.map((driver: Driver, index: number) => (
                       <div key={index} className="text-center bg-[#0F0F0F]/60 rounded-lg p-3 border border-[#FF1801]/10">
@@ -436,7 +346,9 @@ export default function InteractivePanel({
 
               {data?.car2025 && (
                 <div>
-                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Car</h3>
+                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+                    {language === 'ko' ? '2025 머신' : '2025 Car'}
+                  </h3>
                   <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
                     <div className="text-center mb-3">
                       <h4 className="text-white font-bold text-lg mb-2">{data.car2025.name}</h4>
@@ -465,21 +377,29 @@ export default function InteractivePanel({
 
               {data?.championships2025 && (
                 <div>
-                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">2025 Championship</h3>
+                  <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+                    {language === 'ko' ? '2025 챔피언십' : '2025 Championship'}
+                  </h3>
                   <div className="space-y-4">
                     <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
                       <div className="text-center mb-3">
                         <div className="text-2xl font-bold text-white mb-1">{data.championships2025.totalPoints}</div>
-                        <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">Total Points</div>
+                        <div className="text-xs text-[#C0C0C0] uppercase tracking-wider">
+                          {language === 'ko' ? '총 포인트' : 'Total Points'}
+                        </div>
                       </div>
                     </div>
                     <div className="bg-[#0F0F0F]/60 rounded-lg p-4 border border-[#FF1801]/10">
-                      <h4 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">All Race Results</h4>
+                      <h4 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+                        {language === 'ko' ? '모든 레이스 결과' : 'All Race Results'}
+                      </h4>
                       <div className="space-y-2 max-h-24 overflow-y-auto scrollbar-transparent">
                         {data.championships2025.raceResults.slice().reverse().map((result, index) => (
                           <div key={index} className="flex justify-between items-center py-1">
                             <span className="text-sm text-white">{result.race}</span>
-                            <span className="text-sm font-medium text-[#FF8700]">{result.points} pts</span>
+                            <span className="text-sm font-medium text-[#FF8700]">
+                              {result.points} {language === 'ko' ? '점' : 'pts'}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -490,16 +410,24 @@ export default function InteractivePanel({
             </div>
 
             <div className="bg-[#1A1A1A]/60 backdrop-blur-sm p-4 rounded border border-[#FF1801]/20">
-              <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">Latest Team News</h3>
+              <h3 className="text-xs text-[#C0C0C0] uppercase tracking-wider mb-3">
+                {language === 'ko' ? '최신 팀 뉴스' : 'Latest Team News'}
+              </h3>
               <div className="space-y-2">
                 <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
-                  • New aerodynamic package tested in wind tunnel
+                  • {language === 'ko' ? 
+                      '새로운 공력 패키지 풍동 테스트 완료' : 
+                      'New aerodynamic package tested in wind tunnel'}
                 </div>
                 <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
-                  • Driver contract extension announced
+                  • {language === 'ko' ? 
+                      '드라이버 계약 연장 발표' : 
+                      'Driver contract extension announced'}
                 </div>
                 <div className="text-sm text-white hover:text-[#FF1801] cursor-pointer transition-colors">
-                  • Technical partnership renewal confirmed
+                  • {language === 'ko' ? 
+                      '기술 파트너십 갱신 확정' : 
+                      'Technical partnership renewal confirmed'}
                 </div>
               </div>
             </div>
@@ -511,7 +439,7 @@ export default function InteractivePanel({
                 borderColor: data?.color || '#FF1801'
               }}
             >
-              Official Team Store
+              {language === 'ko' ? '공식 팀 스토어' : 'Official Team Store'}
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -594,10 +522,9 @@ export default function InteractivePanel({
         <div className="sticky top-0 z-10 bg-transparent rounded-t-2xl">
           {/* Handle Bar - 드래그 영역을 핸들 바로만 제한 */}
           <div 
-            className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
+            className="handle-bar flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
             style={{ touchAction: 'none' }}
             onTouchStart={handleDragStart}
-            onTouchMove={handleDragMove}
             onTouchEnd={handleDragEnd}
             onMouseDown={handleDragStart}
             onMouseMove={isDragging ? handleDragMove : undefined}
@@ -613,14 +540,16 @@ export default function InteractivePanel({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-white font-semibold text-base">
-                    {module === 'circuit-detail' ? (data?.name || 'Circuit') :
-                     module === 'team-hq' ? (data?.name || 'Team HQ') :
-                     'Next Race'}
+                    {module === 'circuit-detail' ? (getText(data?.name || 'Circuit', language)) :
+                     module === 'team-hq' ? (getText(data?.name || 'Team HQ', language)) :
+                     (language === 'ko' ? '다음 레이스' : 'Next Race')}
                   </h3>
                   {module === 'circuit-detail' && (
                     <p className="text-xs text-[#C0C0C0] mt-0.5">
                       {typeof data?.location === 'string' ? data.location :
-                       `${data?.location?.city || ''}, ${data?.location?.country || ''}`}
+                       typeof data?.location === 'object' && 'city' in data.location ?
+                       `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
+                       ''}
                     </p>
                   )}
                 </div>
@@ -635,9 +564,9 @@ export default function InteractivePanel({
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-6 bg-[#FF1801] rounded-full" />
                   <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
-                    {module === 'circuit-detail' ? 'CIRCUIT DETAIL' :
-                     module === 'team-hq' ? 'TEAM HQ' :
-                     'NEXT RACE'}
+                    {module === 'circuit-detail' ? (language === 'ko' ? '서킷 세부사항' : 'CIRCUIT DETAIL') :
+                     module === 'team-hq' ? (language === 'ko' ? '팀 본부' : 'TEAM HQ') :
+                     (language === 'ko' ? '다음 레이스' : 'NEXT RACE')}
                   </span>
                 </div>
               </div>
