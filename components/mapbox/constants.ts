@@ -15,14 +15,13 @@ export const ANIMATION_CONFIG = {
   rotationSpeed: 0.07
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const FOG_CONFIG: any = {
+export const FOG_CONFIG = {
   range: [0.5, 10] as [number, number],
   color: 'white',
   'high-color': '#245cdf',
   'space-color': 'black',
   'star-intensity': 0.5
-};
+} as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const SKY_LAYER_CONFIG: any = {
@@ -89,10 +88,6 @@ export const PITCH_ANGLES = {
 } as const;
 
 
-// Special coordinates
-export const SPECIAL_COORDINATES = {
-  redBull: [-0.689, 52.0092] as [number, number]
-};
 
 // Timeouts
 export const TIMEOUTS = {
