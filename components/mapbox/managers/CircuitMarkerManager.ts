@@ -102,7 +102,11 @@ export class CircuitMarkerManager {
       }
       
       rafId = requestAnimationFrame(() => {
-        const zoom = this.map!.getZoom();
+        if (!this.map) {
+          rafId = null;
+          return;
+        }
+        const zoom = this.map.getZoom();
         this.markers.forEach((data) => {
           this.updateMarkerVisibility(data, zoom);
         });
@@ -119,6 +123,10 @@ export class CircuitMarkerManager {
       // Throttle render checks to every 3rd frame for performance
       if (renderRafId === null) {
         renderRafId = requestAnimationFrame(() => {
+          if (!this.map) {
+            renderRafId = null;
+            return;
+          }
           this.markers.forEach((data) => {
             this.checkGlobeOcclusion(data);
           });

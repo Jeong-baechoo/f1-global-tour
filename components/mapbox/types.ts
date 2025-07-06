@@ -1,4 +1,3 @@
-import mapboxgl from 'mapbox-gl';
 import type { LocalizedText } from '@/utils/i18n';
 
 // 공통 위치 타입
@@ -56,13 +55,7 @@ export interface MarkerData {
 }
 
 export interface MapAPI {
-  flyToLocation: (coordinates: [number, number], zoom?: number) => void;
   flyToCircuit: (circuitId: string, gentle?: boolean) => void;
-  flyToTeam: (teamId: string) => void;
-  getCurrentBounds: () => mapboxgl.LngLatBounds | null;
-  getCurrentZoom: () => number;
-  getCurrentCenter: () => [number, number] | null;
-  resetView: () => void;
   toggleCinematicMode?: () => boolean;
 }
 
@@ -80,10 +73,6 @@ export interface TrackDrawOptions {
   onComplete?: () => void;
 }
 
-export interface MarkerCreationOptions {
-  map: mapboxgl.Map;
-  onMarkerClick?: (item: MarkerData) => void;
-}
 
 // 팀 정보
 export interface Team {
@@ -111,7 +100,3 @@ export interface Team {
   };
 }
 
-export interface TransformedTeam extends Team {
-  logo: string;
-  drivers: string[];
-}

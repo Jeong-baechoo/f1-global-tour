@@ -4,7 +4,6 @@ import {useEffect, useRef, useState, memo, forwardRef, useImperativeHandle} from
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@/styles/circuit-marker.css';
-import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -16,7 +15,7 @@ import CinematicModeButton from './controls/CinematicModeButton';
 import ZoomScrollbar from './controls/ZoomScrollbar';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
-import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES } from './constants';
+import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
 import { trackManager } from './utils/map/trackManager';
 
@@ -59,16 +58,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
   // Map API를 부모 컴포넌트에 노출
   useImperativeHandle(ref, () => ({
-    flyToLocation: (coordinates: [number, number], zoom: number = 15) => {
-      map.current?.flyTo({
-        center: coordinates,
-        zoom,
-        speed: ANIMATION_SPEEDS.flyTo,
-        curve: ANIMATION_SPEEDS.curve,
-        essential: true
-      });
-    },
-    
     flyToCircuit: (circuitId: string, gentle: boolean = false) => {
       if (!map.current) {
         return;
@@ -106,62 +95,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           }
         });
       }
-    },
-    
-    flyToTeam: (teamId: string) => {
-      if (!map.current) return;
-
-      const team = teamsData.teams.find(t => t.id === teamId);
-      if (team) {
-        const mobile = typeof window !== 'undefined' && window.innerWidth < 640;
-        // 글로브 스피너 일시 중단
-        globeSpinner.current?.startInteracting();
-        
-        // Red Bull만 특별한 좌표 사용, 나머지는 공통 설정
-        const center = teamId === 'red-bull' 
-          ? SPECIAL_COORDINATES.redBull
-          : [team.headquarters.lng, team.headquarters.lat] as [number, number];
-          
-        map.current.flyTo({
-          center,
-          zoom: mobile ? ZOOM_LEVELS.teamHQ.mobile : ZOOM_LEVELS.teamHQ.desktop,
-          bearing: 0,
-          pitch: PITCH_ANGLES.teamHQ,
-          speed: ANIMATION_SPEEDS.flyTo,
-          curve: ANIMATION_SPEEDS.curve,
-          essential: true
-        });
-
-        // flyTo 완료 시 글로브 스피너 재개
-        map.current.once('moveend', () => {
-          globeSpinner.current?.stopInteracting();
-        });
-      }
-    },
-    
-    getCurrentBounds: () => {
-      return map.current?.getBounds() || null;
-    },
-    
-    getCurrentZoom: () => {
-      return map.current?.getZoom() || 0;
-    },
-    
-    getCurrentCenter: () => {
-      const center = map.current?.getCenter();
-      return center ? [center.lng, center.lat] as [number, number] : null;
-    },
-    
-    resetView: () => {
-      map.current?.flyTo({
-        center: [0, 0],
-        zoom: 2,
-        pitch: PITCH_ANGLES.default,
-        bearing: 0,
-        speed: ANIMATION_SPEEDS.flyToReset,
-        curve: ANIMATION_SPEEDS.curve,
-        essential: true
-      });
     },
     
     toggleCinematicMode: handleCinematicModeToggle
