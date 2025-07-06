@@ -4,6 +4,7 @@ import { createCircuitRotation } from './globeAnimation';
 import { getTrackCoordinates } from '../data/trackDataLoader';
 import { getCircuitCameraConfig } from '../map/camera';
 import { getCircuitColor } from '../map/circuitColors';
+import { addSectorMarkersProgressively } from '../../markers/circuit/SectorMarkerManager';
 import { trackManager } from '../map/trackManager';
 
 // 타입 정의
@@ -69,6 +70,53 @@ export const flyToCircuitWithTrack = async (
     // 트랙 데이터 로드 시도
     const trackData = await getTrackCoordinates(circuit.id);
 
+    if (trackData && map.getZoom() > 10) {
+      // 섹터 마커를 먼저 생성 (숨김 상태)
+      const sectorMarkerCleanup = addSectorMarkersProgressively({
+        map,
+        circuitId: circuit.id
+      });
+
+      // DRS Detection과 Speed Trap 마커도 생성 (오스트리아, 영국, 호주 서킷)
+      let drsDetectionCleanup: (() => void) | null = null;
+      let speedTrapCleanup: (() => void) | null = null;
+
+      // 뉘르부르크링을 제외한 모든 서킷에서 DRS Detection과 Speed Trap 마커 지원
+      if (circuit.id !== 'nurburgring') {
+        // DRS Detection 마커 추가 (숨김 상태로 생성)
+        const { addDRSDetectionMarkers, addSpeedTrapMarkers } = await import('../../markers/circuit/SectorMarkerManager');
+
+        drsDetectionCleanup = addDRSDetectionMarkers({
+          map,
+          circuitId: circuit.id
+        });
+
+        speedTrapCleanup = addSpeedTrapMarkers({
+          map,
+          circuitId: circuit.id
+        });
+      }
+
+      drawTrack(map, {
+          trackId: `${circuit.id}-track`,
+          trackCoordinates: trackData,
+          color: getCircuitColor(circuit.id),
+          delay: 500,
+          sectorMarkerCleanup, // 청리업 함수 전달
+          onComplete: () => {
+            // 트랙 그리기 완료 후 DRS Detection과 Speed Trap 마커 표시 (뉘르부르크링 제외)
+            if (circuit.id !== 'nurburgring') {
+              import('../../markers/circuit/SectorMarkerManager').then(({ showDRSAndSpeedTrapMarkers }) => {
+                setTimeout(() => {
+                  showDRSAndSpeedTrapMarkers();
+                }, 500); // 트랙 그리기 완료 후 0.5초 딜레이
+              });
+            }
+
+            // 회전 애니메이션 시작
+            if (onRotationStart) {
+              onRotationStart();
+            }
     if (trackData) {
       // 줌 레벨 확인 및 기존 트랙 체크
       if (trackManager.canShowTrack()) {
@@ -85,10 +133,10 @@ export const flyToCircuitWithTrack = async (
             onRotationStart();
           }
 
-          const rotation = createCircuitRotation(
-            map,
-            cameraConfig.bearing || 0
-          );
+            const rotation = createCircuitRotation(
+              map,
+              cameraConfig.bearing || 0
+            );
 
           // Store event handlers for cleanup
           const dragStartHandler = () => rotation.stopRotation();
@@ -132,6 +180,11 @@ export const flyToCircuitWithTrack = async (
               map.off('movestart', moveHandler);
               map.off('touchstart', touchHandler);
               rotation.cleanup();
+
+              // 마커 cleanup 함수들 호출
+              if (sectorMarkerCleanup) sectorMarkerCleanup();
+              if (drsDetectionCleanup) drsDetectionCleanup();
+              if (speedTrapCleanup) speedTrapCleanup();
             },
             rotation: rotation,
             onCinematicModeToggle
@@ -156,7 +209,7 @@ export const flyToCircuitWithTrack = async (
           const zoomEndHandler = () => rotation.startRotation();
           const moveHandler = () => rotation.stopRotation();
           const touchHandler = () => rotation.stopRotation();
-          
+
           const handlersObj = {
             dragStart: dragStartHandler,
             dragEnd: dragEndHandler,
@@ -165,7 +218,7 @@ export const flyToCircuitWithTrack = async (
             moveHandler,
             touchHandler
           };
-          
+
           rotation.setHandlers(handlersObj);
 
           // 이벤트 핸들러 등록
