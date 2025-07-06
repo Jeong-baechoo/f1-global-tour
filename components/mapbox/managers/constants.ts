@@ -19,13 +19,6 @@ export const ANIMATION_TIMINGS = {
   TRANSITION_DURATION: 300  // CSS transition duration
 } as const;
 
-// Marker dimensions
-export const MARKER_DIMENSIONS = {
-  DOT_SIZE: 12,
-  DOT_OFFSET: -6,      // Half of dot size for centering
-  PULSE_SIZE: 20,
-  LINE_HEIGHT: 1
-} as const;
 
 // Enums
 export enum ZoomLevel {
@@ -37,6 +30,5 @@ export enum ZoomLevel {
 }
 
 export enum MarkerOcclusionState {
-  VISIBLE = 'visible',
-  OCCLUDED = 'occluded'
+  VISIBLE = 'visible'
 }

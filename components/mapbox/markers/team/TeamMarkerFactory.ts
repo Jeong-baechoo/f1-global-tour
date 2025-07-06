@@ -3,7 +3,7 @@ import { MarkerData } from '../../types';
 import { Team } from '@/types/f1';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
 import { isMobile } from '../../utils/viewport';
-import { MOBILE_TEAM_CONFIGS } from '../../../../configs/mobile-team-configs';
+import { MOBILE_TEAM_CONFIGS } from '@/configs/mobile-team-configs';
 import { getText, type Language } from '@/utils/i18n';
 
 interface TeamMarkerFactoryProps {
@@ -80,8 +80,8 @@ export class TeamMarkerFactory {
       .setLngLat(teamHQ.coordinates)
       .addTo(map);
     
-    // 클릭 이벤트 설정 (marker를 전달)
-    TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, marker, language, onMarkerClick);
+    // 클릭 이벤트 설정
+    TeamMarkerFactory.setupClickHandler(el, team, config, map, teamHQ, language, onMarkerClick);
     
     // 줌 레벨에 따른 표시 변경 및 cleanup 함수 반환
     const zoomCleanup = TeamMarkerFactory.setupZoomHandler(map, el, config);
@@ -135,7 +135,7 @@ export class TeamMarkerFactory {
     el.appendChild(box);
 
     // GPU 가속 설정
-    TeamMarkerFactory.setupGPUAcceleration(el, box);
+    TeamMarkerFactory.setupGPUAcceleration(box);
     
     // 호버 효과 설정
     TeamMarkerFactory.setupHoverEffects(el, box, config);
@@ -211,9 +211,8 @@ export class TeamMarkerFactory {
   /**
    * GPU 가속 설정
    */
-  private static setupGPUAcceleration(el: HTMLDivElement, box: HTMLDivElement): void {
+  private static setupGPUAcceleration(box: HTMLDivElement): void {
     // willChange 제거 - 드래그 시 마커 움직임 문제 해결
-    // el.style.willChange = 'transform';
     box.style.willChange = 'box-shadow';
   }
 
@@ -245,7 +244,6 @@ export class TeamMarkerFactory {
     config: TeamMarkerConfig,
     map: mapboxgl.Map,
     teamHQ: { coordinates: [number, number] },
-    marker: mapboxgl.Marker,
     language: Language,
     onMarkerClick?: (item: MarkerData) => void
   ): void {
@@ -309,36 +307,5 @@ export class TeamMarkerFactory {
     });
   }
 
-  /**
-   * 여러 팀 마커를 한번에 생성
-   * 
-   * @example
-   * ```typescript
-   * const markerCleanups = TeamMarkerFactory.createMultiple(map, teams, onMarkerClick);
-   * ```
-   */
-  static createMultiple(
-    map: mapboxgl.Map,
-    teams: Team[],
-    onMarkerClick?: (item: MarkerData) => void
-  ): TeamMarkerWithCleanup[] {
-    const markerCleanups: TeamMarkerWithCleanup[] = [];
-    
-    teams.forEach(team => {
-      const markerWithCleanup = TeamMarkerFactory.create({ map, team, onMarkerClick });
-      if (markerWithCleanup) {
-        markerCleanups.push(markerWithCleanup);
-      }
-    });
 
-    return markerCleanups;
-  }
-
-  /**
-   * 모든 마커 제거 및 cleanup 실행
-   */
-  static removeAll(markerCleanups: TeamMarkerWithCleanup[]): void {
-    markerCleanups.forEach(({ cleanup }) => cleanup());
-    markerCleanups.length = 0;
-  }
 }

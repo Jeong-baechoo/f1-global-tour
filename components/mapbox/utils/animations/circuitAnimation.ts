@@ -19,7 +19,6 @@ interface CircuitRotationHandlers {
     enableCinematicMode: () => void;
     disableCinematicMode: () => void;
     toggleCinematicMode: () => boolean;
-    isCinematicModeEnabled: () => boolean;
     cleanup: () => void;
   };
   onCinematicModeToggle?: (enabled: boolean) => void;

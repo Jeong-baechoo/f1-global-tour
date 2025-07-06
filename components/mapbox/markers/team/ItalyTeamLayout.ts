@@ -6,11 +6,6 @@ export const ITALY_TEAMS = [
   'racing-bulls'   // Faenza
 ];
 
-// 이탈리아 팀들의 중심점 (대략적인 중심)
-export const ITALY_CENTER = {
-  lat: 44.4178,    // 페라리와 레이싱 불스 사이 중간
-  lng: 11.3633
-};
 
 // 줌 레벨별 배치 반경 (km 단위)
 export const ITALY_LAYOUT_RADIUS = {
@@ -22,11 +17,6 @@ export const ITALY_LAYOUT_RADIUS = {
 // 지구 반지름 (km)
 const EARTH_RADIUS_KM = 6371;
 
-// 팀별 고정 각도 위치
-export const ITALY_TEAM_POSITIONS: Record<string, number> = {
-  'ferrari': 225,        // 남서쪽 (로마 방향)
-  'racing-bulls': 110    // 동남쪽 (살짝 남쪽)
-};
 
 /**
  * 측지선 공식을 사용하여 중심점에서 특정 거리와 방위각에 있는 좌표 계산
@@ -106,14 +96,12 @@ export const getItalyTeamAdjustedPosition = (
   const bearing = ITALY_TEAM_DISPERSION_ANGLES[teamId] || 0;
   
   // 각 팀의 실제 위치에서 지정된 방향으로 분산
-  const adjustedPosition = calculateGeodesicPosition(
+  return calculateGeodesicPosition(
     originalLat,  // 팀의 실제 위도
     originalLng,  // 팀의 실제 경도
     radiusKm,
     bearing
   );
-  
-  return adjustedPosition;
 };
 
 /**

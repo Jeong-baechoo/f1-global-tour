@@ -397,7 +397,3 @@ export const getTeamMarkerConfig = (teamId: string): TeamMarkerConfig | undefine
   return TEAM_MARKER_CONFIGS[teamId];
 };
 
-// 모든 팀 ID 목록
-export const getAllTeamIds = (): string[] => {
-  return Object.keys(TEAM_MARKER_CONFIGS);
-};

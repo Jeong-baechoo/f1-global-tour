@@ -137,8 +137,8 @@ const DRS_ZONES_PERCENTAGE: { [key: string]: Array<{ startPercent: number; endPe
 
 // SVG 쉐브론 생성 함수
 const createChevronSVG = (color: string = '#00FF00', opacity: number = 1): string => {
-  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 15L12 9L18 15" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>
+  return `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="fill:none">
+    <path d="M6 15L12 9L18 15" style="stroke:${color};stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:${opacity}"/>
   </svg>`;
 };
 

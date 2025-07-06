@@ -1,4 +1,3 @@
-import mapboxgl from 'mapbox-gl';
 import teamsData from '@/data/teams.json';
 import { TeamMarkerFactory } from './TeamMarkerFactory';
 import { MarkerData, Team } from '../../types';
@@ -46,12 +45,11 @@ const createSpecialLayoutTeamMarker = (
   
   // 마커 표시는 조정된 위치로, 하지만 클릭 시엔 원래 위치로 이동해야 함
   // TeamMarkerFactory가 사용할 팀 데이터는 원본 그대로 전달
-  const originalTeam = team;
   
   // TeamMarkerFactory를 사용하여 마커 생성
   const markerWithCleanup = TeamMarkerFactory.create({
     map,
-    team: originalTeam,
+    team,
     language,
     onMarkerClick
   });

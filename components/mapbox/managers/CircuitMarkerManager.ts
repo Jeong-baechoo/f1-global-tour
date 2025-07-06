@@ -409,21 +409,6 @@ export class CircuitMarkerManager {
     return { element, labelContainer, line, dot, cityLabel, countryLabel };
   }
 
-  removeCircuitMarker(circuitId: string) {
-    const data = this.markers.get(circuitId);
-    if (!data) return;
-
-    // 호버 타임아웃 정리
-    const timeout = this.hoverTimeouts.get(circuitId);
-    if (timeout) {
-      clearTimeout(timeout);
-      this.hoverTimeouts.delete(circuitId);
-    }
-
-    // 마커 제거
-    data.marker.remove();
-    this.markers.delete(circuitId);
-  }
 
   cleanup() {
     // 모든 호버 타임아웃 정리

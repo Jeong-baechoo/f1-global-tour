@@ -28,15 +28,6 @@ export const UK_LAYOUT_RADIUS = {
 // 지구 반지름 (km)
 const EARTH_RADIUS_KM = 6371;
 
-// 팀별 고정 각도 위치 (정육각형 배치)
-export const UK_TEAM_POSITIONS: Record<string, number> = {
-  'mercedes': 0,        // 북쪽 (12시)
-  'red-bull': 60,       // 북동쪽 (2시)
-  'aston-martin': 120,  // 남동쪽 (4시)
-  'mclaren': 180,       // 남쪽 (6시)
-  'williams': 240,      // 남서쪽 (8시)
-  'alpine': 300         // 북서쪽 (10시)
-};
 
 /**
  * 측지선 공식을 사용하여 중심점에서 특정 거리와 방위각에 있는 좌표 계산
