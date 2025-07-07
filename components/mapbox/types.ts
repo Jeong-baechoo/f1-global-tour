@@ -77,6 +77,7 @@ export interface TrackDrawOptions {
   trackCoordinates: number[][];
   color?: string;
   delay?: number;
+  onProgress?: (progress: number) => void;
   onComplete?: () => void;
   sectorMarkerCleanup?: () => void;
 }
@@ -115,4 +116,34 @@ export interface Team {
 export interface TransformedTeam extends Team {
   logo: string;
   drivers: string[];
+}
+
+// Track state management types
+export interface TrackLayerInfo {
+  trackId: string;
+  sectorLayers: string[];
+  sectorData?: Array<unknown>;
+}
+
+export interface DRSLayerInfo {
+  trackId: string;
+  drsLayers: string[];
+}
+
+export interface OriginalTrackData {
+  trackId: string;
+  originalData: {
+    type: 'Feature';
+    properties: Record<string, unknown>;
+    geometry: {
+      type: 'LineString';
+      coordinates: number[][];
+    };
+  };
+}
+
+export interface DRSAnimationInfo {
+  animationId: number;
+  isActive: boolean;
+  restartFunction?: () => void;
 }

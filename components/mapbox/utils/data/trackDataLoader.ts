@@ -164,58 +164,18 @@ interface SectorData {
 // 특정 서킷의 섹터 데이터 가져오기 (트랙 색칠용)
 export const getSectorData = async (circuitId: string): Promise<SectorData[] | null> => {
   try {
-    // 오스트리아 서킷은 austria.geojson에서 로드
-    if (circuitId === 'austria') {
-      try {
-        const response = await fetch('/data/circuits-geojson/austria.geojson');
-        const data = await response.json();
-        
-        // 섹터 데이터 찾기
-        const sectorFeatures = data.features.filter((feature: GeoJSONFeature) => 
-          feature.properties.sector && feature.properties.sector > 0
-        );
-        
-        
-        return sectorFeatures.map((feature: GeoJSONFeature) => {
-          // 섹터별 색상 강제 설정
-          let sectorColor = '#FF0000'; // 기본 빨간색
-          switch (feature.properties.sector) {
-            case 1:
-              sectorColor = '#FF0000'; // 빨간색
-              break;
-            case 2:
-              sectorColor = '#0000FF'; // 파란색
-              break;
-            case 3:
-              sectorColor = '#FFFF00'; // 노란색
-              break;
-          }
-          
-          return {
-            id: feature.id || `sector-${feature.properties.sector}`,
-            name: feature.properties.name || `Sector ${feature.properties.sector}`,
-            description: feature.properties.description || '',
-            color: sectorColor,
-            coordinates: feature.geometry.coordinates,
-            sector: feature.properties.sector || 1
-          };
-        });
-      } catch {
-        // Failed to load sector data
-      }
-    }
+    // 개별 GeoJSON 파일에서 섹터 데이터를 로드할 수 있는 서킷들
+    const supportedCircuits = ['austria', 'britain', 'australia', 'belgium'];
     
-    // 영국 서킷은 britain.geojson에서 로드
-    if (circuitId === 'britain') {
+    if (supportedCircuits.includes(circuitId)) {
       try {
-        const response = await fetch('/data/circuits-geojson/britain.geojson');
+        const response = await fetch(`/data/circuits-geojson/${circuitId}.geojson`);
         const data = await response.json();
         
         // 섹터 데이터 찾기
         const sectorFeatures = data.features.filter((feature: GeoJSONFeature) => 
           feature.properties.sector && feature.properties.sector > 0
         );
-        
         
         return sectorFeatures.map((feature: GeoJSONFeature) => {
           // 섹터별 색상 강제 설정
@@ -230,46 +190,8 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
             case 3:
               sectorColor = '#FFFF00'; // 노란색
               break;
-          }
-          
-          return {
-            id: feature.id || `sector-${feature.properties.sector}`,
-            name: feature.properties.name || `Sector ${feature.properties.sector}`,
-            description: feature.properties.description || '',
-            color: sectorColor,
-            coordinates: feature.geometry.coordinates,
-            sector: feature.properties.sector || 1
-          };
-        });
-      } catch {
-        // Failed to load sector data
-      }
-    }
-    
-    // 호주 서킷은 australia.geojson에서 로드
-    if (circuitId === 'australia') {
-      try {
-        const response = await fetch('/data/circuits-geojson/australia.geojson');
-        const data = await response.json();
-        
-        // 섹터 데이터 찾기
-        const sectorFeatures = data.features.filter((feature: GeoJSONFeature) => 
-          feature.properties.sector && feature.properties.sector > 0
-        );
-        
-        
-        return sectorFeatures.map((feature: GeoJSONFeature) => {
-          // 섹터별 색상 강제 설정
-          let sectorColor = '#FF0000'; // 기본 빨간색
-          switch (feature.properties.sector) {
-            case 1:
-              sectorColor = '#FF0000'; // 빨간색
-              break;
-            case 2:
-              sectorColor = '#0000FF'; // 파란색
-              break;
-            case 3:
-              sectorColor = '#FFFF00'; // 노란색
+            default:
+              sectorColor = '#00FF00'; // 녹색 (4섹터 이상)
               break;
           }
           

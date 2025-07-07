@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { drawTrack } from '../map/trackDrawing';
+import { drawAnimatedTrack as drawTrack, clearAllTrackState } from '../map/trackDrawing';
 import { createCircuitRotation } from './globeAnimation';
 import { getTrackCoordinates } from '../data/trackDataLoader';
 import { getCircuitCameraConfig } from '../map/camera';
@@ -7,7 +7,7 @@ import { getCircuitColor } from '../map/circuitColors';
 import { addSectorMarkersProgressively } from '../../markers/circuit/SectorMarkerManager';
 import { cleanupSectorMarkers } from '../circuitManagerExtensions';
 import { trackManager } from '../map/trackManager';
-import { clearAllTrackState } from '../map/trackDrawing';
+import { ZOOM_THRESHOLDS, ANIMATION_TIMINGS, CIRCUIT_VIEW } from '../../constants';
 
 // 타입 정의
 interface CircuitRotationHandlers {
@@ -80,7 +80,7 @@ export const flyToCircuitWithTrack = async (
         if (map.loaded() && !map.isMoving()) {
           resolve();
         } else {
-          setTimeout(checkReady, 50);
+          setTimeout(checkReady, ANIMATION_TIMINGS.MAP_READY_CHECK);
         }
       };
       checkReady();
@@ -92,11 +92,11 @@ export const flyToCircuitWithTrack = async (
     await waitForMapReady();
     
     // Additional small delay to ensure stability
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, ANIMATION_TIMINGS.MAP_READY_DELAY));
     // 트랙 데이터 로드 시도
     const trackData = await getTrackCoordinates(circuit.id);
 
-    if (trackData && map.getZoom() > 10) {
+    if (trackData && map.getZoom() > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
       // trackManager에 먼저 트랙 등록
       trackManager.registerTrack(circuit.id, `${circuit.id}-track`);
       
@@ -130,7 +130,7 @@ export const flyToCircuitWithTrack = async (
           trackId: `${circuit.id}-track`,
           trackCoordinates: trackData,
           color: getCircuitColor(circuit.id),
-          delay: 500,
+          delay: CIRCUIT_VIEW.DRAW_DELAY,
           sectorMarkerCleanup, // 청리업 함수 전달
           onComplete: () => {
             // 트랙 그리기 완료 후 DRS Detection과 Speed Trap 마커 표시 (뉘르부르크링 제외)
@@ -138,7 +138,7 @@ export const flyToCircuitWithTrack = async (
               import('../../markers/circuit/SectorMarkerManager').then(({ showDRSAndSpeedTrapMarkers }) => {
                 setTimeout(() => {
                   showDRSAndSpeedTrapMarkers();
-                }, 500); // 트랙 그리기 완료 후 0.5초 딜레이
+                }, CIRCUIT_VIEW.MARKER_DELAY); // 트랙 그리기 완료 후 0.5초 딜레이
               });
             }
 
