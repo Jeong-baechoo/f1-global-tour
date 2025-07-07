@@ -9,11 +9,12 @@ import circuitsData from '@/data/circuits.json';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import {MapProps, MapAPI} from './types';
-import {addAllCircuitsWithManager, findNextRace} from './markers/circuit/CircuitMarkerManager';
+import {addAllCircuitsWithExtensions, findNextRace, cleanupSectorMarkers} from './utils/circuitManagerExtensions';
 import {addAllTeams} from './markers/team/TeamMarkerManager';
 import { CircuitMarkerManager } from './managers/CircuitMarkerManager';
 import CinematicModeButton from './controls/CinematicModeButton';
 import ZoomScrollbar from './controls/ZoomScrollbar';
+import CircuitInfoPanel from './controls/CircuitInfoPanel';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useCinematicMode } from './hooks/useCinematicMode';
 import { ZOOM_LEVELS, TIMEOUTS, ANIMATION_SPEEDS, PITCH_ANGLES, SPECIAL_COORDINATES } from './constants';
@@ -41,6 +42,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   const isCircuitViewRef = useRef(false);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   
+  // Circuit info panel states
+  const [sectorInfoEnabled, setSectorInfoEnabled] = useState(true);
+  const [drsInfoEnabled, setDRSInfoEnabled] = useState(true);
+
   // Custom hooks 사용
   const { map, globeSpinner } = useMapInitialization({ mapContainer, onUserInteraction });
   const { handleCinematicModeToggle } = useCinematicMode({ map, onCinematicModeChange });
@@ -177,10 +182,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
       // map instance를 state에 저장
       setMapInstance(map.current);
-      
+
       // TrackManager 초기화
       trackManager.setMap(map.current);
-      
+
       // CircuitMarkerManager 초기화
       if (!circuitMarkerManager.current) {
         circuitMarkerManager.current = new CircuitMarkerManager();
@@ -222,7 +227,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         
         // 모든 서킷 마커 추가 (CircuitMarkerManager 사용)
         if (circuitMarkerManager.current) {
-          addAllCircuitsWithManager(circuitMarkerManager.current, nextRace || undefined, language);
+          addAllCircuitsWithExtensions(circuitMarkerManager.current, nextRace || undefined, language);
         }
         
       }, TIMEOUTS.markerDelay);
@@ -241,7 +246,10 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         cleanup();
       });
       markers.current = [];
-      
+
+      // 섹터 마커도 정리
+      cleanupSectorMarkers();
+
       // 서킷 마커 매니저 cleanup
       if (circuitMarkerManager.current) {
         circuitMarkerManager.current.cleanup();
@@ -260,7 +268,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       cleanup();
     });
     markers.current = [];
-    
+
     // 서킷 마커 매니저도 정리
     if (circuitMarkerManager.current) {
       circuitMarkerManager.current.cleanup();
@@ -270,7 +278,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
     // 새로운 언어로 마커 재생성 (부드러운 전환을 위해 짧은 딘레이)
     const timeoutId = setTimeout(() => {
       if (!map.current) return;
-      
+
       // CircuitMarkerManager 재초기화
       if (!circuitMarkerManager.current) {
         circuitMarkerManager.current = new CircuitMarkerManager();
@@ -279,7 +287,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
           circuitMarkerManager.current.setOnMarkerClick(propsRef.current.onMarkerClick);
         }
       }
-      
+
       // 팀 마커 추가
       addAllTeams({
         map: map.current,
@@ -287,26 +295,69 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         markersWithCleanup: markers.current,
         language
       });
-      
+
       // 다음 레이스 찾기
       const nextRace = findNextRace();
-      
+
       // 모든 서킷 마커 추가 (CircuitMarkerManager 사용)
       if (circuitMarkerManager.current) {
-        addAllCircuitsWithManager(circuitMarkerManager.current, nextRace || undefined, language);
+        addAllCircuitsWithExtensions(circuitMarkerManager.current, nextRace || undefined, language);
       }
-      
+
     }, 50); // 최소한의 딘레이로 빠른 업데이트
 
     return () => clearTimeout(timeoutId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]); // language가 변경될 때만 마커 재생성 (map은 ref이므로 의존성에서 제외)
 
+  // Sector info toggle handlers
+  const handleToggleSectorInfo = (enabled: boolean) => {
+    setSectorInfoEnabled(enabled);
+
+    // 섹터 마커 토글
+    window.dispatchEvent(new CustomEvent('toggleSectorMarkers', {
+      detail: { enabled }
+    }));
+
+    // 섹터 트랙 색상 토글
+    window.dispatchEvent(new CustomEvent('toggleSectorTrackColors', {
+      detail: { enabled }
+    }));
+  };
+
+  // DRS info toggle handlers
+  const handleToggleDRSInfo = (enabled: boolean) => {
+    setDRSInfoEnabled(enabled);
+
+    // DRS Detection 마커 토글
+    window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', {
+      detail: { enabled }
+    }));
+
+    // Speed Trap 마커 토글
+    window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', {
+      detail: { enabled }
+    }));
+
+    // DRS 존 레이어 및 애니메이션 토글
+    window.dispatchEvent(new CustomEvent('toggleDRSZoneLayers', {
+      detail: { enabled }
+    }));
+  };
+
   return (
     <>
       <div ref={mapContainer} className="w-full h-full" />
       
-      
+      {/* Circuit Info Panel - 항상 표시 (테스트용) */}
+      <CircuitInfoPanel
+        isVisible={true}
+        onToggleSectorInfo={handleToggleSectorInfo}
+        onToggleDRSInfo={handleToggleDRSInfo}
+        sectorInfoEnabled={sectorInfoEnabled}
+        drsInfoEnabled={drsInfoEnabled}
+      />
+
       <CinematicModeButton
         isCircuitView={isCircuitView}
         onToggleAction={handleCinematicModeToggle}

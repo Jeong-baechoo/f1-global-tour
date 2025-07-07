@@ -8,6 +8,9 @@ interface TrackState {
   hasDRS: boolean;
   layers: string[];
   sources: string[];
+  sectorMarkers: mapboxgl.Marker[];
+  drsDetectionMarkers: mapboxgl.Marker[];
+  speedTrapMarkers: mapboxgl.Marker[];
 }
 
 class TrackManager {
@@ -40,8 +43,12 @@ class TrackManager {
       hasTrack: true,
       hasDRS: false,
       layers: [],
-      sources: []
+      sources: [],
+      sectorMarkers: [],
+      drsDetectionMarkers: [],
+      speedTrapMarkers: []
     });
+    console.log(`🎯 Track registered for ${circuitId}`);
   }
 
   // 트랙 레이어 추가 시 기록
@@ -77,12 +84,50 @@ class TrackManager {
     }
   }
 
+  // 섹터 마커 추가 시 기록
+  addSectorMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
+    const state = this.tracksState.get(circuitId);
+    if (state) {
+      state.sectorMarkers.push(...markers);
+      console.log(`✅ Added ${markers.length} sector markers for ${circuitId}`);
+    } else {
+      console.warn(`⚠️ No track state found for ${circuitId} when adding sector markers`);
+    }
+  }
+
+  // DRS Detection 마커 추가 시 기록
+  addDRSDetectionMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
+    const state = this.tracksState.get(circuitId);
+    if (state) {
+      state.drsDetectionMarkers.push(...markers);
+    }
+  }
+
+  // Speed Trap 마커 추가 시 기록
+  addSpeedTrapMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
+    const state = this.tracksState.get(circuitId);
+    if (state) {
+      state.speedTrapMarkers.push(...markers);
+    }
+  }
+
   // 특정 서킷의 트랙 제거
   removeTrack(circuitId: string) {
     if (!this.map) return;
     
     const state = this.tracksState.get(circuitId);
     if (!state) return;
+
+    console.log(`🗑️ Removing track for ${circuitId}: ${state.sectorMarkers.length} sector, ${state.drsDetectionMarkers.length} DRS, ${state.speedTrapMarkers.length} speed trap markers`);
+
+    // 섹터 마커 제거
+    state.sectorMarkers.forEach(marker => marker.remove());
+    
+    // DRS Detection 마커 제거
+    state.drsDetectionMarkers.forEach(marker => marker.remove());
+    
+    // Speed Trap 마커 제거
+    state.speedTrapMarkers.forEach(marker => marker.remove());
 
     // 레이어 제거
     state.layers.forEach(layerId => {
@@ -107,6 +152,38 @@ class TrackManager {
     this.tracksState.forEach((_, circuitId) => {
       this.removeTrack(circuitId);
     });
+    
+    // 추가로 알려지지 않은 트랙 관련 레이어들도 제거
+    if (this.map) {
+      const style = this.map.getStyle();
+      if (style && style.layers) {
+        const trackLayers = style.layers.filter(layer => 
+          layer.id.includes('-track') || 
+          layer.id.includes('-sector') || 
+          layer.id.includes('-drs') ||
+          layer.id.includes('-symbols')
+        );
+        
+        trackLayers.forEach(layer => {
+          if (this.map!.getLayer(layer.id)) {
+            this.map!.removeLayer(layer.id);
+          }
+        });
+      }
+      
+      // 소스도 정리
+      if (style && style.sources) {
+        Object.keys(style.sources).forEach(sourceId => {
+          if (sourceId.includes('-track') || 
+              sourceId.includes('-sector') || 
+              sourceId.includes('-drs')) {
+            if (this.map!.getSource(sourceId)) {
+              this.map!.removeSource(sourceId);
+            }
+          }
+        });
+      }
+    }
   }
 
   // 트랙이 표시되어 있는지 확인
