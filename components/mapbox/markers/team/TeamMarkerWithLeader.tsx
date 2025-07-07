@@ -3,6 +3,7 @@ import { Team, MarkerData } from '../../types';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
 import { isMobile } from '../../utils/viewport';
 import { MOBILE_TEAM_CONFIGS } from '../../../../configs/mobile-team-configs';
+import { getText, type Language } from '@/utils/i18n';
 
 interface TeamMarkerWithLeaderProps {
   map: mapboxgl.Map;
@@ -10,6 +11,7 @@ interface TeamMarkerWithLeaderProps {
   onMarkerClick?: (item: MarkerData) => void;
   showLeaderLine?: boolean;
   leaderLineTarget?: { lat: number; lng: number };
+  language?: Language;
 }
 
 interface TeamMarkerStyle {
@@ -42,7 +44,8 @@ export class TeamMarkerWithLeader {
     team, 
     onMarkerClick,
     showLeaderLine = false,
-    leaderLineTarget
+    leaderLineTarget,
+    language = 'en'
   }: TeamMarkerWithLeaderProps): mapboxgl.Marker | null {
     const config = getTeamMarkerConfig(team.id);
     if (!config) {
@@ -113,7 +116,7 @@ export class TeamMarkerWithLeader {
     container.appendChild(el);
     
     // 클릭 이벤트 설정
-    this.setupClickHandler(el, team, config, map, teamHQ, onMarkerClick);
+    this.setupClickHandler(el, team, config, map, teamHQ, onMarkerClick, language);
 
     // Mapbox 마커 생성 및 반환
     const marker = new mapboxgl.Marker(container, { 
@@ -246,7 +249,8 @@ export class TeamMarkerWithLeader {
     config: TeamMarkerConfig,
     map: mapboxgl.Map,
     teamHQ: { coordinates: [number, number] },
-    onMarkerClick?: (item: MarkerData) => void
+    onMarkerClick?: (item: MarkerData) => void,
+    language: Language = 'en'
   ): void {
     el.addEventListener('click', () => {
       // 마커 클릭 콜백 실행
@@ -255,7 +259,7 @@ export class TeamMarkerWithLeader {
           type: 'team',
           id: team.id,
           name: team.fullName,
-          principal: team.teamPrincipal,
+          principal: getText(team.teamPrincipal, language),
           location: team.headquarters,
           color: team.colors.primary,
           drivers: config.drivers2025?.map(d => d.name) || [],

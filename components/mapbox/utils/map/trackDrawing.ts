@@ -27,8 +27,6 @@ const drawGeoJSONDRSZones = async (
   trackId: string,
   geoJsonDrsZones: Array<{ id: string; name: string; coordinates: number[][]; color: string }>
 ) => {
-  console.log(`🎯 Drawing ${geoJsonDrsZones.length} GeoJSON DRS zones`);
-
   // SVG 이미지 로드 (여러 색상/투명도)
   const chevronStates = [
     { color: '#003300', opacity: 0.3, name: 'chevron-dim' },
@@ -58,11 +56,9 @@ const drawGeoJSONDRSZones = async (
   geoJsonDrsZones.forEach((drsZone, index) => {
     const drsId = `${trackId}-drs-${index}`;
 
-    console.log(`🎯 Creating GeoJSON DRS zone ${index}:`, drsZone.name);
 
     // DRS 존 좌표에 보간 적용
     const interpolatedCoordinates = interpolateCoordinates(drsZone.coordinates);
-    console.log(`🔄 DRS zone ${index} coordinates: ${drsZone.coordinates.length} -> ${interpolatedCoordinates.length} (interpolated)`);
 
     // DRS 포인트 생성 (Symbol용)
     const features = [];
@@ -122,7 +118,6 @@ const drawGeoJSONDRSZones = async (
         }
       });
       currentDrsLayers.push(layerId);
-      console.log(`✅ GeoJSON DRS layer created: ${layerId}`);
     }
   });
 
@@ -145,11 +140,9 @@ const drawDRSZones = async (
   // DRS ID 목록 수집용
   const drsIds: string[] = [];
 
-  console.log(`🔍 Drawing DRS zones for circuit: ${circuitId}`);
 
   // Circuit ID 매핑 (austria -> at-1969)
   const mappedCircuitId = CIRCUIT_ID_MAPPING[circuitId] || circuitId;
-  console.log(`🗺️ Mapped circuit ID: ${circuitId} -> ${mappedCircuitId}`);
 
   let drsZones;
   
@@ -157,13 +150,11 @@ const drawDRSZones = async (
   try {
     const geoJsonDrsZones = await getDRSZones(circuitId);
     if (geoJsonDrsZones && geoJsonDrsZones.length > 0) {
-      console.log(`✅ Using GeoJSON DRS zones for ${circuitId}:`, geoJsonDrsZones.length);
       // GeoJSON 좌표를 Symbol 방식으로 직접 처리
       await drawGeoJSONDRSZones(map, trackId, geoJsonDrsZones);
       return;
     }
   } catch (error) {
-    console.log(`⚠️ Failed to load GeoJSON DRS zones for ${circuitId}:`, error);
   }
   
   // 2순위: 인덱스 방식 (DRS_ZONES)
@@ -172,7 +163,6 @@ const drawDRSZones = async (
   // 3순위: Dynamic 방식
   if (!drsZones) {
     drsZones = 'dynamic';
-    console.log(`📍 Using dynamic DRS zones for ${circuitId}`);
   }
 
   // 'dynamic'인 경우 트랙의 초반 10%를 DRS 존으로 설정
@@ -208,11 +198,9 @@ const drawDRSZones = async (
 
   // drsZones가 배열인지 확인 후 처리
   if (Array.isArray(drsZones)) {
-    console.log(`🔄 Processing ${drsZones.length} DRS zones for trackId: ${trackId}`);
     const currentDrsLayers: string[] = [];
 
     drsZones.forEach((zone, index) => {
-      console.log(`🎯 Creating DRS zone ${index}:`, zone);
     let drsLineCoordinates;
     
     if (zone.wrapAround) {
@@ -267,11 +255,9 @@ const drawDRSZones = async (
       });
     }
     
-    // Symbol 레이어 추가 (가장 위에 표시되도록)
+    // Symbol 레이어 추가 (줌 레벨 14 이상에서만 표시)
     const layerId = `${drsId}-symbols`;
     if (!map.getLayer(layerId)) {
-    // Symbol 레이어 추가 (줌 레벨 14 이상에서만 표시)
-    if (!map.getLayer(`${drsId}-symbols`)) {
       map.addLayer({
         id: layerId,
         type: 'symbol',
@@ -296,9 +282,7 @@ const drawDRSZones = async (
         }
       });
       currentDrsLayers.push(layerId);
-      console.log(`✅ DRS layer created: ${layerId}`);
     }
-    });
 
     // DRS 레이어 정보 저장
     if (currentDrsLayers.length > 0) {
@@ -307,6 +291,7 @@ const drawDRSZones = async (
         drsLayers: currentDrsLayers
       });
     }
+    });
   }
 };
 
@@ -328,29 +313,56 @@ const findSectorIndexInTrack = (trackCoordinates: number[][], sectorCoord: numbe
 
     // 임계값 내에 있으면 즉시 반환
     if (distance < threshold) {
-      console.log(`✅ 섹터 지점 발견: index ${i}, distance: ${distance.toFixed(6)}`);
       return i;
     }
   }
 
   // 임계값 내에서 찾지 못하면 가장 가까운 지점 반환
   if (closestIndex >= 0) {
-    console.log(`⚠️ 가장 가까운 지점 사용: index ${closestIndex}, distance: ${minDistance.toFixed(6)}`);
     return closestIndex;
   }
 
   return -1; // 찾지 못함
 };
 
+// 특정 서킷의 섹터 3 하드코딩된 위치 (트랙 진행률 기준)
+const HARDCODED_SECTOR3_POSITIONS = {
+  'monaco': 0.72,       // 72% 지점
+  'netherlands': 0.68,  // 68% 지점  
+  'singapore': 0.75,    // 75% 지점
+  'saudi-arabia': 0.73  // 73% 지점
+};
+
 // 섹터 마커 데이터에 트랙 인덱스 추가
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const enrichSectorDataWithTrackIndex = (sectorData: any[], trackCoordinates: number[][]) => {
+const enrichSectorDataWithTrackIndex = (sectorData: any[], originalTrackCoordinates: number[][], smoothTrackCoordinates: number[][], circuitId: string) => {
   return sectorData.map(sector => {
-    const trackIndex = findSectorIndexInTrack(trackCoordinates, sector.position);
+    let originalTrackIndex: number;
+    let originalProgress: number;
+
+    // 특정 서킷의 섹터 3은 하드코딩된 위치 사용
+    if (sector.number === 3 && HARDCODED_SECTOR3_POSITIONS[circuitId as keyof typeof HARDCODED_SECTOR3_POSITIONS]) {
+      originalProgress = HARDCODED_SECTOR3_POSITIONS[circuitId as keyof typeof HARDCODED_SECTOR3_POSITIONS];
+      originalTrackIndex = Math.floor(originalProgress * originalTrackCoordinates.length);
+    } else {
+      // 일반적인 경우: 원본 트랙 좌표에서 섹터 위치 찾기
+      originalTrackIndex = findSectorIndexInTrack(originalTrackCoordinates, sector.position);
+      
+      if (originalTrackIndex < 0) {
+        return { ...sector, trackIndex: -1, trackProgress: -1 };
+      }
+      
+      originalProgress = originalTrackIndex / originalTrackCoordinates.length;
+    }
+    
+    // 보간된 트랙에서의 해당 인덱스 계산
+    const smoothTrackIndex = Math.floor(originalProgress * smoothTrackCoordinates.length);
+    
+    
     return {
       ...sector,
-      trackIndex,
-      trackProgress: trackIndex >= 0 ? trackIndex / trackCoordinates.length : -1
+      trackIndex: smoothTrackIndex,
+      trackProgress: originalProgress
     };
   }).filter(sector => sector.trackIndex >= 0) // 트랙에서 찾지 못한 섹터는 제외
     .sort((a, b) => a.trackIndex - b.trackIndex); // 트랙 순서대로 정렬
@@ -362,13 +374,62 @@ export const drawSectorColoredTrack = async (
   trackId: string,
   circuitId: string
 ) => {
-  console.log(`Drawing sector-colored track for ${circuitId}`);
 
-  // 섹터 데이터 로드
-  const sectorData = await getSectorData(circuitId);
+  // 1차: 기존 trackDataLoader에서 섹터 데이터 시도
+  let sectorData = await getSectorData(circuitId);
+  
+  // 2차: 실패시 동적 로더에서 섹터 데이터를 가져와서 변환
+  if (!sectorData || sectorData.length === 0) {
+    
+    // 동적 로더에서 GeoJSON 로드
+    const { loadCircuitGeoJSON } = await import('../data/dynamicSectorLoader');
+    const geoJsonData = await loadCircuitGeoJSON(circuitId);
+    
+    if (geoJsonData) {
+      // GeoJSON에서 섹터 좌표 추출
+      const geoSectorFeatures = geoJsonData.features.filter(feature => 
+        feature.properties.sector !== undefined
+      );
+      
+      if (geoSectorFeatures.length > 0) {
+        // SectorData 형식으로 변환
+        sectorData = geoSectorFeatures
+          .filter(feature => feature.geometry.type === 'LineString' && typeof feature.properties.sector === 'number')
+          .map(feature => {
+            const sectorNumber = feature.properties.sector as number;
+            
+            // 섹터별 색상 설정
+            let sectorColor = '#FF0000'; // 기본 빨간색
+            switch (sectorNumber) {
+              case 1:
+                sectorColor = '#FF0000'; // 빨간색
+                break;
+              case 2:
+                sectorColor = '#0000FF'; // 파란색
+                break;
+              case 3:
+                sectorColor = '#FFFF00'; // 노란색
+                break;
+              default:
+                sectorColor = '#00FF00'; // 녹색 (4섹터 이상)
+                break;
+            }
+            
+            return {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              id: (feature as any).id || `sector-${sectorNumber}`,
+              name: feature.properties.name || feature.properties.Name || `Sector ${sectorNumber}`,
+              description: feature.properties.description || '',
+              color: sectorColor,
+              coordinates: feature.geometry.coordinates as number[][],
+              sector: sectorNumber
+            };
+          });
+      }
+    }
+  }
 
   if (sectorData && sectorData.length > 0) {
-    console.log(`Found ${sectorData.length} sectors for coloring`);
 
     // 원래 트랙 데이터는 이미 drawTrack에서 저장됨
 
@@ -389,7 +450,6 @@ export const drawSectorColoredTrack = async (
     sectorData.forEach((sector) => {
       const sectorTrackId = `${trackId}-sector-${sector.sector}`;
 
-      console.log(`Drawing sector ${sector.sector} with color ${sector.color}`);
 
       // 섹터별 소스 추가
       if (!map.getSource(sectorTrackId)) {
@@ -457,10 +517,8 @@ export const drawSectorColoredTrack = async (
     //   moveDRSLayersToTop(map, trackId);
     // }, 100);
 
-    console.log(`✅ Sector-colored track created for ${circuitId} with ${currentSectorLayers.length} layers`);
     return true;
   } else {
-    console.log(`⚠️ No sector data found for ${circuitId}`);
     return false;
   }
 };
@@ -500,13 +558,10 @@ const moveDRSLayersToTop = (map: mapboxgl.Map, trackId: string) => {
           map.removeLayer(layerId);
           map.addLayer(layerSpec);
 
-          console.log(`↗️ DRS layer moved to top: ${layerId}`);
         }
       }
     });
-    console.log(`✅ All DRS layers moved to top for ${trackId}`);
   } else {
-    console.log(`⚠️ No DRS layers found for ${trackId}`);
   }
 };
 
@@ -514,7 +569,6 @@ const moveDRSLayersToTop = (map: mapboxgl.Map, trackId: string) => {
 const restoreOriginalTrack = (map: mapboxgl.Map, trackId: string) => {
   const savedData = originalTrackData.find(item => item.trackId === trackId);
   if (savedData) {
-    console.log(`🔄 Restoring original track for ${trackId}`);
 
     // 기존 레이어들 제거
     if (map.getLayer(`${trackId}-main`)) {
@@ -576,11 +630,9 @@ const restoreOriginalTrack = (map: mapboxgl.Map, trackId: string) => {
       moveDRSLayersToTop(map, trackId);
     }, 50);
 
-    console.log(`✅ Original track restored for ${trackId} with color ${savedData.color}`);
     return true;
   }
 
-  console.log(`⚠️ No original track data found for ${trackId}`);
   return false;
 };
 
@@ -604,7 +656,6 @@ export const toggleSectorTrackColors = (trackId: string, enabled: boolean, map: 
           map.setLayoutProperty(layerId, 'visibility', 'visible');
         }
       });
-      console.log(`Sector track colors enabled for ${trackId}`);
     }
   } else {
     // 섹터 색상 트랙 숨기기 및 원래 트랙 복원
@@ -618,12 +669,6 @@ export const toggleSectorTrackColors = (trackId: string, enabled: boolean, map: 
 
     // 원래 트랙 복원
     const restored = restoreOriginalTrack(map, trackId);
-    console.log(`Sector track colors disabled and original track ${restored ? 'restored' : 'restoration failed'} for ${trackId}`);
-  }
-
-  // TrackManager에 DRS 정보 추가
-  if (drsIds.length > 0) {
-    trackManager.addDRSElements(circuitId, drsIds);
   }
 };
 
@@ -632,9 +677,31 @@ export const drawTrack = (
   map: mapboxgl.Map,
   { trackId, trackCoordinates, color = '#FF1801', delay = 0, onComplete, sectorMarkerCleanup }: TrackDrawOptions
 ) => {
-  setTimeout(() => {
-    if (!map || !map.loaded()) {
-      console.warn(`Map not ready for track ${trackId}`);
+  setTimeout(async () => {
+    // Enhanced map readiness check
+    const waitForMapReady = () => {
+      return new Promise<void>((resolve, reject) => {
+        let attempts = 0;
+        const maxAttempts = 20; // 1 second total wait time
+        
+        const checkReady = () => {
+          attempts++;
+          if (map && map.loaded() && !map.isMoving()) {
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            reject(new Error(`Map not ready for track ${trackId} after ${maxAttempts} attempts`));
+          } else {
+            setTimeout(checkReady, 50);
+          }
+        };
+        checkReady();
+      });
+    };
+
+    try {
+      await waitForMapReady();
+    } catch (error) {
+      console.warn(`Skipping track animation: ${error}`);
       return;
     }
 
@@ -643,7 +710,6 @@ export const drawTrack = (
 
     // 줌 레벨 확인
     if (!trackManager.canShowTrack()) {
-      console.log(`Zoom level too low to show track for ${circuitId}`);
       return;
     }
 
@@ -666,7 +732,6 @@ export const drawTrack = (
         coordinates: smoothCoordinates,
         color
       });
-      console.log(`💾 Original track data saved for ${trackId}`);
     }
 
     // 트랙 소스 추가
@@ -754,18 +819,14 @@ export const drawTrack = (
       trackManager.addTrackLayer(circuitId, `${trackId}-main`);
     }
 
-    // 서킷 ID 추출 (trackId는 보통 'circuitId-track' 형식)
-    const circuitId = trackId.replace('-track', '');
-
-    // 섹터 마커 데이터 로드 및 트랙 인덱스 매핑
-    const rawSectorData = getSectorMarkerData(circuitId);
-    const sectorMarkerData = enrichSectorDataWithTrackIndex(rawSectorData, smoothCoordinates);
+    // 섹터 마커 데이터 로드 및 트랙 인덱스 매핑 (원본 좌표로 매칭 후 보간된 좌표로 변환)
+    const rawSectorData = await getSectorMarkerData(circuitId);
+    const sectorMarkerData = enrichSectorDataWithTrackIndex(rawSectorData, trackCoordinates, smoothCoordinates, circuitId);
     const passedSectors = new Set<string>(); // 이미 지나친 섹터 추적
 
-    console.log(`트랙 예상 섹터 순서 (${circuitId}):`, sectorMarkerData.map(s => `${s.name} (index: ${s.trackIndex}/${smoothCoordinates.length}, ${(s.trackProgress*100).toFixed(1)}%)`));
+
 
     if (sectorMarkerData.length === 0) {
-      console.log(`⚠️ ${circuitId}에 대한 섹터 마커 데이터가 없습니다.`);
     }
 
     // 트랙 애니메이션
@@ -798,7 +859,6 @@ export const drawTrack = (
             }, 100); // 약간의 지연으로 자연스럽게 표시
 
             passedSectors.add(sector.id);
-            console.log(`✨ 트랙 진행률 ${(currentIndex/totalPoints*100).toFixed(1)}%에서 섹터 마커 표시: ${sector.name} (trackIndex: ${sector.trackIndex}, currentIndex: ${currentIndex})`);
           }
         });
       }
@@ -835,7 +895,6 @@ export const drawTrack = (
             }
           });
         } else {
-          console.warn(`Source ${trackId} not found during animation`);
           return; // 애니메이션 중단
         }
       }
@@ -843,24 +902,20 @@ export const drawTrack = (
       if (progress < 1) {
         requestAnimationFrame(animateTrack);
       } else {
-        // 오스트리아, 영국, 호주 서킷인 경우: 섹터별 색상 적용 + DRS 애니메이션
-        if (circuitId === 'austria' || circuitId === 'britain' || circuitId === 'australia') {
-          // 1. 섹터별 색상 트랙으로 교체
-          setTimeout(async () => {
-            const sectorApplied = await drawSectorColoredTrack(map, trackId, circuitId);
-            if (sectorApplied) {
-              console.log('Sector colors applied successfully');
+        // 모든 서킷에서 섹터별 색상 적용 시도
+        setTimeout(async () => {
+          const sectorApplied = await drawSectorColoredTrack(map, trackId, circuitId);
+          if (sectorApplied) {
 
-              // 2. 섹터 색상 적용 후 DRS 존 생성 (자동으로 위에 위치)
-              await drawDRSZones(map, trackId, smoothCoordinates, circuitId);
-              setTimeout(() => animateDRSSequentialSignal(map, trackId), 300);
-            }
-          }, 200);
-        } else {
-          // 다른 서킷: 기존 방식 (DRS 존 색칠 + 애니메이션)
-          await drawDRSZones(map, trackId, smoothCoordinates, circuitId);
-          setTimeout(() => animateDRSSequentialSignal(map, trackId), 500);
-        }
+            // 2. 섹터 색상 적용 후 DRS 존 생성 (자동으로 위에 위치)
+            await drawDRSZones(map, trackId, smoothCoordinates, circuitId);
+            setTimeout(() => animateDRSSequentialSignal(map, trackId), 300);
+          } else {
+            // 섹터 색상 적용 실패시 기존 방식 (DRS 존 색칠 + 애니메이션)
+            await drawDRSZones(map, trackId, smoothCoordinates, circuitId);
+            setTimeout(() => animateDRSSequentialSignal(map, trackId), 500);
+          }
+        }, 200);
 
         // cleanup 함수 저장 (나중에 사용)
         if (sectorMarkerCleanup) {
@@ -885,6 +940,28 @@ const activeDRSAnimations: Map<string, {
   restartFunction?: () => void
 }> = new Map();
 
+// 모든 DRS 애니메이션 정리 함수
+export const clearAllDRSAnimations = () => {
+  activeDRSAnimations.forEach((animationInfo) => {
+    animationInfo.isActive = false;
+    if (animationInfo.animationId) {
+      cancelAnimationFrame(animationInfo.animationId);
+    }
+  });
+  activeDRSAnimations.clear();
+};
+
+// 모든 트랙 관련 전역 상태 정리 함수
+export const clearAllTrackState = () => {
+  // 레이어 정보 정리
+  sectorLayers.length = 0;
+  drsLayers.length = 0;
+  originalTrackData.length = 0;
+  
+  // DRS 애니메이션 정리
+  clearAllDRSAnimations();
+};
+
 // DRS 애니메이션 토글 함수
 export const toggleDRSAnimations = (trackId: string, enabled: boolean) => {
   const animationInfo = activeDRSAnimations.get(trackId);
@@ -892,21 +969,18 @@ export const toggleDRSAnimations = (trackId: string, enabled: boolean) => {
   if (animationInfo) {
     animationInfo.isActive = enabled;
     if (!enabled) {
-      console.log(`🛑 DRS animation stopped for ${trackId}`);
       // 애니메이션 프레임 취소
       if (animationInfo.animationId) {
         cancelAnimationFrame(animationInfo.animationId);
         animationInfo.animationId = 0;
       }
     } else {
-      console.log(`▶️ DRS animation resumed for ${trackId}`);
       // 애니메이션 다시 시작
       if (animationInfo.restartFunction) {
         animationInfo.restartFunction();
       }
     }
   } else {
-    console.log(`⚠️ No DRS animation info found for ${trackId}`);
   }
 };
 
@@ -919,7 +993,6 @@ export const toggleDRSZoneLayers = (trackId: string, enabled: boolean, map: mapb
         map.setLayoutProperty(layerId, 'visibility', enabled ? 'visible' : 'none');
       }
     });
-    console.log(`DRS zone layers ${enabled ? 'enabled' : 'disabled'} for ${trackId}`);
   } else {
     // DRS 존 레이어들 찾기 (fallback)
     let drsIndex = 0;
@@ -945,7 +1018,6 @@ export const toggleDRSZoneLayers = (trackId: string, enabled: boolean, map: mapb
       });
     }
 
-    console.log(`DRS zone layers ${enabled ? 'enabled' : 'disabled'} for ${trackId}`);
   }
 
   // DRS 애니메이션도 함께 토글
@@ -954,19 +1026,16 @@ export const toggleDRSZoneLayers = (trackId: string, enabled: boolean, map: mapb
 
 // DRS 존 시퀀셜 시그널 애니메이션 (Symbol 기반)
 const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
-  console.log(`🎬 Starting DRS animation for ${trackId}`);
   const animationDuration = 2000; // 2초
 
   const startAnimation = () => {
     const startTime = performance.now();
-    console.log(`▶️ DRS animation loop started for ${trackId}`);
 
     const animate = () => {
       const animationInfo = activeDRSAnimations.get(trackId);
 
       // 애니메이션이 비활성화되었으면 중단
       if (!animationInfo || !animationInfo.isActive) {
-        console.log(`⏸️ DRS animation paused for ${trackId}`);
         return;
       }
 
@@ -982,7 +1051,6 @@ const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
 
         if (!map.getLayer(layerId)) {
           if (drsIndex === 0) {
-            console.log(`❌ No DRS layers found for ${trackId}`);
           }
           break; // 더 이상 DRS 존이 없으면 종료
         }
@@ -1030,7 +1098,6 @@ const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
 
       // 첫 번째 루프에서만 로그 출력
       if (foundLayers > 0 && elapsed < 100) {
-        console.log(`🔄 Animating ${foundLayers} DRS layers for ${trackId}`);
       }
 
       const currentAnimationInfo = activeDRSAnimations.get(trackId);
@@ -1067,7 +1134,6 @@ const animateDRSSequentialSignal = (map: mapboxgl.Map, trackId: string) => {
   window.addEventListener('toggleDRSZoneLayers', drsEventHandler as EventListener);
   window.addEventListener('toggleSectorTrackColors', sectorTrackEventHandler as EventListener);
 
-  console.log(`🎬 DRS animation started for ${trackId}`);
   const startTime = performance.now();
 
   const animate = () => {

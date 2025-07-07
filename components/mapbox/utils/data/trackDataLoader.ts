@@ -116,11 +116,10 @@ export const getTrackCoordinates = async (circuitId: string): Promise<number[][]
         );
         
         if (trackFeature && trackFeature.geometry.coordinates) {
-          console.log(`Successfully loaded track data for ${circuitId} (${expectedId})`);
           return trackFeature.geometry.coordinates;
         }
-      } catch (error) {
-        console.error(`Failed to load ${circuitId} track data:`, error);
+      } catch {
+        // Failed to load track data
       }
     }
     
@@ -176,7 +175,6 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
           feature.properties.sector && feature.properties.sector > 0
         );
         
-        console.log('Found sector features for track coloring:', sectorFeatures.length);
         
         return sectorFeatures.map((feature: GeoJSONFeature) => {
           // 섹터별 색상 강제 설정
@@ -202,8 +200,8 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
             sector: feature.properties.sector || 1
           };
         });
-      } catch (error) {
-        console.error('Failed to load Red Bull Ring sector data:', error);
+      } catch {
+        // Failed to load sector data
       }
     }
     
@@ -218,7 +216,6 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
           feature.properties.sector && feature.properties.sector > 0
         );
         
-        console.log('Found Silverstone sector features for track coloring:', sectorFeatures.length);
         
         return sectorFeatures.map((feature: GeoJSONFeature) => {
           // 섹터별 색상 강제 설정
@@ -244,8 +241,8 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
             sector: feature.properties.sector || 1
           };
         });
-      } catch (error) {
-        console.error('Failed to load Silverstone sector data:', error);
+      } catch {
+        // Failed to load sector data
       }
     }
     
@@ -260,7 +257,6 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
           feature.properties.sector && feature.properties.sector > 0
         );
         
-        console.log('Found Albert Park sector features for track coloring:', sectorFeatures.length);
         
         return sectorFeatures.map((feature: GeoJSONFeature) => {
           // 섹터별 색상 강제 설정
@@ -286,8 +282,8 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
             sector: feature.properties.sector || 1
           };
         });
-      } catch (error) {
-        console.error('Failed to load Albert Park sector data:', error);
+      } catch {
+        // Failed to load sector data
       }
     }
     
@@ -313,23 +309,10 @@ export const getDRSZones = async (circuitId: string): Promise<DRSZone[] | null> 
         const response = await fetch(`/data/circuits-geojson/${circuitId}.geojson`);
         const data = await response.json();
         
-        console.log(`${circuitId} GeoJSON loaded, total features:`, data.features.length);
-        
         // DRS 존 데이터 찾기
         const drsFeatures = data.features.filter((feature: GeoJSONFeature) => 
           feature.properties.drs && feature.properties.drs > 0
         );
-        
-        console.log(`Found ${drsFeatures.length} DRS features for ${circuitId}`);
-        drsFeatures.forEach((feature: GeoJSONFeature, index: number) => {
-          console.log(`${circuitId} DRS Zone ${index + 1}:`, {
-            id: feature.id,
-            name: feature.properties.name,
-            drs: feature.properties.drs,
-            coordinateCount: feature.geometry.coordinates.length,
-            color: feature.properties.color
-          });
-        });
         
         return drsFeatures.map((feature: GeoJSONFeature) => ({
           id: feature.id || `drs-zone-${feature.properties.drs}`,
@@ -338,8 +321,8 @@ export const getDRSZones = async (circuitId: string): Promise<DRSZone[] | null> 
           color: feature.properties.color || '#FFD700',
           coordinates: feature.geometry.coordinates
         }));
-      } catch (error) {
-        console.error(`Failed to load ${circuitId} DRS zones:`, error);
+      } catch {
+        // Failed to load DRS zones
       }
     }
     

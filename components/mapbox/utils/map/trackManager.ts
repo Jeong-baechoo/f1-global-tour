@@ -107,6 +107,38 @@ class TrackManager {
     this.tracksState.forEach((_, circuitId) => {
       this.removeTrack(circuitId);
     });
+    
+    // 추가로 알려지지 않은 트랙 관련 레이어들도 제거
+    if (this.map) {
+      const style = this.map.getStyle();
+      if (style && style.layers) {
+        const trackLayers = style.layers.filter(layer => 
+          layer.id.includes('-track') || 
+          layer.id.includes('-sector') || 
+          layer.id.includes('-drs') ||
+          layer.id.includes('-symbols')
+        );
+        
+        trackLayers.forEach(layer => {
+          if (this.map!.getLayer(layer.id)) {
+            this.map!.removeLayer(layer.id);
+          }
+        });
+      }
+      
+      // 소스도 정리
+      if (style && style.sources) {
+        Object.keys(style.sources).forEach(sourceId => {
+          if (sourceId.includes('-track') || 
+              sourceId.includes('-sector') || 
+              sourceId.includes('-drs')) {
+            if (this.map!.getSource(sourceId)) {
+              this.map!.removeSource(sourceId);
+            }
+          }
+        });
+      }
+    }
   }
 
   // 트랙이 표시되어 있는지 확인

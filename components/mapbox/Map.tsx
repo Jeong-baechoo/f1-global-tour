@@ -9,8 +9,7 @@ import circuitsData from '@/data/circuits.json';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import {MapProps, MapAPI} from './types';
-import {addAllCircuits, findNextRace, cleanupSectorMarkers} from './markers/circuit/CircuitMarkerManager';
-import {addAllCircuitsWithManager, findNextRace} from './markers/circuit/CircuitMarkerManager';
+import {addAllCircuitsWithManager, findNextRace, cleanupSectorMarkers} from './markers/circuit/CircuitMarkerManager';
 import {addAllTeams} from './markers/team/TeamMarkerManager';
 import { CircuitMarkerManager } from './managers/CircuitMarkerManager';
 import CinematicModeButton from './controls/CinematicModeButton';
@@ -250,7 +249,6 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
       // 섹터 마커도 정리
       cleanupSectorMarkers();
-    };
 
       // 서킷 마커 매니저 cleanup
       if (circuitMarkerManager.current) {

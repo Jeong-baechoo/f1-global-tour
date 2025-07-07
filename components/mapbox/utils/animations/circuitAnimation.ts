@@ -5,7 +5,9 @@ import { getTrackCoordinates } from '../data/trackDataLoader';
 import { getCircuitCameraConfig } from '../map/camera';
 import { getCircuitColor } from '../map/circuitColors';
 import { addSectorMarkersProgressively } from '../../markers/circuit/SectorMarkerManager';
+import { cleanupSectorMarkers } from '../../markers/circuit/CircuitMarkerManager';
 import { trackManager } from '../map/trackManager';
+import { clearAllTrackState } from '../map/trackDrawing';
 
 // 타입 정의
 interface CircuitRotationHandlers {
@@ -59,6 +61,11 @@ export const flyToCircuitWithTrack = async (
     delete mapWithHandlers._circuitRotationHandlers;
   }
 
+  // Clean up all existing tracks, animations, and markers
+  trackManager.removeAllTracks();
+  clearAllTrackState();
+  cleanupSectorMarkers();
+
   const cameraConfig = getCircuitCameraConfig(circuit.id);
 
   map.flyTo({
@@ -66,13 +73,32 @@ export const flyToCircuitWithTrack = async (
     center: [circuit.location.lng, circuit.location.lat]
   });
 
+  // Wait for the map to be ready and flyTo to complete
+  const waitForMapReady = () => {
+    return new Promise<void>((resolve) => {
+      const checkReady = () => {
+        if (map.loaded() && !map.isMoving()) {
+          resolve();
+        } else {
+          setTimeout(checkReady, 50);
+        }
+      };
+      checkReady();
+    });
+  };
+
   map.once('moveend', async () => {
+    // Ensure map is fully ready before proceeding
+    await waitForMapReady();
+    
+    // Additional small delay to ensure stability
+    await new Promise(resolve => setTimeout(resolve, 100));
     // 트랙 데이터 로드 시도
     const trackData = await getTrackCoordinates(circuit.id);
 
     if (trackData && map.getZoom() > 10) {
       // 섹터 마커를 먼저 생성 (숨김 상태)
-      const sectorMarkerCleanup = addSectorMarkersProgressively({
+      const sectorMarkerCleanup = await addSectorMarkersProgressively({
         map,
         circuitId: circuit.id
       });
@@ -86,12 +112,12 @@ export const flyToCircuitWithTrack = async (
         // DRS Detection 마커 추가 (숨김 상태로 생성)
         const { addDRSDetectionMarkers, addSpeedTrapMarkers } = await import('../../markers/circuit/SectorMarkerManager');
 
-        drsDetectionCleanup = addDRSDetectionMarkers({
+        drsDetectionCleanup = await addDRSDetectionMarkers({
           map,
           circuitId: circuit.id
         });
 
-        speedTrapCleanup = addSpeedTrapMarkers({
+        speedTrapCleanup = await addSpeedTrapMarkers({
           map,
           circuitId: circuit.id
         });
@@ -117,139 +143,122 @@ export const flyToCircuitWithTrack = async (
             if (onRotationStart) {
               onRotationStart();
             }
-    if (trackData) {
-      // 줌 레벨 확인 및 기존 트랙 체크
-      if (trackManager.canShowTrack()) {
-        // 이미 트랙이 있으면 그대로 두고, 없으면 그리기
-        if (!trackManager.hasTrack(circuit.id)) {
-          drawTrack(map, {
-            trackId: `${circuit.id}-track`,
-            trackCoordinates: trackData,
-            color: getCircuitColor(circuit.id),
-            delay: 500,
-            onComplete: () => {
-          // 회전 애니메이션 시작
-          if (onRotationStart) {
-            onRotationStart();
-          }
 
             const rotation = createCircuitRotation(
               map,
               cameraConfig.bearing || 0
             );
 
-          // Store event handlers for cleanup
-          const dragStartHandler = () => rotation.stopRotation();
-          const dragEndHandler = () => rotation.startRotation();
-          const zoomStartHandler = () => rotation.stopRotation();
-          const zoomEndHandler = () => rotation.startRotation();
-          const moveHandler = () => rotation.stopRotation();
-          const touchHandler = () => rotation.stopRotation();
-          
-          const handlersObj = {
-            dragStart: dragStartHandler,
-            dragEnd: dragEndHandler,
-            zoomStart: zoomStartHandler,
-            zoomEnd: zoomEndHandler,
-            moveHandler,
-            touchHandler
-          };
-          
-          rotation.setHandlers(handlersObj);
+            // Store event handlers for cleanup
+            const dragStartHandler = () => rotation.stopRotation();
+            const dragEndHandler = () => rotation.startRotation();
+            const zoomStartHandler = () => rotation.stopRotation();
+            const zoomEndHandler = () => rotation.startRotation();
+            const moveHandler = () => rotation.stopRotation();
+            const touchHandler = () => rotation.stopRotation();
 
-          // 이벤트 핸들러 등록
-          map.on('dragstart', dragStartHandler);
-          map.on('dragend', dragEndHandler);
-          map.on('zoomstart', zoomStartHandler);
-          map.on('zoomend', zoomEndHandler);
-          map.on('movestart', moveHandler);
-          map.on('touchstart', touchHandler);
+            const handlersObj = {
+              dragStart: dragStartHandler,
+              dragEnd: dragEndHandler,
+              zoomStart: zoomStartHandler,
+              zoomEnd: zoomEndHandler,
+              moveHandler,
+              touchHandler
+            };
 
-          // Store handlers and rotation object for potential cleanup later
-          mapWithHandlers._circuitRotationHandlers = {
-            dragStart: dragStartHandler,
-            dragEnd: dragEndHandler,
-            zoomStart: zoomStartHandler,
-            zoomEnd: zoomEndHandler,
-            cleanup: () => {
-              // 이벤트 핸들러 제거
-              map.off('dragstart', dragStartHandler);
-              map.off('dragend', dragEndHandler);
-              map.off('zoomstart', zoomStartHandler);
-              map.off('zoomend', zoomEndHandler);
-              map.off('movestart', moveHandler);
-              map.off('touchstart', touchHandler);
-              rotation.cleanup();
+            rotation.setHandlers(handlersObj);
 
-              // 마커 cleanup 함수들 호출
-              if (sectorMarkerCleanup) sectorMarkerCleanup();
-              if (drsDetectionCleanup) drsDetectionCleanup();
-              if (speedTrapCleanup) speedTrapCleanup();
-            },
-            rotation: rotation,
-            onCinematicModeToggle
-          };
-        }
-      });
-        } else {
-          // 트랙이 이미 있으면 회전 애니메이션만 시작
-          if (onRotationStart) {
-            onRotationStart();
+            // 이벤트 핸들러 등록
+            map.on('dragstart', dragStartHandler);
+            map.on('dragend', dragEndHandler);
+            map.on('zoomstart', zoomStartHandler);
+            map.on('zoomend', zoomEndHandler);
+            map.on('movestart', moveHandler);
+            map.on('touchstart', touchHandler);
+
+            // Store handlers and rotation object for potential cleanup later
+            mapWithHandlers._circuitRotationHandlers = {
+              dragStart: dragStartHandler,
+              dragEnd: dragEndHandler,
+              zoomStart: zoomStartHandler,
+              zoomEnd: zoomEndHandler,
+              cleanup: () => {
+                // 이벤트 핸들러 제거
+                map.off('dragstart', dragStartHandler);
+                map.off('dragend', dragEndHandler);
+                map.off('zoomstart', zoomStartHandler);
+                map.off('zoomend', zoomEndHandler);
+                map.off('movestart', moveHandler);
+                map.off('touchstart', touchHandler);
+                rotation.cleanup();
+
+                // 마커 cleanup 함수들 호출
+                if (sectorMarkerCleanup) sectorMarkerCleanup();
+                if (drsDetectionCleanup) drsDetectionCleanup();
+                if (speedTrapCleanup) speedTrapCleanup();
+              },
+              rotation: rotation,
+              onCinematicModeToggle: onCinematicModeToggle
+            };
           }
-
-          const rotation = createCircuitRotation(
-            map,
-            cameraConfig.bearing || 0
-          );
-
-          // Store event handlers for cleanup
-          const dragStartHandler = () => rotation.stopRotation();
-          const dragEndHandler = () => rotation.startRotation();
-          const zoomStartHandler = () => rotation.stopRotation();
-          const zoomEndHandler = () => rotation.startRotation();
-          const moveHandler = () => rotation.stopRotation();
-          const touchHandler = () => rotation.stopRotation();
-
-          const handlersObj = {
-            dragStart: dragStartHandler,
-            dragEnd: dragEndHandler,
-            zoomStart: zoomStartHandler,
-            zoomEnd: zoomEndHandler,
-            moveHandler,
-            touchHandler
-          };
-
-          rotation.setHandlers(handlersObj);
-
-          // 이벤트 핸들러 등록
-          map.on('dragstart', dragStartHandler);
-          map.on('dragend', dragEndHandler);
-          map.on('zoomstart', zoomStartHandler);
-          map.on('zoomend', zoomEndHandler);
-          map.on('movestart', moveHandler);
-          map.on('touchstart', touchHandler);
-
-          // Store handlers and rotation object for potential cleanup later
-          mapWithHandlers._circuitRotationHandlers = {
-            dragStart: dragStartHandler,
-            dragEnd: dragEndHandler,
-            zoomStart: zoomStartHandler,
-            zoomEnd: zoomEndHandler,
-            cleanup: () => {
-              // 이벤트 핸들러 제거
-              map.off('dragstart', dragStartHandler);
-              map.off('dragend', dragEndHandler);
-              map.off('zoomstart', zoomStartHandler);
-              map.off('zoomend', zoomEndHandler);
-              map.off('movestart', moveHandler);
-              map.off('touchstart', touchHandler);
-              rotation.cleanup();
-            },
-            rotation: rotation,
-            onCinematicModeToggle
-          };
-        }
+        });
+    } else {
+      // No track data - just start rotation animation
+      if (onRotationStart) {
+        onRotationStart();
       }
+
+      const rotation = createCircuitRotation(
+        map,
+        cameraConfig.bearing || 0
+      );
+
+      // Store event handlers for cleanup
+      const dragStartHandler = () => rotation.stopRotation();
+      const dragEndHandler = () => rotation.startRotation();
+      const zoomStartHandler = () => rotation.stopRotation();
+      const zoomEndHandler = () => rotation.startRotation();
+      const moveHandler = () => rotation.stopRotation();
+      const touchHandler = () => rotation.stopRotation();
+
+      const handlersObj = {
+        dragStart: dragStartHandler,
+        dragEnd: dragEndHandler,
+        zoomStart: zoomStartHandler,
+        zoomEnd: zoomEndHandler,
+        moveHandler,
+        touchHandler
+      };
+
+      rotation.setHandlers(handlersObj);
+
+      // 이벤트 핸들러 등록
+      map.on('dragstart', dragStartHandler);
+      map.on('dragend', dragEndHandler);
+      map.on('zoomstart', zoomStartHandler);
+      map.on('zoomend', zoomEndHandler);
+      map.on('movestart', moveHandler);
+      map.on('touchstart', touchHandler);
+
+      // Store handlers and rotation object for potential cleanup later
+      mapWithHandlers._circuitRotationHandlers = {
+        dragStart: dragStartHandler,
+        dragEnd: dragEndHandler,
+        zoomStart: zoomStartHandler,
+        zoomEnd: zoomEndHandler,
+        cleanup: () => {
+          // 이벤트 핸들러 제거
+          map.off('dragstart', dragStartHandler);
+          map.off('dragend', dragEndHandler);
+          map.off('zoomstart', zoomStartHandler);
+          map.off('zoomend', zoomEndHandler);
+          map.off('movestart', moveHandler);
+          map.off('touchstart', touchHandler);
+          rotation.cleanup();
+        },
+        rotation: rotation,
+        onCinematicModeToggle: onCinematicModeToggle
+      };
     }
   });
 };

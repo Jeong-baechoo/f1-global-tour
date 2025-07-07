@@ -1,28 +1,12 @@
 import mapboxgl from 'mapbox-gl';
-
-export interface SectorInfo {
-  id: string;
-  name: string;
-  position: [number, number]; // [lng, lat]
-  number: number; // 1, 2, 3 for sectors, 0 for start/finish
-  isStartFinish?: boolean;
-}
-
-export interface DRSDetectionInfo {
-  id: string;
-  name: string;
-  position: [number, number]; // [lng, lat]
-  number: number; // DRS detection zone number
-  type: 'drs_detection';
-}
-
-export interface SpeedTrapInfo {
-  id: string;
-  name: string;
-  position: [number, number]; // [lng, lat]
-  number: number; // Speed trap number
-  type: 'speed_trap';
-}
+import { 
+  getDynamicSectorData, 
+  getDynamicDRSDetectionData, 
+  getDynamicSpeedTrapData,
+  type SectorInfo,
+  type DRSDetectionInfo,
+  type SpeedTrapInfo
+} from '../../utils/data/dynamicSectorLoader';
 
 interface SectorMarkerManagerProps {
   map: mapboxgl.Map;
@@ -54,197 +38,34 @@ const getSpeedTrapColor = (): string => {
   return '#FFFFFF'; // 흰색
 };
 
-// 서킷별 섹터 데이터 (GeoJSON에서 추출한 정확한 섹터 시작 지점)
-export const getSectorData = (circuitId: string): SectorInfo[] => {
-  if (circuitId === 'austria') {
-    return [
-      {
-        id: 'red-bull-ring-start-finish',
-        name: 'Start/Finish',
-        position: [14.765111, 47.219999], // Sector 1 시작 - Start/Finish Line (GeoJSON line 17-18)
-        number: 1,
-        isStartFinish: true
-      },
-      {
-        id: 'red-bull-ring-sector-2',
-        name: 'Sector 2', 
-        position: [14.755506, 47.225087], // Sector 2 시작 - Turn 3 후 (GeoJSON line 920-921, sector-2 시작점)
-        number: 2,
-        isStartFinish: false
-      },
-      {
-        id: 'red-bull-ring-sector-3',
-        name: 'Sector 3',
-        position: [14.759746, 47.222326], // Sector 3 시작 - 고속 코너 후 (GeoJSON line 381-382, sector-3 시작점)
-        number: 3,
-        isStartFinish: false
-      }
-    ];
+// 동적으로 GeoJSON에서 섹터 데이터를 가져오는 함수
+export const getSectorData = async (circuitId: string): Promise<SectorInfo[]> => {
+  try {
+    const sectors = await getDynamicSectorData(circuitId);
+    return sectors;
+  } catch {
+    return [];
   }
-  
-  if (circuitId === 'britain') {
-    return [
-      {
-        id: 'silverstone-start-finish',
-        name: 'Start/Finish',
-        position: [-1.022882, 52.068746], // Sector 1 시작 - Start/Finish Line (메인 트랙 첫 좌표)
-        number: 1,
-        isStartFinish: true
-      },
-      {
-        id: 'silverstone-sector-2',
-        name: 'Sector 2',
-        position: [-1.017984, 52.07672], // Sector 2 시작점 (Sector 2 LineString 첫 좌표)
-        number: 2,
-        isStartFinish: false
-      },
-      {
-        id: 'silverstone-sector-3',
-        name: 'Sector 3',
-        position: [-1.011879, 52.069064], // Sector 3 시작점 (Sector 3 LineString 첫 좌표)
-        number: 3,
-        isStartFinish: false
-      }
-    ];
-  }
-  
-  if (circuitId === 'australia') {
-    return [
-      {
-        id: 'albert-park-start-finish',
-        name: 'Start/Finish',
-        position: [144.968644, -37.849757], // Sector 1 시작 - Start/Finish Line (메인 트랙 첫 좌표)
-        number: 1,
-        isStartFinish: true
-      },
-      {
-        id: 'albert-park-sector-2',
-        name: 'Sector 2',
-        position: [144.96742, -37.838172], // Sector 2 시작점 (Sector 2 LineString 첫 좌표)
-        number: 2,
-        isStartFinish: false
-      },
-      {
-        id: 'albert-park-sector-3',
-        name: 'Sector 3',
-        position: [144.972384, -37.847465], // Sector 3 시작점 (Sector 3 LineString 첫 좌표)
-        number: 3,
-        isStartFinish: false
-      }
-    ];
-  }
-  
-  return [];
 };
 
-// DRS Detection Zone 데이터 (GeoJSON에서 추출)
-export const getDRSDetectionData = (circuitId: string): DRSDetectionInfo[] => {
-  if (circuitId === 'austria') {
-    return [
-      {
-        id: 'red-bull-ring-drs-detection-1',
-        name: 'DRS Detection Zone 1',
-        position: [14.761838, 47.219396], // GeoJSON line 1474-1477
-        number: 1,
-        type: 'drs_detection'
-      },
-      {
-        id: 'red-bull-ring-drs-detection-2',
-        name: 'DRS Detection Zone 2',
-        position: [14.754417, 47.225837], // GeoJSON line 1489-1492
-        number: 2,
-        type: 'drs_detection'
-      },
-      {
-        id: 'red-bull-ring-drs-detection-3',
-        name: 'DRS Detection Zone 3',
-        position: [14.770088, 47.22268], // GeoJSON line 1504-1507
-        number: 3,
-        type: 'drs_detection'
-      }
-    ];
+// 동적으로 GeoJSON에서 DRS Detection 데이터를 가져오는 함수
+export const getDRSDetectionData = async (circuitId: string): Promise<DRSDetectionInfo[]> => {
+  try {
+    const drsZones = await getDynamicDRSDetectionData(circuitId);
+    return drsZones;
+  } catch {
+    return [];
   }
-  
-  if (circuitId === 'britain') {
-    return [
-      {
-        id: 'silverstone-drs-detection-1',
-        name: 'DRS Detection Zone 1',
-        position: [-1.014076, 52.072269], // Silverstone GeoJSON drs_detection: 1
-        number: 1,
-        type: 'drs_detection'
-      },
-      {
-        id: 'silverstone-drs-detection-2',
-        name: 'DRS Detection Zone 2',
-        position: [-1.009761, 52.073767], // Silverstone GeoJSON drs_detection: 2
-        number: 2,
-        type: 'drs_detection'
-      }
-    ];
-  }
-  
-  if (circuitId === 'australia') {
-    return [
-      {
-        id: 'albert-park-drs-detection-1',
-        name: 'DRS Detection Zone 1',
-        position: [144.968282, -37.838227], // Albert Park GeoJSON drs_detection: 1
-        number: 1,
-        type: 'drs_detection'
-      },
-      {
-        id: 'albert-park-drs-detection-2',
-        name: 'DRS Detection Zone 2',
-        position: [144.974536, -37.852479], // Albert Park GeoJSON drs_de: 2
-        number: 2,
-        type: 'drs_detection'
-      }
-    ];
-  }
-  
-  return [];
 };
 
-// Speed Trap 데이터 (GeoJSON에서 추출)
-export const getSpeedTrapData = (circuitId: string): SpeedTrapInfo[] => {
-  if (circuitId === 'austria') {
-    return [
-      {
-        id: 'red-bull-ring-speed-trap-1',
-        name: 'Speed Trap 1',
-        position: [14.763303, 47.225734], // GeoJSON line 1519-1522
-        number: 1,
-        type: 'speed_trap'
-      }
-    ];
+// 동적으로 GeoJSON에서 Speed Trap 데이터를 가져오는 함수
+export const getSpeedTrapData = async (circuitId: string): Promise<SpeedTrapInfo[]> => {
+  try {
+    const speedTraps = await getDynamicSpeedTrapData(circuitId);
+    return speedTraps;
+  } catch {
+    return [];
   }
-  
-  if (circuitId === 'britain') {
-    return [
-      {
-        id: 'silverstone-speed-trap-1',
-        name: 'Speed Trap 1',
-        position: [-1.016114, 52.064352], // Silverstone GeoJSON speed_trap: 1
-        number: 1,
-        type: 'speed_trap'
-      }
-    ];
-  }
-  
-  if (circuitId === 'australia') {
-    return [
-      {
-        id: 'albert-park-speed-trap-1',
-        name: 'Speed Trap 1',
-        position: [144.966528, -37.848099], // Albert Park GeoJSON speed_trap: 1
-        number: 1,
-        type: 'speed_trap'
-      }
-    ];
-  }
-  
-  return [];
 };
 
 // DRS Detection과 Speed Trap 마커들을 애니메이션 완료 후 표시하는 함수
@@ -258,19 +79,17 @@ export const showDRSAndSpeedTrapMarkers = () => {
   window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', { 
     detail: { enabled: true } 
   }));
-  
-  console.log('🏁 DRS Detection과 Speed Trap 마커들 표시 완료');
 };
 
 // 순차적으로 섹터 마커를 표시하는 함수
-export const addSectorMarkersProgressively = ({ 
+export const addSectorMarkersProgressively = async ({ 
   map, 
   circuitId
 }: {
   map: mapboxgl.Map;
   circuitId: string;
-}): (() => void) => {
-  const sectorData = getSectorData(circuitId);
+}): Promise<(() => void)> => {
+  const sectorData = await getSectorData(circuitId);
   const markers: { marker: mapboxgl.Marker; sector: SectorInfo; visible: boolean }[] = [];
   
   if (sectorData.length === 0) {
@@ -291,8 +110,6 @@ export const addSectorMarkersProgressively = ({
     markers.push({ marker, sector, visible: false });
   });
   
-  console.log(`ℹ️ 섹터 마커 ${sectorData.length}개 생성 완료 (모두 숨김 상태)`);
-
   // 마커 표시/숨김 제어 함수 (토글용)
   const toggleVisibility = (visible: boolean) => {
     markers.forEach(({ marker }) => {
@@ -301,7 +118,6 @@ export const addSectorMarkersProgressively = ({
       element.style.opacity = visible ? '1' : '0';
       element.style.pointerEvents = visible ? 'auto' : 'none';
     });
-    console.log(`🔄 Sector markers (Progressive) ${visible ? 'shown' : 'hidden'}`);
   };
 
   // 전역 이벤트 리스너 등록 - showSectorMarker (개별 마커 표시용)
@@ -313,13 +129,11 @@ export const addSectorMarkersProgressively = ({
   // 전역 이벤트 리스너 등록 - toggleSectorMarkers (전체 토글용)
   const toggleEventHandler = (event: CustomEvent) => {
     const { enabled } = event.detail;
-    console.log(`🔄 Progressive sector markers toggle event received: ${enabled}`);
     toggleVisibility(enabled);
   };
   
   window.addEventListener('showSectorMarker', showEventHandler as EventListener);
   window.addEventListener('toggleSectorMarkers', toggleEventHandler as EventListener);
-  console.log(`✅ Progressive sector markers event listeners registered for ${circuitId}`);
 
   return () => {
     // 이벤트 리스너 제거
@@ -351,11 +165,6 @@ export const showSectorMarker = (
     }, 100);
     
     markerData.visible = true;
-    console.log(`✨ 섹터 마커 페이드인: ${markerData.sector.name} (ID: ${sectorId})`);
-  } else if (markerData && markerData.visible) {
-    console.log(`⚠️ 이미 표시된 마커: ${markerData.sector.name}`);
-  } else {
-    console.log(`❌ 마커를 찾을 수 없음: ${sectorId}`);
   }
 };
 
@@ -770,8 +579,8 @@ const createSectorMarker = (map: mapboxgl.Map, sector: SectorInfo): { marker: ma
 };
 
 // DRS Detection 마커 추가 함수
-export const addDRSDetectionMarkers = ({ map, circuitId }: SectorMarkerManagerProps): (() => void) => {
-  const drsDetectionData = getDRSDetectionData(circuitId);
+export const addDRSDetectionMarkers = async ({ map, circuitId }: SectorMarkerManagerProps): Promise<(() => void)> => {
+  const drsDetectionData = await getDRSDetectionData(circuitId);
   const markers: { marker: mapboxgl.Marker; element: HTMLElement }[] = [];
   
   if (drsDetectionData.length === 0) {
@@ -791,7 +600,6 @@ export const addDRSDetectionMarkers = ({ map, circuitId }: SectorMarkerManagerPr
     markers.push({ marker, element });
   });
 
-  console.log(`ℹ️ DRS Detection 마커 ${drsDetectionData.length}개 생성 완료`);
 
   // 마커 표시/숨김 제어 함수
   const toggleVisibility = (visible: boolean) => {
@@ -815,8 +623,8 @@ export const addDRSDetectionMarkers = ({ map, circuitId }: SectorMarkerManagerPr
 };
 
 // Speed Trap 마커 추가 함수
-export const addSpeedTrapMarkers = ({ map, circuitId }: SectorMarkerManagerProps): (() => void) => {
-  const speedTrapData = getSpeedTrapData(circuitId);
+export const addSpeedTrapMarkers = async ({ map, circuitId }: SectorMarkerManagerProps): Promise<(() => void)> => {
+  const speedTrapData = await getSpeedTrapData(circuitId);
   const markers: { marker: mapboxgl.Marker; element: HTMLElement }[] = [];
   
   if (speedTrapData.length === 0) {
@@ -836,7 +644,6 @@ export const addSpeedTrapMarkers = ({ map, circuitId }: SectorMarkerManagerProps
     markers.push({ marker, element });
   });
 
-  console.log(`ℹ️ Speed Trap 마커 ${speedTrapData.length}개 생성 완료`);
 
   // 마커 표시/숨김 제어 함수
   const toggleVisibility = (visible: boolean) => {
@@ -860,8 +667,8 @@ export const addSpeedTrapMarkers = ({ map, circuitId }: SectorMarkerManagerProps
 };
 
 // 기존 함수도 유지 (기존 코드와의 호환성을 위해)
-export const addSectorMarkers = ({ map, circuitId }: SectorMarkerManagerProps): (() => void) => {
-  const sectorData = getSectorData(circuitId);
+export const addSectorMarkers = async ({ map, circuitId }: SectorMarkerManagerProps): Promise<(() => void)> => {
+  const sectorData = await getSectorData(circuitId);
   const markers: { marker: mapboxgl.Marker; element: HTMLElement }[] = [];
   
   if (sectorData.length === 0) {
