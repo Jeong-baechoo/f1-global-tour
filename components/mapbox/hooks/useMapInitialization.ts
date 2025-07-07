@@ -160,6 +160,22 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
       // fog 설정 적용
       map.current.setFog(FOG_CONFIG);
 
+      // DEM 소스 추가 (고도 데이터용)
+      if (!map.current.getSource('mapbox-dem')) {
+        map.current.addSource('mapbox-dem', {
+          type: 'raster-dem',
+          url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+          tileSize: 512,
+          maxzoom: 14
+        });
+        
+        // Terrain을 매우 작은 exaggeration으로 설정 - 시각적으로 평평하면서 고도 데이터 접근 가능
+        map.current.setTerrain({
+          source: 'mapbox-dem',
+          exaggeration: 0.001
+        });
+      }
+
       // 불필요한 레이어 제거
       const style = map.current.getStyle();
       if (style && style.layers) {

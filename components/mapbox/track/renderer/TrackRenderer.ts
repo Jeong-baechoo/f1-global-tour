@@ -8,6 +8,7 @@ import { DRSAnimationController } from '../animation/DRSAnimationController';
 import { SectorTrackManager } from '../sector/SectorTrackManager';
 import { TrackEventBus } from '../events/TrackEventBus';
 import { getSectorData as getSectorMarkerData } from '../../markers/circuit/SectorMarkerManager';
+import { ElevationTrackManager } from '../elevation/ElevationTrackManager';
 
 // New TrackDrawOptions interface for the refactored version
 interface TrackDrawOptions {
@@ -113,6 +114,9 @@ export class TrackRenderer {
           
           // Draw DRS zones
           await DRSZoneManager.drawDRSZones(map, trackId, smoothCoordinates, circuitId);
+          
+          // Draw 3D elevation track
+          ElevationTrackManager.draw3DElevationTrack(map, trackId, smoothCoordinates, circuitId).catch(console.error);
           
           // Start DRS animation
           setTimeout(() => {

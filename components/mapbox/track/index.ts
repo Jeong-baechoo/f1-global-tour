@@ -5,6 +5,7 @@ export { DRSAnimationController } from './animation/DRSAnimationController';
 export { SectorTrackManager } from './sector/SectorTrackManager';
 export { TrackEventBus } from './events/TrackEventBus';
 export { trackStateManager } from './state/TrackStateManager';
+export { ElevationTrackManager } from './elevation/ElevationTrackManager';
 
 // Main function that replaces the old drawAnimatedTrack
 import mapboxgl from 'mapbox-gl';
