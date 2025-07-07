@@ -41,7 +41,7 @@ export class DRSZoneManager {
           if (!map.hasImage(state.name)) {
             try {
               map.addImage(state.name, img);
-            } catch (e) {
+            } catch {
               console.warn(`Image ${state.name} already exists, skipping...`);
             }
           }

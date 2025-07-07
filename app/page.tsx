@@ -98,7 +98,7 @@ export default function Home() {
       setPanelOpen(true);
       setPanelMinimized(false);
     }
-  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData?.id, languageChangedFlag]);
+  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData?.id, languageChangedFlag, scrollToCircuit]);
 
   const handleUserInteraction = useCallback(() => {
     if (initialFocusTimerRef.current && !hasUserInteracted) {
@@ -156,7 +156,11 @@ export default function Home() {
       length: circuit.length,
       corners: circuit.corners,
       laps: circuit.laps,
-      lapRecord: circuit.lapRecord,
+      lapRecord: circuit.lapRecord ? {
+        time: circuit.lapRecord.time,
+        driver: circuit.lapRecord.driver,
+        year: circuit.lapRecord.year.toString()
+      } : undefined,
       description: circuit.description
     });
 
