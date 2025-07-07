@@ -1,7 +1,6 @@
 import circuitsData from '@/data/circuits.json';
 import { CircuitMarkerManager } from '../managers/CircuitMarkerManager';
 import { F1_2025_CIRCUITS } from './data/circuitMapping';
-import { addSectorMarkers, addDRSDetectionMarkers, addSpeedTrapMarkers } from '../markers/circuit/SectorMarkerManager';
 import type { Language } from '@/utils/i18n';
 
 // 섹터 마커 cleanup 함수들을 저장할 배열
@@ -55,32 +54,6 @@ export const addAllCircuitsWithExtensions = (
   }
 };
 
-// 특정 서킷에 섹터 마커 추가 (트랙 애니메이션 완료 후 호출)
-export const addSectorMarkersForCircuit = async (map: mapboxgl.Map, circuitId: string) => {
-  // 뉘르부르크링을 제외한 모든 서킷에 섹터 마커 추가
-  if (circuitId !== 'nurburgring') {
-    // 섹터 마커 추가
-    const sectorCleanup = await addSectorMarkers({
-      map,
-      circuitId: circuitId
-    });
-    sectorCleanupFunctions.push(sectorCleanup);
-
-    // DRS Detection 마커 추가
-    const drsDetectionCleanup = await addDRSDetectionMarkers({
-      map,
-      circuitId: circuitId
-    });
-    sectorCleanupFunctions.push(drsDetectionCleanup);
-
-    // Speed Trap 마커 추가
-    const speedTrapCleanup = await addSpeedTrapMarkers({
-      map,
-      circuitId: circuitId
-    });
-    sectorCleanupFunctions.push(speedTrapCleanup);
-  }
-};
 
 // 섹터 마커 정리 함수
 export const cleanupSectorMarkers = () => {

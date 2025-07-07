@@ -137,10 +137,6 @@ const drawDRSZones = async (
   trackCoordinates: number[][],
   circuitId: string
 ) => {
-  // DRS ID 목록 수집용
-  const drsIds: string[] = [];
-
-
   // Circuit ID 매핑 (austria -> at-1969)
   const mappedCircuitId = CIRCUIT_ID_MAPPING[circuitId] || circuitId;
 
@@ -214,7 +210,6 @@ const drawDRSZones = async (
     }
     
     const drsId = `${trackId}-drs-${index}`;
-    drsIds.push(drsId);
 
     // DRS 포인트 생성 (Symbol용)
     const features = [];
@@ -337,16 +332,14 @@ const HARDCODED_SECTOR3_POSITIONS = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const enrichSectorDataWithTrackIndex = (sectorData: any[], originalTrackCoordinates: number[][], smoothTrackCoordinates: number[][], circuitId: string) => {
   return sectorData.map(sector => {
-    let originalTrackIndex: number;
     let originalProgress: number;
 
     // 특정 서킷의 섹터 3은 하드코딩된 위치 사용
     if (sector.number === 3 && HARDCODED_SECTOR3_POSITIONS[circuitId as keyof typeof HARDCODED_SECTOR3_POSITIONS]) {
       originalProgress = HARDCODED_SECTOR3_POSITIONS[circuitId as keyof typeof HARDCODED_SECTOR3_POSITIONS];
-      originalTrackIndex = Math.floor(originalProgress * originalTrackCoordinates.length);
     } else {
       // 일반적인 경우: 원본 트랙 좌표에서 섹터 위치 찾기
-      originalTrackIndex = findSectorIndexInTrack(originalTrackCoordinates, sector.position);
+      const originalTrackIndex = findSectorIndexInTrack(originalTrackCoordinates, sector.position);
       
       if (originalTrackIndex < 0) {
         return { ...sector, trackIndex: -1, trackProgress: -1 };
@@ -399,7 +392,7 @@ export const drawSectorColoredTrack = async (
             const sectorNumber = feature.properties.sector as number;
             
             // 섹터별 색상 설정
-            let sectorColor = '#FF0000'; // 기본 빨간색
+            let sectorColor;
             switch (sectorNumber) {
               case 1:
                 sectorColor = '#FF0000'; // 빨간색
@@ -931,7 +924,7 @@ export const drawTrack = (
       }
     };
 
-    animateTrack();
+    await animateTrack();
   }, delay);
 };
 

@@ -42,8 +42,7 @@ const getSpeedTrapColor = (): string => {
 // 동적으로 GeoJSON에서 섹터 데이터를 가져오는 함수
 export const getSectorData = async (circuitId: string): Promise<SectorInfo[]> => {
   try {
-    const sectors = await getDynamicSectorData(circuitId);
-    return sectors;
+    return await getDynamicSectorData(circuitId);
   } catch {
     return [];
   }
@@ -52,8 +51,7 @@ export const getSectorData = async (circuitId: string): Promise<SectorInfo[]> =>
 // 동적으로 GeoJSON에서 DRS Detection 데이터를 가져오는 함수
 export const getDRSDetectionData = async (circuitId: string): Promise<DRSDetectionInfo[]> => {
   try {
-    const drsZones = await getDynamicDRSDetectionData(circuitId);
-    return drsZones;
+    return await getDynamicDRSDetectionData(circuitId);
   } catch {
     return [];
   }
@@ -62,8 +60,7 @@ export const getDRSDetectionData = async (circuitId: string): Promise<DRSDetecti
 // 동적으로 GeoJSON에서 Speed Trap 데이터를 가져오는 함수
 export const getSpeedTrapData = async (circuitId: string): Promise<SpeedTrapInfo[]> => {
   try {
-    const speedTraps = await getDynamicSpeedTrapData(circuitId);
-    return speedTraps;
+    return await getDynamicSpeedTrapData(circuitId);
   } catch {
     return [];
   }

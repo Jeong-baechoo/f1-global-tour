@@ -269,22 +269,3 @@ export const getDynamicSpeedTrapData = async (circuitId: string): Promise<SpeedT
   return extractSpeedTrapData(geoJsonData, circuitId);
 };
 
-/**
- * 모든 정보를 한 번에 가져오는 함수
- */
-export const getAllCircuitData = async (circuitId: string) => {
-  const geoJsonData = await loadCircuitGeoJSON(circuitId);
-  if (!geoJsonData) {
-    return {
-      sectors: [],
-      drsDetection: [],
-      speedTraps: []
-    };
-  }
-  
-  return {
-    sectors: extractSectorData(geoJsonData, circuitId),
-    drsDetection: extractDRSDetectionData(geoJsonData, circuitId),
-    speedTraps: extractSpeedTrapData(geoJsonData, circuitId)
-  };
-};

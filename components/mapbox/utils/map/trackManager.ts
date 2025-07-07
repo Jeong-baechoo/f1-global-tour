@@ -67,22 +67,6 @@ class TrackManager {
     }
   }
 
-  // DRS 추가 시 기록
-  addDRSElements(circuitId: string, drsIds: string[]) {
-    const state = this.tracksState.get(circuitId);
-    if (state) {
-      state.hasDRS = true;
-      // DRS 레이어와 소스 추가
-      drsIds.forEach(id => {
-        if (!state.layers.includes(`${id}-symbols`)) {
-          state.layers.push(`${id}-symbols`);
-        }
-        if (!state.sources.includes(id)) {
-          state.sources.push(id);
-        }
-      });
-    }
-  }
 
   // 섹터 마커 추가 시 기록
   addSectorMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
