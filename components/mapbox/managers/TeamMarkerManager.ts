@@ -3,11 +3,14 @@ import { Team } from '@/types/f1';
 import { MarkerData } from '../types';
 import { type Language } from '@/utils/i18n';
 import { TeamMarkerFactory } from '../markers/team/TeamMarkerFactory';
+import { getUKTeamAdjustedPosition, isUKTeam } from '../markers/team/UKTeamLayout';
+import { getItalyTeamAdjustedPosition, isItalyTeam } from '../markers/team/ItalyTeamLayout';
 
 interface TeamMarkerData {
   team: Team;
   marker: mapboxgl.Marker;
   cleanup: () => void;
+  zoomHandler?: () => void;
 }
 
 /**
@@ -69,10 +72,69 @@ export class TeamMarkerManager {
     });
 
     if (markerWithCleanup) {
+      const { marker, cleanup } = markerWithCleanup;
+      
+      // UK 또는 Italy 팀인 경우 특별 레이아웃 적용
+      let zoomHandler: (() => void) | undefined;
+      
+      if (isUKTeam(team.id)) {
+        // 초기 위치 설정
+        const initialZoom = this.map.getZoom();
+        const initialPosition = getUKTeamAdjustedPosition(
+          team.id,
+          team.headquarters.lat,
+          team.headquarters.lng,
+          initialZoom
+        );
+        marker.setLngLat([initialPosition.lng, initialPosition.lat]);
+        
+        // 줌 변경 핸들러
+        const updatePosition = () => {
+          const zoom = this.map!.getZoom();
+          const adjustedPosition = getUKTeamAdjustedPosition(
+            team.id,
+            team.headquarters.lat,
+            team.headquarters.lng,
+            zoom
+          );
+          marker.setLngLat([adjustedPosition.lng, adjustedPosition.lat]);
+        };
+        
+        this.map.on('zoom', updatePosition);
+        zoomHandler = () => this.map!.off('zoom', updatePosition);
+        
+      } else if (isItalyTeam(team.id)) {
+        // 초기 위치 설정
+        const initialZoom = this.map.getZoom();
+        const initialPosition = getItalyTeamAdjustedPosition(
+          team.id,
+          team.headquarters.lat,
+          team.headquarters.lng,
+          initialZoom
+        );
+        marker.setLngLat([initialPosition.lng, initialPosition.lat]);
+        
+        // 줌 변경 핸들러
+        const updatePosition = () => {
+          const zoom = this.map!.getZoom();
+          const adjustedPosition = getItalyTeamAdjustedPosition(
+            team.id,
+            team.headquarters.lat,
+            team.headquarters.lng,
+            zoom
+          );
+          marker.setLngLat([adjustedPosition.lng, adjustedPosition.lat]);
+        };
+        
+        this.map.on('zoom', updatePosition);
+        zoomHandler = () => this.map!.off('zoom', updatePosition);
+      }
+      
       this.markers.set(team.id, {
         team,
-        marker: markerWithCleanup.marker,
-        cleanup: markerWithCleanup.cleanup
+        marker,
+        cleanup,
+        zoomHandler
       });
     }
   }
@@ -90,6 +152,9 @@ export class TeamMarkerManager {
   removeTeamMarker(teamId: string): void {
     const markerData = this.markers.get(teamId);
     if (markerData) {
+      if (markerData.zoomHandler) {
+        markerData.zoomHandler();
+      }
       markerData.cleanup();
       this.markers.delete(teamId);
     }
