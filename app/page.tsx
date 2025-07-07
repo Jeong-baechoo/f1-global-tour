@@ -57,6 +57,32 @@ export default function Home() {
   const lastMoveTime = useRef<number>(0);
   const lastMoveX = useRef<number>(0);
 
+  // 스크롤바에서 특정 서킷을 중앙으로 이동
+  const scrollToCircuit = useCallback((circuitId: string) => {
+    if (!scrollRef.current) return;
+
+    const container = scrollRef.current;
+    const circuitElements = container.querySelectorAll('[data-circuit-id]');
+    
+    circuitElements.forEach((element) => {
+      if (element.getAttribute('data-circuit-id') === circuitId) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        // 요소의 중앙을 컨테이너의 중앙으로 이동
+        const elementCenter = elementRect.left + elementRect.width / 2;
+        const containerCenter = containerRect.left + containerRect.width / 2;
+        const scrollOffset = elementCenter - containerCenter;
+        
+        // 부드러운 스크롤
+        container.scrollTo({
+          left: container.scrollLeft + scrollOffset,
+          behavior: 'smooth'
+        });
+      }
+    });
+  }, []);
+
   const handleMarkerClick = useCallback((item: PanelData) => {
     if (!item.type) return;
     
@@ -108,32 +134,6 @@ export default function Home() {
     }
   }, [hasUserInteracted]);
 
-  // 스크롤바에서 특정 서킷을 중앙으로 이동
-  const scrollToCircuit = useCallback((circuitId: string) => {
-    if (!scrollRef.current) return;
-
-    const container = scrollRef.current;
-    const circuitElements = container.querySelectorAll('[data-circuit-id]');
-    
-    circuitElements.forEach((element) => {
-      if (element.getAttribute('data-circuit-id') === circuitId) {
-        const elementRect = element.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        
-        // 요소의 중앙을 컨테이너의 중앙으로 이동
-        const elementCenter = elementRect.left + elementRect.width / 2;
-        const containerCenter = containerRect.left + containerRect.width / 2;
-        const scrollOffset = elementCenter - containerCenter;
-        
-        // 부드러운 스크롤
-        container.scrollTo({
-          left: container.scrollLeft + scrollOffset,
-          behavior: 'smooth'
-        });
-      }
-    });
-  }, []);
-
   // 언어 변경 감지
   useEffect(() => {
     setLanguageChangedFlag(true);
@@ -160,8 +160,7 @@ export default function Home() {
         time: circuit.lapRecord.time,
         driver: circuit.lapRecord.driver,
         year: circuit.lapRecord.year.toString()
-      } : undefined,
-      description: circuit.description
+      } : undefined
     });
 
     if (mapRef.current) {
