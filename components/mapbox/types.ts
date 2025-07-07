@@ -71,6 +71,7 @@ export interface TrackDrawOptions {
   color?: string;
   delay?: number;
   onComplete?: () => void;
+  sectorMarkerCleanup?: () => void;
 }
 
 
