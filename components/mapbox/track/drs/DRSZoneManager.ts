@@ -37,7 +37,14 @@ export class DRSZoneManager {
 
         const img = new Image();
         img.onload = () => {
-          map.addImage(state.name, img);
+          // 이미지 추가 직전에 한 번 더 확인
+          if (!map.hasImage(state.name)) {
+            try {
+              map.addImage(state.name, img);
+            } catch (e) {
+              console.warn(`Image ${state.name} already exists, skipping...`);
+            }
+          }
           URL.revokeObjectURL(url);
         };
         img.src = url;

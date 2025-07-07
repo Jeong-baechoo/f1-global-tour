@@ -83,6 +83,8 @@ export default function Home() {
     // 서킷 클릭 시 지도 줌인 및 트랙 그리기
     if (item.type === 'circuit' && item.id && mapRef.current) {
       mapRef.current.flyToCircuit(item.id);
+      // 스크롤바에서 해당 서킷을 중앙으로
+      scrollToCircuit(item.id);
     }
 
     // 토글 로직
@@ -105,6 +107,32 @@ export default function Home() {
       setHasUserInteracted(true);
     }
   }, [hasUserInteracted]);
+
+  // 스크롤바에서 특정 서킷을 중앙으로 이동
+  const scrollToCircuit = useCallback((circuitId: string) => {
+    if (!scrollRef.current) return;
+
+    const container = scrollRef.current;
+    const circuitElements = container.querySelectorAll('[data-circuit-id]');
+    
+    circuitElements.forEach((element) => {
+      if (element.getAttribute('data-circuit-id') === circuitId) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        // 요소의 중앙을 컨테이너의 중앙으로 이동
+        const elementCenter = elementRect.left + elementRect.width / 2;
+        const containerCenter = containerRect.left + containerRect.width / 2;
+        const scrollOffset = elementCenter - containerCenter;
+        
+        // 부드러운 스크롤
+        container.scrollTo({
+          left: container.scrollLeft + scrollOffset,
+          behavior: 'smooth'
+        });
+      }
+    });
+  }, []);
 
   // 언어 변경 감지
   useEffect(() => {
@@ -135,6 +163,8 @@ export default function Home() {
     if (mapRef.current) {
       mapRef.current.flyToCircuit(nextRaceCircuitId);
     }
+    // 스크롤바에서 해당 서킷을 중앙으로
+    scrollToCircuit(nextRaceCircuitId);
   };
 
   // 모멘텀 애니메이션
@@ -394,6 +424,7 @@ export default function Home() {
               {circuitsData.circuits.map((circuit) => (
               <div
                 key={circuit.id}
+                data-circuit-id={circuit.id}
                 className="flex flex-col items-center cursor-pointer select-none group"
                 onClick={(e) => {
                   // 드래그 중이 아닐 때만 클릭 이벤트 처리
@@ -405,6 +436,8 @@ export default function Home() {
                   if (mapRef.current) {
                     mapRef.current.flyToCircuit(circuit.id);
                   }
+                  // 스크롤바에서 클릭한 서킷을 중앙으로
+                  scrollToCircuit(circuit.id);
                   // 서킷 상세 패널 열기
                   setPanelModule('circuit-detail');
                   setPanelData({
