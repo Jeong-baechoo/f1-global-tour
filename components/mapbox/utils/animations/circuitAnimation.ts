@@ -5,7 +5,7 @@ import { getTrackCoordinates } from '../data/trackDataLoader';
 import { getCircuitCameraConfig } from '../map/camera';
 import { getCircuitColor } from '../map/circuitColors';
 import { addSectorMarkersProgressively } from '../../markers/circuit/SectorMarkerManager';
-import { cleanupSectorMarkers } from '../../markers/circuit/CircuitMarkerManager';
+import { cleanupSectorMarkers } from '../circuitManagerExtensions';
 import { trackManager } from '../map/trackManager';
 import { clearAllTrackState } from '../map/trackDrawing';
 
@@ -97,6 +97,9 @@ export const flyToCircuitWithTrack = async (
     const trackData = await getTrackCoordinates(circuit.id);
 
     if (trackData && map.getZoom() > 10) {
+      // trackManager에 먼저 트랙 등록
+      trackManager.registerTrack(circuit.id, `${circuit.id}-track`);
+      
       // 섹터 마커를 먼저 생성 (숨김 상태)
       const sectorMarkerCleanup = await addSectorMarkersProgressively({
         map,

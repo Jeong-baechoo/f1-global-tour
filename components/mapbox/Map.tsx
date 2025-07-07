@@ -9,7 +9,7 @@ import circuitsData from '@/data/circuits.json';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import {MapProps, MapAPI} from './types';
-import {addAllCircuitsWithManager, findNextRace, cleanupSectorMarkers} from './markers/circuit/CircuitMarkerManager';
+import {addAllCircuitsWithExtensions, findNextRace, cleanupSectorMarkers} from './utils/circuitManagerExtensions';
 import {addAllTeams} from './markers/team/TeamMarkerManager';
 import { CircuitMarkerManager } from './managers/CircuitMarkerManager';
 import CinematicModeButton from './controls/CinematicModeButton';
@@ -227,7 +227,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         
         // 모든 서킷 마커 추가 (CircuitMarkerManager 사용)
         if (circuitMarkerManager.current) {
-          addAllCircuitsWithManager(circuitMarkerManager.current, nextRace || undefined, language);
+          addAllCircuitsWithExtensions(circuitMarkerManager.current, nextRace || undefined, language);
         }
         
       }, TIMEOUTS.markerDelay);
@@ -301,7 +301,7 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
 
       // 모든 서킷 마커 추가 (CircuitMarkerManager 사용)
       if (circuitMarkerManager.current) {
-        addAllCircuitsWithManager(circuitMarkerManager.current, nextRace || undefined, language);
+        addAllCircuitsWithExtensions(circuitMarkerManager.current, nextRace || undefined, language);
       }
 
     }, 50); // 최소한의 딘레이로 빠른 업데이트

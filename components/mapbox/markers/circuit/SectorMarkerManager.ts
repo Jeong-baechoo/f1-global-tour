@@ -7,6 +7,7 @@ import {
   type DRSDetectionInfo,
   type SpeedTrapInfo
 } from '../../utils/data/dynamicSectorLoader';
+import { trackManager } from '../../utils/map/trackManager';
 
 interface SectorMarkerManagerProps {
   map: mapboxgl.Map;
@@ -109,6 +110,9 @@ export const addSectorMarkersProgressively = async ({
     
     markers.push({ marker, sector, visible: false });
   });
+  
+  // trackManager에 섹터 마커들 등록
+  trackManager.addSectorMarkers(circuitId, markers.map(m => m.marker));
   
   // 마커 표시/숨김 제어 함수 (토글용)
   const toggleVisibility = (visible: boolean) => {
@@ -600,6 +604,8 @@ export const addDRSDetectionMarkers = async ({ map, circuitId }: SectorMarkerMan
     markers.push({ marker, element });
   });
 
+  // trackManager에 DRS Detection 마커들 등록
+  trackManager.addDRSDetectionMarkers(circuitId, markers.map(m => m.marker));
 
   // 마커 표시/숨김 제어 함수
   const toggleVisibility = (visible: boolean) => {
@@ -644,6 +650,8 @@ export const addSpeedTrapMarkers = async ({ map, circuitId }: SectorMarkerManage
     markers.push({ marker, element });
   });
 
+  // trackManager에 Speed Trap 마커들 등록
+  trackManager.addSpeedTrapMarkers(circuitId, markers.map(m => m.marker));
 
   // 마커 표시/숨김 제어 함수
   const toggleVisibility = (visible: boolean) => {

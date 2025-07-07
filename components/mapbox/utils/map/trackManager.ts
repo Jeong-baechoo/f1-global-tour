@@ -8,6 +8,9 @@ interface TrackState {
   hasDRS: boolean;
   layers: string[];
   sources: string[];
+  sectorMarkers: mapboxgl.Marker[];
+  drsDetectionMarkers: mapboxgl.Marker[];
+  speedTrapMarkers: mapboxgl.Marker[];
 }
 
 class TrackManager {
@@ -40,8 +43,12 @@ class TrackManager {
       hasTrack: true,
       hasDRS: false,
       layers: [],
-      sources: []
+      sources: [],
+      sectorMarkers: [],
+      drsDetectionMarkers: [],
+      speedTrapMarkers: []
     });
+    console.log(`🎯 Track registered for ${circuitId}`);
   }
 
   // 트랙 레이어 추가 시 기록
@@ -77,12 +84,50 @@ class TrackManager {
     }
   }
 
+  // 섹터 마커 추가 시 기록
+  addSectorMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
+    const state = this.tracksState.get(circuitId);
+    if (state) {
+      state.sectorMarkers.push(...markers);
+      console.log(`✅ Added ${markers.length} sector markers for ${circuitId}`);
+    } else {
+      console.warn(`⚠️ No track state found for ${circuitId} when adding sector markers`);
+    }
+  }
+
+  // DRS Detection 마커 추가 시 기록
+  addDRSDetectionMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
+    const state = this.tracksState.get(circuitId);
+    if (state) {
+      state.drsDetectionMarkers.push(...markers);
+    }
+  }
+
+  // Speed Trap 마커 추가 시 기록
+  addSpeedTrapMarkers(circuitId: string, markers: mapboxgl.Marker[]) {
+    const state = this.tracksState.get(circuitId);
+    if (state) {
+      state.speedTrapMarkers.push(...markers);
+    }
+  }
+
   // 특정 서킷의 트랙 제거
   removeTrack(circuitId: string) {
     if (!this.map) return;
     
     const state = this.tracksState.get(circuitId);
     if (!state) return;
+
+    console.log(`🗑️ Removing track for ${circuitId}: ${state.sectorMarkers.length} sector, ${state.drsDetectionMarkers.length} DRS, ${state.speedTrapMarkers.length} speed trap markers`);
+
+    // 섹터 마커 제거
+    state.sectorMarkers.forEach(marker => marker.remove());
+    
+    // DRS Detection 마커 제거
+    state.drsDetectionMarkers.forEach(marker => marker.remove());
+    
+    // Speed Trap 마커 제거
+    state.speedTrapMarkers.forEach(marker => marker.remove());
 
     // 레이어 제거
     state.layers.forEach(layerId => {

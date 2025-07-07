@@ -154,7 +154,7 @@ const drawDRSZones = async (
       await drawGeoJSONDRSZones(map, trackId, geoJsonDrsZones);
       return;
     }
-  } catch (error) {
+  } catch {
   }
   
   // 2순위: 인덱스 방식 (DRS_ZONES)
@@ -668,7 +668,7 @@ export const toggleSectorTrackColors = (trackId: string, enabled: boolean, map: 
     }
 
     // 원래 트랙 복원
-    const restored = restoreOriginalTrack(map, trackId);
+    restoreOriginalTrack(map, trackId);
   }
 };
 
@@ -718,8 +718,10 @@ export const drawTrack = (
       return;
     }
 
-    // TrackManager에 등록
-    trackManager.registerTrack(circuitId, trackId);
+    // TrackManager에 등록 (이미 등록되어 있지 않은 경우만)
+    if (!trackManager.hasTrack(circuitId)) {
+      trackManager.registerTrack(circuitId, trackId);
+    }
 
     // 좌표 보간
     const smoothCoordinates = interpolateCoordinates(trackCoordinates);
