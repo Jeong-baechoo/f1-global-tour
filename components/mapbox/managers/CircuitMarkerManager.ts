@@ -7,8 +7,9 @@ import {
   OCCLUSION_SETTINGS, 
   ANIMATION_TIMINGS,
   ZoomLevel,
-  MarkerOcclusionState 
-} from './constants';
+  MarkerOcclusionState,
+  isMobile 
+} from '../constants';
 
 interface CircuitMarkerData {
   element: HTMLElement;
@@ -346,7 +347,7 @@ export class CircuitMarkerManager {
   }
 
   private createMarkerElements(circuit: Circuit, isNextRace: boolean) {
-    const mobile = window.innerWidth < 640;
+    const mobile = isMobile();
 
     // 메인 컨테이너
     const element = document.createElement('div');

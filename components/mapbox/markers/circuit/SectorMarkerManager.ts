@@ -153,20 +153,33 @@ export const showSectorMarker = (
   markers: { marker: mapboxgl.Marker; sector: SectorInfo; visible: boolean }[],
   sectorId: string
 ) => {
-  const markerData = markers.find(m => m.sector.id === sectorId);
+  const markerData = markers.find(m => {
+    // ID로 비교
+    if (m.sector.id === sectorId) return true;
+    // name으로 비교
+    if (m.sector.name === sectorId) return true;
+    // sector-N 형식으로 비교
+    if (sectorId === `sector-${m.sector.number}`) return true;
+    // 마지막으로 ID에 sector-N이 포함되어 있는지 확인
+    if (m.sector.id.includes(`sector-${m.sector.number}`)) {
+      return sectorId === `sector-${m.sector.number}`;
+    }
+    return false;
+  });
+  
   if (markerData && !markerData.visible) {
     const element = markerData.marker.getElement();
     
     // 마커 표시 준비 (여전히 투명한 상태)
     element.style.display = 'flex';
     element.style.opacity = '0'; // 아직 투명
-    element.style.transition = 'opacity 0.8s ease-out';
+    element.style.transition = 'opacity 0.6s ease-out'; // 더 빠른 페이드인
     
-    // 페쑖4인 시작 (단순히 opacity만 변경)
-    setTimeout(() => {
+    // 페이드인 시작 (단순히 opacity만 변경)
+    requestAnimationFrame(() => {
       element.style.opacity = '1';
       element.style.pointerEvents = 'auto';
-    }, 100);
+    });
     
     markerData.visible = true;
   }
@@ -441,7 +454,7 @@ const createSectorMarker = (map: mapboxgl.Map, sector: SectorInfo): { marker: ma
 
     // 초기 설정 (투명 상태로 시작)
     el.style.opacity = '0';
-    el.style.transition = 'opacity 0.8s ease-out';
+    el.style.transition = 'opacity 0.6s ease-out';
 
     // 점 (실제 섹터 위치)
     const dotContainer = document.createElement('div');
