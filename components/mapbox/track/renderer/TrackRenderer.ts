@@ -224,6 +224,7 @@ export class TrackRenderer {
   ): Promise<void> {
     const startTime = performance.now();
     const totalPoints = smoothCoordinates.length;
+    let previousIndex = 0;
 
     const animate = async () => {
       const elapsed = performance.now() - startTime;
@@ -250,30 +251,38 @@ export class TrackRenderer {
         });
       }
 
-      // Check for sector markers
-      if (sectorMarkerData.length > 0 && currentIndex >= 0) {
+      // Check for sector markers - show when track animation passes through the sector position
+      if (sectorMarkerData.length > 0 && currentIndex > previousIndex) {
         sectorMarkerData.forEach(sector => {
-          // Show marker when track reaches sector point
           const sectorKey = sector.id || sector.name || `sector-${sector.number}`;
           
-          if (!passedSectors.has(sectorKey) && 
-              sector.trackIndex !== undefined && 
-              currentIndex >= sector.trackIndex) {
-            // Dispatch event to show sector marker immediately
-            const sectorId = sector.id || sector.name;
+          if (!passedSectors.has(sectorKey) && sector.trackIndex !== undefined) {
+            // Check if the sector position is between the previous and current index
+            const sectorIdx = sector.trackIndex;
             
-            window.dispatchEvent(new CustomEvent('showSectorMarker', {
-              detail: { sectorId: sectorId }
-            }));
+            // The track has just passed through this sector if:
+            // 1. The sector index is between previous and current index (inclusive)
+            // 2. Or we've just reached exactly the sector index
+            if (sectorIdx >= previousIndex && sectorIdx <= currentIndex) {
+              // Dispatch event to show sector marker
+              const sectorId = sector.id || sector.name;
+              
+              window.dispatchEvent(new CustomEvent('showSectorMarker', {
+                detail: { sectorId: sectorId }
+              }));
 
-            passedSectors.add(sectorKey);
-            
-            if (onProgress) {
-              onProgress(progress, sector.name);
+              passedSectors.add(sectorKey);
+              
+              if (onProgress) {
+                onProgress(progress, sector.name);
+              }
             }
           }
         });
       }
+
+      // Update previous index for next frame
+      previousIndex = currentIndex;
 
       // Check zoom level
       const currentZoom = map.getZoom();
@@ -295,16 +304,15 @@ export class TrackRenderer {
   }
 
   /**
-   * Find sector index in track coordinates
+   * Find sector index in track coordinates with improved accuracy
    */
   private static findSectorIndexInTrack(
     trackCoordinates: number[][], 
     sectorCoord: number[], 
-    threshold: number = 0.01  // Increased threshold for better matching
+    threshold: number = 0.0005  // More precise threshold for exact matching
   ): number {
     let closestIndex = -1;
     let minDistance = Infinity;
-
 
     for (let i = 0; i < trackCoordinates.length; i++) {
       const coord = trackCoordinates[i];
@@ -317,14 +325,19 @@ export class TrackRenderer {
         closestIndex = i;
       }
 
-      // Return immediately if within threshold
+      // Return immediately if very close
       if (distance < threshold) {
         return i;
       }
     }
     
-    // If closest distance is reasonable (within 0.1 degrees), use it
-    if (minDistance < 0.1) {
+    // If closest distance is reasonable (within ~100m), use it
+    if (minDistance < 0.001) {
+      return closestIndex;
+    }
+
+    // For less precise matches, still accept if within ~1km
+    if (minDistance < 0.01) {
       return closestIndex;
     }
 

@@ -173,7 +173,7 @@ export const showSectorMarker = (
     // 마커 표시 준비 (여전히 투명한 상태)
     element.style.display = 'flex';
     element.style.opacity = '0'; // 아직 투명
-    element.style.transition = 'opacity 0.6s ease-out'; // 더 빠른 페이드인
+    element.style.transition = 'opacity 0.3s ease-out'; // 빠른 페이드인
     
     // 페이드인 시작 (단순히 opacity만 변경)
     requestAnimationFrame(() => {
@@ -454,7 +454,7 @@ const createSectorMarker = (map: mapboxgl.Map, sector: SectorInfo): { marker: ma
 
     // 초기 설정 (투명 상태로 시작)
     el.style.opacity = '0';
-    el.style.transition = 'opacity 0.6s ease-out';
+    el.style.transition = 'opacity 0.3s ease-out';
 
     // 점 (실제 섹터 위치)
     const dotContainer = document.createElement('div');
