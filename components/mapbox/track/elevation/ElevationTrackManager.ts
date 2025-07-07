@@ -467,4 +467,51 @@ export class ElevationTrackManager {
       });
     }
   }
+
+  /**
+   * Toggle 3D elevation track visibility
+   */
+  static toggle3DElevationTrack(
+    map: mapboxgl.Map,
+    trackId: string,
+    enabled: boolean
+  ): void {
+    const source3DId = `${trackId}-3d`;
+    const extrusionLayerId = `${source3DId}-extrusion`;
+    const topLayerId = `${source3DId}-top`;
+
+    if (map.getLayer(extrusionLayerId)) {
+      map.setLayoutProperty(extrusionLayerId, 'visibility', enabled ? 'visible' : 'none');
+    }
+    
+    if (map.getLayer(topLayerId)) {
+      map.setLayoutProperty(topLayerId, 'visibility', enabled ? 'visible' : 'none');
+    }
+  }
+
+  /**
+   * Remove 3D elevation track completely
+   */
+  static remove3DElevationTrack(
+    map: mapboxgl.Map,
+    trackId: string
+  ): void {
+    const source3DId = `${trackId}-3d`;
+    const extrusionLayerId = `${source3DId}-extrusion`;
+    const topLayerId = `${source3DId}-top`;
+
+    // Remove layers
+    if (map.getLayer(extrusionLayerId)) {
+      map.removeLayer(extrusionLayerId);
+    }
+    
+    if (map.getLayer(topLayerId)) {
+      map.removeLayer(topLayerId);
+    }
+
+    // Remove source
+    if (map.getSource(source3DId)) {
+      map.removeSource(source3DId);
+    }
+  }
 }

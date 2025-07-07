@@ -195,6 +195,23 @@ class TrackManager {
   canShowTrack(): boolean {
     return this.map ? this.map.getZoom() >= 10 : false;
   }
+
+  // 모든 활성화된 트랙 소스 ID 반환
+  getAllTrackSources(): string[] {
+    const trackSources: string[] = [];
+    this.tracksState.forEach(state => {
+      // trackId에서 source ID를 추출
+      if (state.trackId) {
+        trackSources.push(state.trackId);
+      }
+    });
+    return trackSources;
+  }
+
+  // 모든 활성화된 서킷 ID 반환  
+  getAllCircuitIds(): string[] {
+    return Array.from(this.tracksState.keys());
+  }
 }
 
 // 싱글톤 인스턴스

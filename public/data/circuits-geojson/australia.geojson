@@ -1503,7 +1503,7 @@
     {
       "type": "Feature",
       "properties": {
-        "drs_de": 2,
+        "drs_detection": 2,
         "Name": "Drs Detection Zone 2"
       },
       "geometry": {
