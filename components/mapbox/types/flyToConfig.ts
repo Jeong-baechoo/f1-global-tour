@@ -4,18 +4,18 @@ export interface FlyToConfig {
   zoom: number;
   pitch: number;
   bearing: number;
-  speed?: number;
-  curve?: number;
-  duration?: number;
+  speed: number;
+  curve: number;
+  duration: number;
 }
 
 // 모바일/데스크톱 설정을 포함하는 확장된 FlyTo 설정
 export interface ResponsiveFlyToConfig {
-  desktop: FlyToConfig;
+  desktop: Partial<FlyToConfig>;
   mobile?: Partial<FlyToConfig>;
 }
 
-// 팀별 FlyTo 설정 타입
+// 팀별 FlyTo 설정 타입 (일부 팀만 특별 설정)
 export interface TeamFlyToConfigs {
   [teamId: string]: ResponsiveFlyToConfig;
 }

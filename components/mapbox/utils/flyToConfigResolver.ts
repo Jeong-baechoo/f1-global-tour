@@ -1,8 +1,7 @@
 import { isMobile } from './viewport';
-import { ResponsiveFlyToConfig } from '../types/flyToConfig';
+import { ResponsiveFlyToConfig, FlyToConfig } from '../types/flyToConfig';
 import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '../config/teamFlyToConfig';
 import { CIRCUIT_CAMERA_CONFIGS, DEFAULT_CIRCUIT_CAMERA } from '../config/circuitCameraConfig';
-import { TeamFlyToConfig } from '../markers/team/teamMarkerConfig';
 import { CameraConfig } from './map/camera';
 
 // MapboxGL FlyTo options type definition
@@ -26,7 +25,7 @@ export class FlyToConfigResolver {
    */
   static resolveTeamFlyToConfig(
     teamId: string, 
-    originalConfig: TeamFlyToConfig,
+    originalConfig: Partial<FlyToConfig>,
     teamHQ: { coordinates: [number, number] }
   ): FlyToOptions {
     const mobile = isMobile();
@@ -40,12 +39,12 @@ export class FlyToConfigResolver {
         
       return {
         center: config.center || teamHQ.coordinates,
-        zoom: config.zoom,
-        pitch: config.pitch,
-        bearing: config.bearing,
-        speed: config.speed || DEFAULT_TEAM_FLYTO.speed,
-        curve: config.curve || DEFAULT_TEAM_FLYTO.curve,
-        duration: config.duration || DEFAULT_TEAM_FLYTO.duration,
+        zoom: config.zoom ?? DEFAULT_TEAM_FLYTO.zoom,
+        pitch: config.pitch ?? DEFAULT_TEAM_FLYTO.pitch,
+        bearing: config.bearing ?? DEFAULT_TEAM_FLYTO.bearing,
+        speed: config.speed ?? DEFAULT_TEAM_FLYTO.speed,
+        curve: config.curve ?? DEFAULT_TEAM_FLYTO.curve,
+        duration: config.duration ?? DEFAULT_TEAM_FLYTO.duration,
         essential: true
       };
     }
@@ -84,12 +83,12 @@ export class FlyToConfigResolver {
         
       return {
         center: [0, 0], // Will be set by caller
-        zoom: config.zoom,
-        pitch: config.pitch,
-        bearing: config.bearing,
-        speed: config.speed || DEFAULT_CIRCUIT_CAMERA.speed,
-        curve: config.curve || DEFAULT_CIRCUIT_CAMERA.curve,
-        duration: config.duration,
+        zoom: config.zoom ?? DEFAULT_CIRCUIT_CAMERA.zoom,
+        pitch: config.pitch ?? DEFAULT_CIRCUIT_CAMERA.pitch,
+        bearing: config.bearing ?? DEFAULT_CIRCUIT_CAMERA.bearing,
+        speed: config.speed ?? DEFAULT_CIRCUIT_CAMERA.speed,
+        curve: config.curve ?? DEFAULT_CIRCUIT_CAMERA.curve,
+        duration: config.duration ?? undefined,
         essential: true
       };
     }

@@ -3,8 +3,9 @@ import { MarkerData } from '../../types';
 import { Team } from '@/types/f1';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
 import { isMobile } from '../../utils/viewport';
-import { MOBILE_TEAM_CONFIGS } from '../../../../configs/mobile-team-configs';
+import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '../../config/teamFlyToConfig';
 import { getText, type Language } from '@/utils/i18n';
+import { MARKER_DIMENSIONS, ZOOM_THRESHOLDS } from '../../constants';
 
 interface TeamMarkerFactoryProps {
   map: mapboxgl.Map;
@@ -19,10 +20,14 @@ interface TeamMarkerStyle {
   boxWidth: string;
   boxHeight: string;
   borderRadius: string;
+  borderWidth?: string;
   mobileWidth: string;
   mobileHeight: string;
   mobileBoxWidth: string;
   mobileBoxHeight: string;
+  simpleSize?: string;
+  simpleBorderRadius?: string;
+  simpleBorderWidth?: string;
 }
 
 // 마커와 cleanup 함수를 포함하는 인터페이스
@@ -31,18 +36,8 @@ export interface TeamMarkerWithCleanup {
   cleanup: () => void;
 }
 
-// 기본 팀 마커 스타일 상수
-const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = {
-  width: '80px',
-  height: '95px',
-  boxWidth: '80px',
-  boxHeight: '80px',
-  borderRadius: '4px',
-  mobileWidth: '60px',
-  mobileHeight: '71px',
-  mobileBoxWidth: '60px',
-  mobileBoxHeight: '60px'
-};
+// 기본 팀 마커 스타일 - 중앙화된 상수 사용
+const DEFAULT_TEAM_MARKER_STYLE: TeamMarkerStyle = MARKER_DIMENSIONS.TEAM_MARKER as TeamMarkerStyle;
 
 /**
  * 통합된 팀 마커 생성 팩토리
@@ -178,18 +173,18 @@ export class TeamMarkerFactory {
     const updateDisplay = () => {
       const zoom = map.getZoom();
       
-      if (zoom <= 5) {
-        // 줌 5 이하: 점으로 표시
-        box.style.width = '12px';
-        box.style.height = '12px';
-        box.style.borderRadius = '50%';
+      if (zoom <= ZOOM_THRESHOLDS.TEAM_MARKER_SIMPLE) {
+        // 줌 임계값 이하: 점으로 표시
+        box.style.width = DEFAULT_TEAM_MARKER_STYLE.simpleSize || '12px';
+        box.style.height = DEFAULT_TEAM_MARKER_STYLE.simpleSize || '12px';
+        box.style.borderRadius = DEFAULT_TEAM_MARKER_STYLE.simpleBorderRadius || '50%';
         box.style.backgroundImage = 'none';
         box.style.backgroundColor = config.style.backgroundColor;
-        box.style.border = `2px solid ${config.style.borderColor}`;
+        box.style.border = `${DEFAULT_TEAM_MARKER_STYLE.simpleBorderWidth || '2px'} solid ${config.style.borderColor}`;
         
         // 컨테이너 크기도 조정
-        el.style.width = '12px';
-        el.style.height = '12px';
+        el.style.width = DEFAULT_TEAM_MARKER_STYLE.simpleSize || '12px';
+        el.style.height = DEFAULT_TEAM_MARKER_STYLE.simpleSize || '12px';
       } else {
         // 줌 5 초과: 원래 로고 표시 - 헬퍼 메서드 사용
         TeamMarkerFactory.applyMarkerStyle(el, box, config, isMobile());
@@ -278,33 +273,36 @@ export class TeamMarkerFactory {
       }
 
       // 지도 이동 애니메이션
-      TeamMarkerFactory.executeMapFlyTo(map, config, teamHQ);
+      TeamMarkerFactory.executeMapFlyTo(map, team.id, teamHQ);
     });
   }
 
   /**
-   * 지도 FlyTo 애니메이션 실행
+   * 지도 FlyTo 애니메이션 실행 (중앙화된 설정 사용)
    */
   private static executeMapFlyTo(
     map: mapboxgl.Map,
-    config: TeamMarkerConfig,
+    teamId: string,
     teamHQ: { coordinates: [number, number] }
   ): void {
-    const flyToConfig = config.flyTo;
     const mobile = isMobile();
+    const teamConfig = TEAM_FLYTO_CONFIGS[teamId];
     
-    // 팀별 모바일 전용 설정은 별도 config 파일에서 관리
-    
-    const mobileConfig = mobile && MOBILE_TEAM_CONFIGS[config.teamId] ? MOBILE_TEAM_CONFIGS[config.teamId] : null;
+    // 팀별 설정이 있으면 사용, 없으면 기본값 사용
+    const config = mobile && teamConfig?.mobile 
+      ? { ...DEFAULT_TEAM_FLYTO, ...teamConfig.mobile }
+      : teamConfig?.desktop 
+      ? { ...DEFAULT_TEAM_FLYTO, ...teamConfig.desktop }
+      : DEFAULT_TEAM_FLYTO;
     
     map.flyTo({
-      center: mobileConfig ? mobileConfig.center : (flyToConfig.center || teamHQ.coordinates),
-      zoom: mobileConfig ? mobileConfig.zoom : (flyToConfig.zoom || 15.68),
-      pitch: mobileConfig ? mobileConfig.pitch : (flyToConfig.pitch || 45),
-      bearing: mobileConfig ? mobileConfig.bearing : (flyToConfig.bearing || 0),
-      speed: flyToConfig.speed || 0.25,  // 0.4에서 0.25로 감소 (더 느리게)
-      curve: flyToConfig.curve || 0.8,
-      duration: flyToConfig.duration || 8000,  // 6초에서 8초로 증가
+      center: 'center' in config && config.center ? config.center : teamHQ.coordinates,
+      zoom: config.zoom,
+      pitch: config.pitch,
+      bearing: config.bearing,
+      speed: config.speed,
+      curve: config.curve,
+      duration: config.duration,
       essential: true
     });
   }

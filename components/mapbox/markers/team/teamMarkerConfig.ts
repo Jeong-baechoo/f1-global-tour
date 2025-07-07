@@ -12,35 +12,14 @@ export interface TeamMarkerStyle {
   backgroundPosition?: string; // 팀별 커스텀 backgroundPosition
 }
 
-// 팀 플라이투 설정
-export interface TeamFlyToConfig {
-  center?: [number, number]; // undefined면 팀 본부 좌표 사용
-  zoom?: number;
-  pitch?: number;
-  bearing?: number;
-  speed?: number;
-  curve?: number;
-  duration?: number;
-}
-
 // 팀 마커 전체 설정
 export interface TeamMarkerConfig {
   teamId: string;
   style: TeamMarkerStyle;
   drivers2025: Driver[];
   car2025: Car;
-  flyTo: TeamFlyToConfig;
 }
 
-// 기본 플라이투 설정
-const DEFAULT_FLY_TO: TeamFlyToConfig = {
-  zoom: 15.68,
-  pitch: 45,
-  bearing: 0,
-  speed: 0.4,
-  curve: 0.8,
-  duration: 6000,
-};
 
 // 기본 팀 스타일 설정
 const createDefaultTeamStyle = (
@@ -87,10 +66,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     car2025: {
       name: "RB21",
       image: "/cars/rb21.jpg"
-    },
-    flyTo: {
-      ...DEFAULT_FLY_TO,
-      center: [-0.689, 52.0092], // 커스텀 좌표
     }
   },
 
@@ -121,8 +96,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     car2025: {
       name: "SF-25",
       image: "/cars/SF-25.jpg"
-    },
-    flyTo: DEFAULT_FLY_TO
+    }
   },
 
   'mercedes': {
@@ -156,7 +130,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       name: "W16",
       image: "/cars/w16.jpg"
     },
-    flyTo: DEFAULT_FLY_TO
   },
 
   'mclaren': {
@@ -188,12 +161,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     car2025: {
       name: "MCL39",
       image: "/cars/MCL39.jpg"
-    },
-    flyTo: {
-      ...DEFAULT_FLY_TO,
-      center: [-0.5459, 51.3446],
-      pitch: 49.5,
-      bearing: 48.8,
     }
   },
 
@@ -224,12 +191,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     car2025: {
       name: "AMR25",
       image: "/cars/amr25.jpg"
-    },
-    flyTo: {
-      ...DEFAULT_FLY_TO,
-      center: [-1.0288, 52.0762],
-      pitch: 49,
-      bearing: 136,
     }
   },
 
@@ -261,7 +222,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       name: "A525",
       image: "/cars/a525.jpg"
     },
-    flyTo: DEFAULT_FLY_TO
   },
 
   'williams': {
@@ -292,7 +252,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       name: "FW47",
       image: "/cars/fw47.jpg"
     },
-    flyTo: DEFAULT_FLY_TO
   },
 
   'racing-bulls': {
@@ -323,7 +282,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       name: "VCARB02",
       image: "/cars/vcarb02.jpg"
     },
-    flyTo: DEFAULT_FLY_TO
   },
 
   'alfa-romeo': {
@@ -354,7 +312,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       name: "C45",
       image: "/cars/c45.jpg"
     },
-    flyTo: DEFAULT_FLY_TO
   },
 
   'haas': {
@@ -388,7 +345,6 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       name: "VF-25",
       image: "/cars/vf-25.jpg"
     },
-    flyTo: DEFAULT_FLY_TO
   }
 };
 
