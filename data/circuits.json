@@ -1,6 +1,118 @@
 {
   "circuits": [
     {
+      "id": "australia",
+      "name": {
+        "en": "Albert Park Circuit",
+        "ko": "앨버트 파크 서킷"
+      },
+      "officialName": "Albert Park Grand Prix Circuit",
+      "grandPrix": {
+        "en": "Australian Grand Prix",
+        "ko": "호주 그랑프리"
+      },
+      "country": "Australia",
+      "city": "Melbourne",
+      "location": {
+        "lat": -37.8498,
+        "lng": 144.9747,
+        "city": {
+          "en": "Melbourne",
+          "ko": "멜버른"
+        },
+        "country": {
+          "en": "Australia",
+          "ko": "호주"
+        }
+      },
+      "length": 5.278,
+      "laps": 58,
+      "lapRecord": {
+        "time": "1:20.260",
+        "driver": "Charles Leclerc",
+        "year": 2022
+      },
+      "raceDate2025": "2025-03-16",
+      "round": 1,
+      "corners": 14,
+      "totalDistance": 306.124
+    },
+    {
+      "id": "china",
+      "name": {
+        "en": "Shanghai International Circuit",
+        "ko": "상하이 인터내셔널 서킷"
+      },
+      "officialName": "Shanghai International Circuit",
+      "grandPrix": {
+        "en": "Chinese Grand Prix",
+        "ko": "중국 그랑프리"
+      },
+      "country": "China",
+      "city": "Shanghai",
+      "location": {
+        "lat": 31.3389,
+        "lng": 121.2208,
+        "city": {
+          "en": "Shanghai",
+          "ko": "상하이"
+        },
+        "country": {
+          "en": "China",
+          "ko": "중국"
+        }
+      },
+      "length": 5.451,
+      "laps": 56,
+      "lapRecord": {
+        "time": "1:32.238",
+        "driver": "Michael Schumacher",
+        "year": 2004
+      },
+      "raceDate2025": "2025-03-23",
+      "round": 2,
+      "sprint": true,
+      "corners": 16,
+      "totalDistance": 305.256
+    },
+    {
+      "id": "japan",
+      "name": {
+        "en": "Suzuka Circuit",
+        "ko": "스즈카 서킷"
+      },
+      "officialName": "Suzuka International Racing Course",
+      "grandPrix": {
+        "en": "Japanese Grand Prix",
+        "ko": "일본 그랑프리"
+      },
+      "country": "Japan",
+      "city": "Suzuka",
+      "location": {
+        "lat": 34.8458,
+        "lng": 136.5382,
+        "city": {
+          "en": "Suzuka",
+          "ko": "스즈카"
+        },
+        "country": {
+          "en": "Japan",
+          "ko": "일본"
+        }
+      },
+      "length": 5.807,
+      "laps": 53,
+      "lapRecord": {
+        "time": "1:30.983",
+        "driver": "Lewis Hamilton",
+        "year": 2019
+      },
+      "raceDate2025": "2025-04-06",
+      "round": 3,
+      "corners": 18,
+      "totalDistance": 307.771
+    },
+    {
       "id": "bahrain",
       "name": {
         "en": "Bahrain International Circuit",
@@ -73,118 +185,6 @@
       "round": 5,
       "corners": 27,
       "totalDistance": 308.7
-    },
-    {
-      "id": "australia",
-      "name": {
-        "en": "Albert Park Circuit",
-        "ko": "앨버트 파크 서킷"
-      },
-      "officialName": "Albert Park Grand Prix Circuit",
-      "grandPrix": {
-        "en": "Australian Grand Prix",
-        "ko": "호주 그랑프리"
-      },
-      "country": "Australia",
-      "city": "Melbourne",
-      "location": {
-        "lat": -37.8498,
-        "lng": 144.9747,
-        "city": {
-          "en": "Melbourne",
-          "ko": "멜버른"
-        },
-        "country": {
-          "en": "Australia",
-          "ko": "호주"
-        }
-      },
-      "length": 5.278,
-      "laps": 58,
-      "lapRecord": {
-        "time": "1:20.260",
-        "driver": "Charles Leclerc",
-        "year": 2022
-      },
-      "raceDate2025": "2025-03-16",
-      "round": 1,
-      "corners": 14,
-      "totalDistance": 306.124
-    },
-    {
-      "id": "japan",
-      "name": {
-        "en": "Suzuka Circuit",
-        "ko": "스즈카 서킷"
-      },
-      "officialName": "Suzuka International Racing Course",
-      "grandPrix": {
-        "en": "Japanese Grand Prix",
-        "ko": "일본 그랑프리"
-      },
-      "country": "Japan",
-      "city": "Suzuka",
-      "location": {
-        "lat": 34.8458,
-        "lng": 136.5382,
-        "city": {
-          "en": "Suzuka",
-          "ko": "스즈카"
-        },
-        "country": {
-          "en": "Japan",
-          "ko": "일본"
-        }
-      },
-      "length": 5.807,
-      "laps": 53,
-      "lapRecord": {
-        "time": "1:30.983",
-        "driver": "Lewis Hamilton",
-        "year": 2019
-      },
-      "raceDate2025": "2025-04-06",
-      "round": 3,
-      "corners": 18,
-      "totalDistance": 307.771
-    },
-    {
-      "id": "china",
-      "name": {
-        "en": "Shanghai International Circuit",
-        "ko": "상하이 인터내셔널 서킷"
-      },
-      "officialName": "Shanghai International Circuit",
-      "grandPrix": {
-        "en": "Chinese Grand Prix",
-        "ko": "중국 그랑프리"
-      },
-      "country": "China",
-      "city": "Shanghai",
-      "location": {
-        "lat": 31.3389,
-        "lng": 121.2208,
-        "city": {
-          "en": "Shanghai",
-          "ko": "상하이"
-        },
-        "country": {
-          "en": "China",
-          "ko": "중국"
-        }
-      },
-      "length": 5.451,
-      "laps": 56,
-      "lapRecord": {
-        "time": "1:32.238",
-        "driver": "Michael Schumacher",
-        "year": 2004
-      },
-      "raceDate2025": "2025-03-23",
-      "round": 2,
-      "sprint": true,
-      "corners": 16,
-      "totalDistance": 305.256
     },
     {
       "id": "miami",
@@ -299,43 +299,6 @@
       "totalDistance": 260.286
     },
     {
-      "id": "canada",
-      "name": {
-        "en": "Circuit Gilles Villeneuve",
-        "ko": "질 빌뇌브 서킷"
-      },
-      "officialName": "Circuit Gilles Villeneuve",
-      "grandPrix": {
-        "en": "Canadian Grand Prix",
-        "ko": "캐나다 그랑프리"
-      },
-      "country": "Canada",
-      "city": "Montreal",
-      "location": {
-        "lat": 45.5000,
-        "lng": -73.5228,
-        "city": {
-          "en": "Montreal",
-          "ko": "몬트리올"
-        },
-        "country": {
-          "en": "Canada",
-          "ko": "캐나다"
-        }
-      },
-      "length": 4.361,
-      "laps": 70,
-      "lapRecord": {
-        "time": "1:13.078",
-        "driver": "Valtteri Bottas",
-        "year": 2019
-      },
-      "raceDate2025": "2025-06-15",
-      "round": 9,
-      "corners": 14,
-      "totalDistance": 305.27
-    },
-    {
       "id": "spain",
       "name": {
         "en": "Circuit de Barcelona-Catalunya",
@@ -368,9 +331,46 @@
         "year": 2023
       },
       "raceDate2025": "2025-06-01",
-      "round": 10,
+      "round": 9,
       "corners": 16,
       "totalDistance": 307.362
+    },
+    {
+      "id": "canada",
+      "name": {
+        "en": "Circuit Gilles Villeneuve",
+        "ko": "질 빌뇌브 서킷"
+      },
+      "officialName": "Circuit Gilles Villeneuve",
+      "grandPrix": {
+        "en": "Canadian Grand Prix",
+        "ko": "캐나다 그랑프리"
+      },
+      "country": "Canada",
+      "city": "Montreal",
+      "location": {
+        "lat": 45.5000,
+        "lng": -73.5228,
+        "city": {
+          "en": "Montreal",
+          "ko": "몬트리올"
+        },
+        "country": {
+          "en": "Canada",
+          "ko": "캐나다"
+        }
+      },
+      "length": 4.361,
+      "laps": 70,
+      "lapRecord": {
+        "time": "1:13.078",
+        "driver": "Valtteri Bottas",
+        "year": 2019
+      },
+      "raceDate2025": "2025-06-15",
+      "round": 10,
+      "corners": 14,
+      "totalDistance": 305.27
     },
     {
       "id": "austria",
@@ -447,43 +447,6 @@
       "totalDistance": 306.332
     },
     {
-      "id": "hungary",
-      "name": {
-        "en": "Hungaroring",
-        "ko": "헝가로링"
-      },
-      "officialName": "Hungaroring",
-      "grandPrix": {
-        "en": "Hungarian Grand Prix",
-        "ko": "헝가리 그랑프리"
-      },
-      "country": "Hungary",
-      "city": "Budapest",
-      "location": {
-        "lat": 47.5836,
-        "lng": 19.2526,
-        "city": {
-          "en": "Budapest",
-          "ko": "부다페스트"
-        },
-        "country": {
-          "en": "Hungary",
-          "ko": "헝가리"
-        }
-      },
-      "length": 4.381,
-      "laps": 70,
-      "lapRecord": {
-        "time": "1:16.627",
-        "driver": "Lewis Hamilton",
-        "year": 2020
-      },
-      "raceDate2025": "2025-08-03",
-      "round": 13,
-      "corners": 14,
-      "totalDistance": 306.67
-    },
-    {
       "id": "belgium",
       "name": {
         "en": "Circuit de Spa-Francorchamps",
@@ -516,10 +479,47 @@
         "year": 2018
       },
       "raceDate2025": "2025-07-27",
-      "round": 14,
+      "round": 13,
       "sprint": true,
       "corners": 19,
       "totalDistance": 308.176
+    },
+    {
+      "id": "hungary",
+      "name": {
+        "en": "Hungaroring",
+        "ko": "헝가로링"
+      },
+      "officialName": "Hungaroring",
+      "grandPrix": {
+        "en": "Hungarian Grand Prix",
+        "ko": "헝가리 그랑프리"
+      },
+      "country": "Hungary",
+      "city": "Budapest",
+      "location": {
+        "lat": 47.5836,
+        "lng": 19.2526,
+        "city": {
+          "en": "Budapest",
+          "ko": "부다페스트"
+        },
+        "country": {
+          "en": "Hungary",
+          "ko": "헝가리"
+        }
+      },
+      "length": 4.381,
+      "laps": 70,
+      "lapRecord": {
+        "time": "1:16.627",
+        "driver": "Lewis Hamilton",
+        "year": 2020
+      },
+      "raceDate2025": "2025-08-03",
+      "round": 14,
+      "corners": 14,
+      "totalDistance": 306.67
     },
     {
       "id": "netherlands",
