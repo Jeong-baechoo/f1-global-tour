@@ -21,6 +21,8 @@ import { useCinematicMode } from './hooks/useCinematicMode';
 import { ZOOM_LEVELS, ANIMATION_SPEEDS, PITCH_ANGLES, ANIMATION_TIMINGS } from './constants';
 import { flyToCircuitWithTrack } from './utils/animations/circuitAnimation';
 import { trackManager } from './utils/map/trackManager';
+import { ElevationTrackManager } from './track/elevation/ElevationTrackManager';
+import { getDRSInfo } from './utils/data/dynamicSectorLoader';
 
 // Mapbox 토큰 확인 및 설정
 if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
@@ -47,6 +49,24 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
   // Circuit info panel states
   const [sectorInfoEnabled, setSectorInfoEnabled] = useState(true);
   const [drsInfoEnabled, setDRSInfoEnabled] = useState(true);
+  const [elevationEnabled, setElevationEnabled] = useState(true);
+  const [currentCircuit, setCurrentCircuit] = useState<any>(null);
+  const [drsZoneCount, setDrsZoneCount] = useState<number>(0);
+  const [drsDetectionCount, setDrsDetectionCount] = useState<number>(0);
+  const [isTrackAnimating, setIsTrackAnimating] = useState(false);
+  const isTrackAnimatingRef = useRef(isTrackAnimating);
+
+  // isTrackAnimating 상태 변경 시 ref 업데이트
+  useEffect(() => {
+    isTrackAnimatingRef.current = isTrackAnimating;
+  }, [isTrackAnimating]);
+
+  // 패널 상태 초기화 함수
+  const resetPanelStates = () => {
+    setSectorInfoEnabled(true);
+    setDRSInfoEnabled(true);
+    setElevationEnabled(true);
+  };
 
   // Custom hooks 사용
   const { map, globeSpinner } = useMapInitialization({ mapContainer, onUserInteraction });
@@ -86,6 +106,22 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         return;
       }
 
+      // 현재 서킷 정보 업데이트
+      setCurrentCircuit(circuit);
+      
+      // 패널 상태 초기화 (새로운 서킷 선택 시)
+      resetPanelStates();
+      
+      // DRS 관련 정보 계산
+      getDRSInfo(circuitId).then(drsInfo => {
+        setDrsZoneCount(drsInfo.drsZoneCount);
+        setDrsDetectionCount(drsInfo.drsDetectionCount);
+      }).catch(error => {
+        console.error('Error calculating DRS info:', error);
+        setDrsZoneCount(0);
+        setDrsDetectionCount(0);
+      });
+
       if (gentle) {
         // gentle flyTo는 간단한 이동만
         const mobile = window.innerWidth < 640;
@@ -106,12 +142,18 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         // 일반 flyTo는 트랙 그리기 포함
         globeSpinner.current?.startInteracting();
         setIsCircuitView(true);
+        setIsTrackAnimating(true);
         flyToCircuitWithTrack(map.current, circuit, undefined, (enabled: boolean) => {
           // 시네마틱 모드 토글 콜백 처리
           if (propsRef.current.onCinematicModeChange) {
             propsRef.current.onCinematicModeChange(enabled);
           }
         });
+        
+        // 트랙 애니메이션 완료 후 플래그 리셋
+        setTimeout(() => {
+          setIsTrackAnimating(false);
+        }, 8000); // 트랙 애니메이션이 보통 6-7초 정도 걸리므로 8초로 설정
       }
     },
     
@@ -215,13 +257,20 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
       }
 
       // 줌 레벨 변경 감지 핸들러
+      
       const handleZoomChange = () => {
         if (!map.current) return;
         const zoom = map.current.getZoom();
         
         // 줌 레벨이 10 이하로 떨어지면 서킷 뷰가 아님
-        if (zoom <= ZOOM_LEVELS.region) {
+        // 단, 트랙 애니메이션 중이 아니고 현재 서킷 뷰 상태일 때만 리셋
+        if (zoom <= ZOOM_LEVELS.region && isCircuitViewRef.current && !isTrackAnimatingRef.current) {
           setIsCircuitView(false);
+          // 줌아웃 시 패널 상태 초기화
+          resetPanelStates();
+          setCurrentCircuit(null);
+          setDrsZoneCount(0);
+          setDrsDetectionCount(0);
         }
         
       };
@@ -354,6 +403,21 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
     }));
   };
 
+  // Elevation toggle handler
+  const handleToggleElevation = (enabled: boolean) => {
+    setElevationEnabled(enabled);
+
+    // 현재 표시되고 있는 모든 서킷의 3D 트랙 토글
+    if (map.current) {
+      // trackManager에서 활성화된 트랙 ID들을 가져와서 각각에 대해 토글
+      const trackSources = trackManager.getAllTrackSources();
+      trackSources.forEach(sourceId => {
+        const trackId = sourceId.replace('-track', '');
+        ElevationTrackManager.toggle3DElevationTrack(map.current!, `${trackId}-track`, enabled);
+      });
+    }
+  };
+
   return (
     <>
       <div ref={mapContainer} className="w-full h-full" />
@@ -363,8 +427,13 @@ const Map = forwardRef<MapAPI, MapProps>(({ onMarkerClick, onCinematicModeChange
         isVisible={true}
         onToggleSectorInfo={handleToggleSectorInfo}
         onToggleDRSInfo={handleToggleDRSInfo}
+        onToggleElevation={handleToggleElevation}
         sectorInfoEnabled={sectorInfoEnabled}
         drsInfoEnabled={drsInfoEnabled}
+        elevationEnabled={elevationEnabled}
+        currentCircuit={currentCircuit}
+        drsZoneCount={drsZoneCount}
+        drsDetectionCount={drsDetectionCount}
       />
 
       <CinematicModeButton

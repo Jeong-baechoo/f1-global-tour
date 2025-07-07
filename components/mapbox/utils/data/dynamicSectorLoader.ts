@@ -288,3 +288,96 @@ export const getAllCircuitData = async (circuitId: string) => {
     speedTraps: extractSpeedTrapData(geoJsonData, circuitId)
   };
 };
+
+/**
+ * DRS 존 개수를 계산하는 함수
+ */
+export const getDRSZoneCount = async (circuitId: string): Promise<number> => {
+  try {
+    const geoJsonData = await loadCircuitGeoJSON(circuitId);
+    if (!geoJsonData) {
+      return 0;
+    }
+    
+    // DRS Detection 포인트의 개수를 카운트
+    const drsDetectionCount = geoJsonData.features.filter(feature => 
+      feature.properties.drs_detection !== undefined && 
+      feature.properties.drs_detection > 0 &&
+      feature.geometry.type === 'Point'
+    ).length;
+    
+    // DRS Zone 라인의 개수를 카운트 (DRS Zone은 보통 LineString으로 정의됨)
+    const drsZoneCount = geoJsonData.features.filter(feature => 
+      feature.properties.id && 
+      feature.properties.id.toLowerCase().includes('drs') &&
+      feature.geometry.type === 'LineString'
+    ).length;
+    
+    // DRS Detection 포인트가 있으면 그걸 기준으로, 없으면 DRS Zone 라인 기준으로
+    return drsDetectionCount > 0 ? drsDetectionCount : drsZoneCount;
+  } catch (error) {
+    console.error(`Error calculating DRS zone count for ${circuitId}:`, error);
+    return 0;
+  }
+};
+
+/**
+ * DRS Detection Zone 개수를 계산하는 함수
+ */
+export const getDRSDetectionCount = async (circuitId: string): Promise<number> => {
+  try {
+    const geoJsonData = await loadCircuitGeoJSON(circuitId);
+    if (!geoJsonData) {
+      return 0;
+    }
+    
+    // DRS Detection 포인트의 개수를 카운트
+    const drsDetectionCount = geoJsonData.features.filter(feature => 
+      feature.properties.drs_detection !== undefined && 
+      feature.properties.drs_detection > 0 &&
+      feature.geometry.type === 'Point'
+    ).length;
+    
+    return drsDetectionCount;
+  } catch (error) {
+    console.error(`Error calculating DRS detection count for ${circuitId}:`, error);
+    return 0;
+  }
+};
+
+/**
+ * 서킷의 DRS 관련 정보를 모두 계산하는 함수
+ */
+export const getDRSInfo = async (circuitId: string): Promise<{
+  drsZoneCount: number;
+  drsDetectionCount: number;
+}> => {
+  try {
+    const geoJsonData = await loadCircuitGeoJSON(circuitId);
+    if (!geoJsonData) {
+      return { drsZoneCount: 0, drsDetectionCount: 0 };
+    }
+    
+    // DRS Detection 포인트 개수
+    const drsDetectionCount = geoJsonData.features.filter(feature => 
+      feature.properties.drs_detection !== undefined && 
+      feature.properties.drs_detection > 0 &&
+      feature.geometry.type === 'Point'
+    ).length;
+    
+    // DRS Zone 라인 개수
+    const drsZoneCount = geoJsonData.features.filter(feature => 
+      feature.properties.id && 
+      feature.properties.id.toLowerCase().includes('drs') &&
+      feature.geometry.type === 'LineString'
+    ).length;
+    
+    return { 
+      drsZoneCount: drsDetectionCount > 0 ? drsDetectionCount : drsZoneCount,
+      drsDetectionCount 
+    };
+  } catch (error) {
+    console.error(`Error calculating DRS info for ${circuitId}:`, error);
+    return { drsZoneCount: 0, drsDetectionCount: 0 };
+  }
+};
