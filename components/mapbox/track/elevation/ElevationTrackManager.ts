@@ -99,13 +99,31 @@ export class ElevationTrackManager {
     // 기본 보간만 적용
     const interpolatedCoords = interpolateCoordinates(trackCoordinates);
     
+    // 트랙이 닫힌 루프인지 확인
+    const firstCoord = interpolatedCoords[0];
+    const lastCoord = interpolatedCoords[interpolatedCoords.length - 1];
+    const distance = Math.sqrt(
+      Math.pow(firstCoord[0] - lastCoord[0], 2) + 
+      Math.pow(firstCoord[1] - lastCoord[1], 2)
+    );
+    
+    // 첫 점과 마지막 점이 가까우면 닫힌 트랙으로 처리
+    const isClosedTrack = distance < 0.001;
+    
+    // 닫힌 트랙이면 마지막 점을 첫 점으로 대체하여 완전히 닫기
+    if (isClosedTrack && interpolatedCoords[interpolatedCoords.length - 1] !== interpolatedCoords[0]) {
+      interpolatedCoords[interpolatedCoords.length - 1] = interpolatedCoords[0];
+    }
+    
     // 선택적 세분화
     let finalCoords = interpolatedCoords;
     if (SUBDIVISION_LEVEL > 0) {
       const detailedCoords = [];
-      for (let i = 0; i < interpolatedCoords.length - 1; i++) {
+      const loopLength = isClosedTrack ? interpolatedCoords.length : interpolatedCoords.length - 1;
+      
+      for (let i = 0; i < loopLength; i++) {
         const coord1 = interpolatedCoords[i];
-        const coord2 = interpolatedCoords[i + 1];
+        const coord2 = interpolatedCoords[(i + 1) % interpolatedCoords.length];
         
         detailedCoords.push(coord1);
         
@@ -118,7 +136,12 @@ export class ElevationTrackManager {
           ]);
         }
       }
-      detailedCoords.push(interpolatedCoords[interpolatedCoords.length - 1]);
+      
+      // 닫힌 트랙이 아닌 경우에만 마지막 점 추가
+      if (!isClosedTrack) {
+        detailedCoords.push(interpolatedCoords[interpolatedCoords.length - 1]);
+      }
+      
       finalCoords = detailedCoords;
     }
     
@@ -162,54 +185,81 @@ export class ElevationTrackManager {
     
     // 각 점에서의 수직 벡터를 미리 계산 (부드러운 연결을 위해)
     const perpVectors = [];
+    const isLoopTrack = Math.sqrt(
+      Math.pow(trackCoordinates[0][0] - trackCoordinates[trackCoordinates.length - 1][0], 2) + 
+      Math.pow(trackCoordinates[0][1] - trackCoordinates[trackCoordinates.length - 1][1], 2)
+    ) < 0.001;
+    
     for (let i = 0; i < trackCoordinates.length; i++) {
       let perpX = 0, perpY = 0;
       
-      if (i === 0) {
-        // 첫 점: 다음 점과의 벡터 사용
-        const dx = trackCoordinates[1][0] - trackCoordinates[0][0];
-        const dy = trackCoordinates[1][1] - trackCoordinates[0][1];
+      // 이전과 다음 인덱스 계산 (닫힌 루프 고려)
+      const prevIdx = isLoopTrack ? 
+        (i - 1 + trackCoordinates.length) % trackCoordinates.length : 
+        Math.max(0, i - 1);
+      const nextIdx = isLoopTrack ? 
+        (i + 1) % trackCoordinates.length : 
+        Math.min(trackCoordinates.length - 1, i + 1);
+      
+      if (i === 0 && !isLoopTrack) {
+        // 열린 트랙의 첫 점: 다음 점과의 벡터 사용
+        const dx = trackCoordinates[nextIdx][0] - trackCoordinates[i][0];
+        const dy = trackCoordinates[nextIdx][1] - trackCoordinates[i][1];
         const length = Math.sqrt(dx * dx + dy * dy);
         perpX = -dy / length;
         perpY = dx / length;
-      } else if (i === trackCoordinates.length - 1) {
-        // 마지막 점: 이전 점과의 벡터 사용
-        const dx = trackCoordinates[i][0] - trackCoordinates[i-1][0];
-        const dy = trackCoordinates[i][1] - trackCoordinates[i-1][1];
+      } else if (i === trackCoordinates.length - 1 && !isLoopTrack) {
+        // 열린 트랙의 마지막 점: 이전 점과의 벡터 사용
+        const dx = trackCoordinates[i][0] - trackCoordinates[prevIdx][0];
+        const dy = trackCoordinates[i][1] - trackCoordinates[prevIdx][1];
         const length = Math.sqrt(dx * dx + dy * dy);
         perpX = -dy / length;
         perpY = dx / length;
       } else {
-        // 중간 점: 이전과 다음 점의 평균 벡터 사용
-        const dx1 = trackCoordinates[i][0] - trackCoordinates[i-1][0];
-        const dy1 = trackCoordinates[i][1] - trackCoordinates[i-1][1];
-        const dx2 = trackCoordinates[i+1][0] - trackCoordinates[i][0];
-        const dy2 = trackCoordinates[i+1][1] - trackCoordinates[i][1];
+        // 중간 점 또는 닫힌 트랙의 모든 점: 이전과 다음 점의 평균 벡터 사용
+        const dx1 = trackCoordinates[i][0] - trackCoordinates[prevIdx][0];
+        const dy1 = trackCoordinates[i][1] - trackCoordinates[prevIdx][1];
+        const dx2 = trackCoordinates[nextIdx][0] - trackCoordinates[i][0];
+        const dy2 = trackCoordinates[nextIdx][1] - trackCoordinates[i][1];
         
         const length1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
         const length2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
         
-        const perp1X = -dy1 / length1;
-        const perp1Y = dx1 / length1;
-        const perp2X = -dy2 / length2;
-        const perp2Y = dx2 / length2;
-        
-        // 두 수직 벡터의 평균 (정규화)
-        perpX = (perp1X + perp2X) / 2;
-        perpY = (perp1Y + perp2Y) / 2;
-        const avgLength = Math.sqrt(perpX * perpX + perpY * perpY);
-        if (avgLength > 0) {
-          perpX /= avgLength;
-          perpY /= avgLength;
+        if (length1 > 0 && length2 > 0) {
+          const perp1X = -dy1 / length1;
+          const perp1Y = dx1 / length1;
+          const perp2X = -dy2 / length2;
+          const perp2Y = dx2 / length2;
+          
+          // 두 수직 벡터의 평균 (정규화)
+          perpX = (perp1X + perp2X) / 2;
+          perpY = (perp1Y + perp2Y) / 2;
+          const avgLength = Math.sqrt(perpX * perpX + perpY * perpY);
+          if (avgLength > 0) {
+            perpX /= avgLength;
+            perpY /= avgLength;
+          }
         }
       }
       
       perpVectors.push([perpX, perpY]);
     }
     
-    for (let i = 0; i < trackCoordinates.length - 1; i++) {
+    // 트랙이 닫힌 루프인지 다시 확인
+    const firstPoint = trackCoordinates[0];
+    const lastPoint = trackCoordinates[trackCoordinates.length - 1];
+    const trackDistance = Math.sqrt(
+      Math.pow(firstPoint[0] - lastPoint[0], 2) + 
+      Math.pow(firstPoint[1] - lastPoint[1], 2)
+    );
+    const isLoop = trackDistance < 0.001;
+    
+    // 세그먼트 생성 (닫힌 트랙의 경우 마지막과 첫 번째를 연결)
+    const segmentCount = isLoop ? trackCoordinates.length : trackCoordinates.length - 1;
+    
+    for (let i = 0; i < segmentCount; i++) {
       const coord1 = trackCoordinates[i];
-      const coord2 = trackCoordinates[i + 1];
+      const coord2 = trackCoordinates[(i + 1) % trackCoordinates.length];
       
       // 미터를 도 단위로 변환 (대략적)
       const metersToDegreesLat = 1 / 111320;
@@ -220,8 +270,11 @@ export class ElevationTrackManager {
       // 각 점에서의 오프셋 계산
       const offset1X = perpVectors[i][0] * halfWidth * metersToDegreesLng;
       const offset1Y = perpVectors[i][1] * halfWidth * metersToDegreesLat;
-      const offset2X = perpVectors[i + 1][0] * halfWidth * metersToDegreesLng;
-      const offset2Y = perpVectors[i + 1][1] * halfWidth * metersToDegreesLat;
+      
+      // 다음 인덱스 (닫힌 루프 고려)
+      const nextPerpIdx = (i + 1) % perpVectors.length;
+      const offset2X = perpVectors[nextPerpIdx][0] * halfWidth * metersToDegreesLng;
+      const offset2Y = perpVectors[nextPerpIdx][1] * halfWidth * metersToDegreesLat;
       
       // 고도 계산 (보간 사용)
       const progress1 = i / (trackCoordinates.length - 1);
@@ -241,10 +294,13 @@ export class ElevationTrackManager {
       let smoothedElevation2 = scaledElevation2;
       
       // Catmull-Rom 스플라인 보간 적용
-      if (i > 0 && i < trackCoordinates.length - 2) {
-        // 4개의 제어점 사용
-        const p0Progress = Math.max(0, i - 1) / (trackCoordinates.length - 1);
-        const p3Progress = Math.min(1, i + 2) / (trackCoordinates.length - 1);
+      if (i > 0 && i < segmentCount - 1) {
+        // 4개의 제어점 사용 (닫힌 루프 고려)
+        const p0Idx = isLoop ? (i - 1 + trackCoordinates.length) % trackCoordinates.length : Math.max(0, i - 1);
+        const p3Idx = isLoop ? (i + 2) % trackCoordinates.length : Math.min(trackCoordinates.length - 1, i + 2);
+        
+        const p0Progress = p0Idx / (trackCoordinates.length - 1);
+        const p3Progress = p3Idx / (trackCoordinates.length - 1);
         
         const p0Elev = interpolateElevation(p0Progress) * heightScale;
         const p1Elev = scaledElevation1;
