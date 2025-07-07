@@ -45,6 +45,7 @@ export default function Home() {
   const initialFocusTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
+  const [nextRaceCircuitId, setNextRaceCircuitId] = useState<string | null>(null);
 
   // 드래그 스크롤을 위한 상태
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -111,18 +112,28 @@ export default function Home() {
   }, [language]);
 
   const handleExploreCircuit = () => {
+    if (!nextRaceCircuitId) return;
+
+    // Find the circuit data
+    const circuit = circuitsData.circuits.find(c => c.id === nextRaceCircuitId);
+    if (!circuit) return;
+
     setPanelModule('circuit-detail');
     setPanelData({
-      name: 'Red Bull Ring',
-      location: 'Spielberg, Austria',
-      grandPrix: 'Austrian Grand Prix',
-      length: 4.318,
-      corners: 10,
-      laps: 71
+      type: 'circuit',
+      id: circuit.id,
+      name: circuit.name,
+      location: circuit.location,
+      grandPrix: circuit.grandPrix,
+      length: circuit.length,
+      corners: circuit.corners,
+      laps: circuit.laps,
+      lapRecord: circuit.lapRecord,
+      description: circuit.description
     });
 
     if (mapRef.current) {
-      mapRef.current.flyToCircuit('austria');
+      mapRef.current.flyToCircuit(nextRaceCircuitId);
     }
   };
 
@@ -262,6 +273,8 @@ export default function Home() {
       if (!mapRef.current || hasUserInteracted) return;
 
       const nextRace = findNextRace();
+
+      setNextRaceCircuitId(nextRace.id); // 다음 레이스 서킷 ID 저장
 
       setPanelModule('next-race');
       setPanelData({
