@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import { usePanelStore } from '../store';
 import { NextRacePanel } from './NextRacePanel';
 import { TeamHQPanel } from './TeamHQPanel';
 import { CircuitDetailPanel } from './CircuitDetailPanel';
 import { CircuitDetailData, NextRaceData, TeamHQData } from '../types';
 import { usePanelDrag, SHEET_HEIGHTS } from '../hooks/usePanelDrag';
-import { Minus, X, Building2, Route, Calendar, Clock3, Flag, Factory, Maximize2 } from 'lucide-react';
+import { Minus, X, Building2, Route, Calendar, Flag, Maximize2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
+import type { PanelData } from '@/types/panel';
 
 interface InteractivePanelProps {
   isOpen: boolean;
@@ -18,14 +18,14 @@ interface InteractivePanelProps {
   onMinimize?: () => void;
   isMinimized?: boolean;
   module: 'next-race' | 'circuit-detail' | 'team-hq' | null;
-  data?: any | null;
+  data?: PanelData | null;
   onExploreCircuit?: () => void;
   isCinematicMode?: boolean;
   onToggleCinematicMode?: () => void;
 }
 
 // Header configuration based on module type
-const getHeaderConfig = (module: string | null, data: any, language: 'en' | 'ko') => {
+const getHeaderConfig = (module: string | null, data: PanelData | null, language: 'en' | 'ko') => {
   switch (module) {
     case 'team-hq':
       return {

@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
 
 type Language = 'en' | 'ko';
 
@@ -15,7 +14,7 @@ interface AppState {
   setLanguage: (language: Language) => void;
 }
 
-const createStore = (set: any) => ({
+const createStore = (set: (partial: Partial<AppState>) => void) => ({
   // 초기 상태
   isLoading: false,
   error: null,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useImperativeHandle, useCallback, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { MapContainer } from './MapContainer';
 import { MapCanvas } from './MapCanvas';
 import { MapAPI } from '@/components/mapbox/types';
@@ -13,19 +13,21 @@ import { useCircuitMarkers } from '@/src/features/circuits/hooks/useCircuitMarke
 import { useCircuits } from '@/src/features/circuits/hooks/useCircuits';
 import { MarkerService } from '../services/MarkerService';
 import { useLanguage } from '@/contexts/LanguageContext';
+import type { Circuit } from '@/src/features/circuits/types';
+import type { PanelData } from '@/types/panel';
 
 interface MapProps {
-  onMarkerClick?: (item: any) => void;
+  onMarkerClick?: (item: PanelData) => void;
   onCinematicModeChange?: (enabled: boolean) => void;
   onUserInteraction?: () => void;
   // Circuit 관련 props
   isCircuitView?: boolean;
-  currentCircuit?: any;
+  currentCircuit?: Circuit | null;
   drsZoneCount?: number;
   drsDetectionCount?: number;
-  onCircuitSelect?: (circuit: any) => void;
+  onCircuitSelect?: (circuit: Circuit) => void;
   setIsCircuitView?: (isCircuitView: boolean) => void;
-  setCurrentCircuit?: (circuit: any) => void;
+  setCurrentCircuit?: (circuit: Circuit | null) => void;
   setDrsZoneCount?: (count: number) => void;
   setDrsDetectionCount?: (count: number) => void;
   resetPanelStates?: () => void;
@@ -38,7 +40,7 @@ interface MapProps {
 const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
   const { map, isMapLoaded } = useMapStore();
   const markerServiceRef = React.useRef<MarkerService | null>(null);
-  const globeSpinnerRef = React.useRef<any>(null);
+  const globeSpinnerRef = React.useRef<unknown>(null);
   
   // Get language from context
   const { language } = useLanguage();
@@ -67,11 +69,11 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
   });
   
   // Teams 모듈 훅
-  const { teams, loadTeams } = useTeams();
+  const { teams } = useTeams();
   const { createTeamMarkers } = useTeamMarkers(map);
   
   // Circuits 모듈 훅
-  const { circuits, loadCircuits } = useCircuits();
+  const { circuits } = useCircuits();
   const { createCircuitMarkers } = useCircuitMarkers(map);
 
   // Map 로드 시 팀 마커 생성
@@ -176,7 +178,7 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       drsDetectionCount={props.drsDetectionCount}
     >
       <MapCanvas 
-        onLoad={(mapInstance) => {
+        onLoad={(_mapInstance) => {
           console.log('Map loaded with MapCanvas');
         }}
         onGlobeSpinnerReady={(spinner) => {

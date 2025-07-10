@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Team, TeamMarkerOptions } from '../types';
 import { useTeamStore } from '../store/useTeamStore';
-import { getText, type Language } from '@/utils/i18n';
+import { type Language } from '@/utils/i18n';
 import { isMobile } from '@/components/mapbox/utils/viewport';
 import { getTeamMarkerConfig } from '@/components/mapbox/markers/team/teamMarkerConfig';
 import { ZOOM_THRESHOLDS, MARKER_DIMENSIONS } from '@/components/mapbox/constants';
@@ -14,7 +14,7 @@ import type { PanelData } from '@/types/panel';
 export const useTeamMarkers = (map: mapboxgl.Map | null) => {
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const { setTeamMarkers } = useTeamStore();
-  const { language } = useLanguage();
+  const { language: _contextLanguage } = useLanguage();
   
   /**
    * Create a marker for a team
@@ -170,7 +170,7 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     map.on('zoom', zoomHandler);
     
     // Store zoom handler for cleanup
-    (el as any)._zoomHandler = zoomHandler;
+    (el as unknown)._zoomHandler = zoomHandler;
     
     // Update store
     updateStoreMarkers();
@@ -200,8 +200,8 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     if (marker) {
       // Get element and cleanup zoom handler
       const el = marker.getElement();
-      if (el && (el as any)._zoomHandler && map) {
-        map.off('zoom', (el as any)._zoomHandler);
+      if (el && (el as unknown)._zoomHandler && map) {
+        map.off('zoom', (el as unknown)._zoomHandler);
       }
       
       marker.remove();
@@ -217,8 +217,8 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     markersRef.current.forEach((marker, teamId) => {
       // Get element and cleanup zoom handler
       const el = marker.getElement();
-      if (el && (el as any)._zoomHandler && map) {
-        map.off('zoom', (el as any)._zoomHandler);
+      if (el && (el as unknown)._zoomHandler && map) {
+        map.off('zoom', (el as unknown)._zoomHandler);
       }
       marker.remove();
     });

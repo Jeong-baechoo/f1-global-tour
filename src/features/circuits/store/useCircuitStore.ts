@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CircuitsState, Circuit, TrackData } from '../types';
+import { CircuitsState, TrackData } from '../types';
 
 const initialState = {
   circuits: [],

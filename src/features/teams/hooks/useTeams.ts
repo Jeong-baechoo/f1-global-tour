@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useTeamStore } from '../store/useTeamStore';
 import { TeamService } from '../services/TeamService';
 
@@ -16,12 +16,7 @@ export const useTeams = () => {
     setError,
   } = useTeamStore();
   
-  // Load teams on mount
-  useEffect(() => {
-    loadTeams();
-  }, []);
-  
-  const loadTeams = async () => {
+  const loadTeams = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -34,7 +29,12 @@ export const useTeams = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setError, setTeams]);
+  
+  // Load teams on mount
+  useEffect(() => {
+    loadTeams();
+  }, [loadTeams]);
   
   const selectTeamById = async (teamId: string) => {
     try {

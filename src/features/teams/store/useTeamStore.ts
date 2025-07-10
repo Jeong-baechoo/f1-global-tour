@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { TeamsState, Team } from '../types';
+import { TeamsState } from '../types';
 
 const initialState = {
   teams: [],

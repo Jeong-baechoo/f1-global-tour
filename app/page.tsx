@@ -10,6 +10,7 @@ import LanguageSelector from '@/components/ui/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/types/panel';
+import type { Circuit } from '@/src/features/circuits/types';
 
 // Dynamic imports for better code splitting
 const Map = dynamic(
@@ -49,10 +50,10 @@ export default function Home() {
   
   // Circuit 관련 상태
   const [isCircuitView, setIsCircuitView] = useState(false);
-  const [currentCircuit, setCurrentCircuit] = useState<any>(null);
+  const [currentCircuit, setCurrentCircuit] = useState<Circuit | null>(null);
   const [drsZoneCount, setDrsZoneCount] = useState(0);
   const [drsDetectionCount, setDrsDetectionCount] = useState(0);
-  const [isTrackAnimating, setIsTrackAnimating] = useState(false);
+  const [, setIsTrackAnimating] = useState(false);
 
   // 드래그 스크롤을 위한 상태
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -145,7 +146,7 @@ export default function Home() {
       // 다른 마커 클릭 시에도 최소화 상태 유지
       // setPanelMinimized(false); <- 이 줄을 제거하여 최소화 상태 유지
     }
-  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData?.id, languageChangedFlag, scrollToCircuit]);
+  }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData, languageChangedFlag, scrollToCircuit]);
 
   const handleUserInteraction = useCallback(() => {
     if (initialFocusTimerRef.current && !hasUserInteracted) {

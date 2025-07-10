@@ -14,54 +14,16 @@ interface CircuitMarkerProps {
 
 export const CircuitMarker: React.FC<CircuitMarkerProps> = ({
   circuit,
-  isSelected = false,
+  isSelected: _isSelected = false,
   isNextRace = false,
   onClick
 }) => {
+  // Suppress unused variable warning
+  void _isSelected;
   const { language } = useLanguage();
   const isMobile = window.innerWidth < 640;
 
-  // Get country flag emoji based on country name
-  const getCountryFlag = (country: string): string => {
-    const countryToCode: Record<string, string> = {
-      'Australia': 'AU',
-      'Austria': 'AT',
-      'Azerbaijan': 'AZ',
-      'Bahrain': 'BH',
-      'Belgium': 'BE',
-      'Brazil': 'BR',
-      'Canada': 'CA',
-      'China': 'CN',
-      'Spain': 'ES',
-      'United Kingdom': 'GB',
-      'Hungary': 'HU',
-      'Italy': 'IT',
-      'Japan': 'JP',
-      'Mexico': 'MX',
-      'Monaco': 'MC',
-      'Netherlands': 'NL',
-      'Qatar': 'QA',
-      'Saudi Arabia': 'SA',
-      'Singapore': 'SG',
-      'United States': 'US',
-      'USA': 'US',
-      'United Arab Emirates': 'AE',
-      'Germany': 'DE'
-    };
-    
-    const flags: Record<string, string> = {
-      'AU': '🇦🇺', 'AT': '🇦🇹', 'AZ': '🇦🇿', 'BH': '🇧🇭', 'BE': '🇧🇪',
-      'BR': '🇧🇷', 'CA': '🇨🇦', 'CN': '🇨🇳', 'ES': '🇪🇸', 'GB': '🇬🇧',
-      'HU': '🇭🇺', 'IT': '🇮🇹', 'JP': '🇯🇵', 'MX': '🇲🇽', 'MC': '🇲🇨',
-      'NL': '🇳🇱', 'QA': '🇶🇦', 'SA': '🇸🇦', 'SG': '🇸🇬', 'US': '🇺🇸',
-      'AE': '🇦🇪', 'DE': '🇩🇪'
-    };
-    
-    const code = countryToCode[country];
-    return code ? flags[code] || '🏁' : '🏁';
-  };
-
-  const countryFlag = circuit.country ? getCountryFlag(circuit.country) : '🏁';
+  // Note: Country flag functionality removed to avoid unused code
 
   return (
     <div

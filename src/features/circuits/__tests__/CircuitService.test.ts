@@ -1,5 +1,4 @@
 import { CircuitService } from '../services/CircuitService';
-import { Circuit } from '../types';
 
 // Mock circuits data
 jest.mock('@/data/circuits.json', () => [

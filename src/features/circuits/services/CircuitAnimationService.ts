@@ -113,7 +113,7 @@ export class CircuitAnimationService {
         circuitTrackManager.registerTrack(circuit.id, `${circuit.id}-track`);
         
         // 줌 레벨이 충분할 때만 섹터 마커 생성
-        let sectorMarkerCleanup: (() => void) | null = null;
+        let sectorMarkerCleanup: (() => void) | undefined = undefined;
         const currentZoom = map.getZoom();
         console.log('🎯 Current zoom level:', currentZoom, 'Track visible threshold:', ZOOM_THRESHOLDS.TRACK_VISIBLE);
         
@@ -152,7 +152,7 @@ export class CircuitAnimationService {
             trackCoordinates: trackData,
             color: getCircuitColor(circuit.id),
             delay: CIRCUIT_VIEW.DRAW_DELAY,
-            sectorMarkerCleanup, // 청리업 함수 전달
+            sectorMarkerCleanup: sectorMarkerCleanup || undefined, // 청리업 함수 전달 (null을 undefined로 변환)
             onComplete: () => {
               // Check zoom level before showing markers
               const finalZoom = map.getZoom();

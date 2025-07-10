@@ -1,5 +1,4 @@
 import { TeamService } from '../services/TeamService';
-import { Team } from '../types';
 
 // Mock the teams data
 jest.mock('@/data/teams.json', () => [

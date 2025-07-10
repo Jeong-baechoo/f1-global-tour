@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useCircuitStore } from '../store/useCircuitStore';
 import { CircuitService } from '../services/CircuitService';
 
@@ -19,9 +19,9 @@ export const useCircuits = () => {
   // Load circuits on mount
   useEffect(() => {
     loadCircuits();
-  }, []);
+  }, [loadCircuits]);
   
-  const loadCircuits = async () => {
+  const loadCircuits = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -34,7 +34,7 @@ export const useCircuits = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setError, setCircuits]);
   
   const selectCircuitById = async (circuitId: string) => {
     try {

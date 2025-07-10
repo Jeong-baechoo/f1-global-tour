@@ -13,9 +13,11 @@ interface TeamMarkerProps {
 
 export const TeamMarker: React.FC<TeamMarkerProps> = ({ 
   team, 
-  isSelected = false,
+  isSelected: _isSelected = false,
   onClick 
 }) => {
+  // Suppress unused variable warning
+  void _isSelected;
   const { language } = useLanguage();
   const isMobile = window.innerWidth < 640;
   
