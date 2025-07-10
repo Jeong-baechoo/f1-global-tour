@@ -451,10 +451,13 @@ export default function Home() {
       <div 
         className="fixed bottom-6 z-50 transition-all duration-300 ease-out hidden sm:block"
         style={{
-          left: panelOpen ? '24px' : '50%',
-          right: panelOpen ? (panelMinimized ? 'calc(320px + 44px)' : 'calc(420px + 44px)') : 'auto',
-          transform: panelOpen ? 'none' : 'translateX(-50%)',
-          width: panelOpen ? 'auto' : 'min(80%, 1280px)'
+          left: '50%',
+          transform: panelOpen 
+            ? `translateX(calc(-50% - ${(panelMinimized ? 320 : 420) / 2 + 22}px))` 
+            : 'translateX(-50%)',
+          width: panelOpen 
+            ? `calc(100vw - ${(panelMinimized ? 320 : 420) + 68}px)` 
+            : 'min(80%, 1280px)'
         }}
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
