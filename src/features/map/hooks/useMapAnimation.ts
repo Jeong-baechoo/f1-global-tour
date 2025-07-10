@@ -65,8 +65,8 @@ export const useMapAnimation = ({
     setCurrentCircuit?.(circuit);
     onCircuitSelect?.(circuit);
     
-    // 패널 상태 초기화
-    resetPanelStates?.();
+    // 패널 상태 초기화 제거 - 자동으로 패널이 닫히는 문제 해결
+    // resetPanelStates?.();
     
     // DRS 관련 정보 계산
     getDRSInfo(circuitId).then(drsInfo => {

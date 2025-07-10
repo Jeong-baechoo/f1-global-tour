@@ -36,7 +36,7 @@ const Map = dynamic(
 
 export default function Home() {
   const { language, setLanguage } = useLanguage();
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true); // 초기값을 true로 변경하여 패널이 처음부터 열리도록 함
   const [panelModule, setPanelModule] = useState<'next-race' | 'circuit-detail' | 'team-hq' | null>(null);
   const [panelMinimized, setPanelMinimized] = useState(false);
   const [panelData, setPanelData] = useState<PanelData | null>(null);
@@ -133,14 +133,17 @@ export default function Home() {
     // 토글 로직
     if (shouldToggle) {
       if (panelMinimized) {
+        // 최소화 상태에서 같은 마커 클릭 시 확대
         setPanelMinimized(false);
       } else {
+        // 일반 상태에서 같은 마커 클릭 시 닫기
         setPanelOpen(false);
       }
     } else {
       console.log('Opening panel with module:', currentModule);
       setPanelOpen(true);
-      setPanelMinimized(false);
+      // 다른 마커 클릭 시에도 최소화 상태 유지
+      // setPanelMinimized(false); <- 이 줄을 제거하여 최소화 상태 유지
     }
   }, [hasUserInteracted, panelOpen, panelModule, panelMinimized, panelData?.id, languageChangedFlag, scrollToCircuit]);
 
@@ -329,6 +332,21 @@ export default function Home() {
       return nextRace || sortedCircuits[0]; // If no future races, show first race of next season
     };
 
+    // 처음 로드 시 즉시 next race 패널 설정
+    const nextRace = findNextRace();
+    console.log('Next race found:', nextRace);
+
+    setNextRaceCircuitId(nextRace.id); // 다음 레이스 서킷 ID 저장
+
+    console.log('Setting panel for next race');
+    setPanelModule('next-race');
+    setPanelData({
+      grandPrix: nextRace.grandPrix,
+      name: nextRace.name,
+      location: nextRace.location,
+      raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
+    });
+    
     // Show next race panel after 1 second to ensure map is loaded
     const timer = setTimeout(() => {
       console.log('Next race timer fired', { 
@@ -337,22 +355,6 @@ export default function Home() {
       });
       
       if (!mapRef.current || hasUserInteracted) return;
-
-      const nextRace = findNextRace();
-      console.log('Next race found:', nextRace);
-
-      setNextRaceCircuitId(nextRace.id); // 다음 레이스 서킷 ID 저장
-
-      console.log('Setting panel for next race');
-      setPanelModule('next-race');
-      setPanelData({
-        grandPrix: nextRace.grandPrix,
-        name: nextRace.name,
-        location: nextRace.location,
-        raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
-      });
-      setPanelOpen(true);
-      console.log('Panel should be open now');
 
       // Add a small delay for flyTo to ensure map is ready
       const flyToTimer = setTimeout(() => {
@@ -398,7 +400,8 @@ export default function Home() {
         setDrsDetectionCount={setDrsDetectionCount}
         resetPanelStates={() => {
           setPanelOpen(false);
-          setPanelMinimized(false);
+          // 사용자가 명시적으로 닫을 때만 최소화 상태 리셋
+          // setPanelMinimized(false);
         }}
         setIsTrackAnimating={setIsTrackAnimating}
       />
@@ -530,7 +533,7 @@ export default function Home() {
                     } : undefined
                   });
                   setPanelOpen(true);
-                  setPanelMinimized(false);
+                  // 최소화 상태 유지 - setPanelMinimized(false) 제거
                 }}
               >
                 {/* 날짜 표시 */}
