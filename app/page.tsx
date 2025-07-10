@@ -445,7 +445,14 @@ export default function Home() {
       </div>
 
       {/* 하단 서킷 타임라인 바 - 플로팅 디자인 */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[80%] max-w-5xl z-50"
+      <div 
+        className="fixed bottom-6 z-50 transition-all duration-300 ease-out hidden sm:block"
+        style={{
+          left: panelOpen ? '24px' : '50%',
+          right: panelOpen ? (panelMinimized ? 'calc(320px + 44px)' : 'calc(420px + 44px)') : 'auto',
+          transform: panelOpen ? 'none' : 'translateX(-50%)',
+          width: panelOpen ? 'auto' : 'min(80%, 1280px)'
+        }}
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}

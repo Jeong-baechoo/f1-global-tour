@@ -8,7 +8,7 @@ import { TeamHQPanel } from './TeamHQPanel';
 import { CircuitDetailPanel } from './CircuitDetailPanel';
 import { CircuitDetailData, NextRaceData, TeamHQData } from '../types';
 import { usePanelDrag, SHEET_HEIGHTS } from '../hooks/usePanelDrag';
-import { Minus, X, Building2, Route, Calendar, Clock3, Flag, Factory } from 'lucide-react';
+import { Minus, X, Building2, Route, Calendar, Clock3, Flag, Factory, Maximize2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 
@@ -157,102 +157,99 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
   return (
     <>
       {/* Desktop Panel - Slide from right with enhanced design */}
-      {!isMobile && (
+      {!isMobile && isOpen && (
         <div
-          className={`fixed transform transition-all duration-300 ease-out ${
-            isOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible'
-          }`}
+          className={`fixed transform transition-all duration-300 ease-out translate-x-0 opacity-100 visible`}
           style={{
-            width: '420px',
+            width: isMinimized ? '320px' : '420px',
+            height: isMinimized ? 'auto' : undefined,
             zIndex: 9999,
-            pointerEvents: isOpen ? 'auto' : 'none',
-            right: '60px',
-            top: '60px',
-            bottom: '60px',
-            filter: isOpen ? 'drop-shadow(0 30px 60px rgba(0,0,0,0.3)) drop-shadow(0 15px 30px rgba(0,0,0,0.2))' : 'none'
+            pointerEvents: 'auto',
+            right: '20px',
+            top: isMinimized ? 'auto' : '60px',
+            bottom: isMinimized ? '24px' : '24px',
+            filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.3)) drop-shadow(0 15px 30px rgba(0,0,0,0.2))'
           }}
         >
-        <div className="h-full rounded-3xl overflow-hidden relative border shadow-2xl"
+        <div className={`h-full rounded-3xl overflow-hidden relative border shadow-2xl ${isMinimized ? 'cursor-pointer' : ''}`}
              style={{
                backgroundColor: 'rgba(18, 18, 20, 0.65)',
                backdropFilter: 'blur(20px) saturate(180%)',
                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
                borderColor: 'rgba(255, 255, 255, 0.08)',
                boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05)'
-             }}>
+             }}
+             onClick={isMinimized ? onMinimize : undefined}
+          >
           {/* Inner container */}
           <div className="relative h-full rounded-3xl overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF1801]/10 rounded-full blur-3xl transform translate-x-32 -translate-y-32" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#FF1801]/5 rounded-full blur-2xl transform -translate-x-24 translate-y-24" />
 
-            {/* Dynamic Header with smooth gradient */}
-            <div className="relative px-6 py-4">
+            {/* Inner padding wrapper */}
+            <div className="h-full p-4 flex flex-col">
+              {/* Enhanced Dynamic Header with better spacing */}
+              <div className={`relative px-6 pt-4 ${isMinimized ? 'pb-4' : 'pb-6'}`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Dynamic accent indicator */}
-                  <div 
-                    className="w-1 h-5 rounded-full transition-all duration-300" 
-                    style={{ backgroundColor: headerConfig.accentColor }}
-                  />
-                  <div className="flex items-center gap-2.5">
-                    {/* Dynamic icon */}
+                <div className="flex items-start gap-4">
+                  {/* Dynamic icon with better presence */}
+                  <div className="mt-1">
                     <HeaderIcon 
-                      className="w-4 h-4 text-white/50 transition-all duration-300" 
+                      className="w-5 h-5 text-white/60 transition-all duration-300" 
                       strokeWidth={1.5}
+                      style={{ color: headerConfig.accentColor }}
                     />
-                    <div>
-                      <h3 className="text-xs font-medium text-white/70 uppercase tracking-[0.2em] transition-all duration-300">
-                        {headerConfig.title}
-                      </h3>
-                      {headerConfig.subtitle && (
-                        <p className="text-[10px] text-white/40 mt-0.5 truncate max-w-[200px]">
-                          {headerConfig.subtitle}
-                        </p>
-                      )}
-                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1">
+                      {headerConfig.title}
+                    </h3>
+                    {headerConfig.subtitle && (
+                      <p className="text-lg font-medium text-white/70">
+                        {headerConfig.subtitle}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={onMinimize}
-                    className="p-1.5 rounded-lg hover:bg-white/[0.05] transition-all duration-300 group"
+                    className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
                   >
-                    <Minus 
-                      className="w-3 h-3 text-white/30 group-hover:text-white/60 transition-colors" 
-                      strokeWidth={1.5}
-                    />
+                    {isMinimized ? (
+                      <Maximize2 
+                        className="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 transition-colors" 
+                        strokeWidth={1.5}
+                      />
+                    ) : (
+                      <Minus 
+                        className="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 transition-colors" 
+                        strokeWidth={1.5}
+                      />
+                    )}
                   </button>
                   <button
                     onClick={onCloseAction}
-                    className="p-1.5 rounded-lg hover:bg-white/[0.05] transition-all duration-300 group"
+                    className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
                   >
                     <X 
-                      className="w-3 h-3 text-white/30 group-hover:text-[#FF1801] transition-colors" 
+                      className="w-3.5 h-3.5 text-white/30 group-hover:text-[#FF1801] transition-colors" 
                       strokeWidth={1.5}
                     />
                   </button>
                 </div>
               </div>
-              {/* Subtle gradient separator instead of hard border */}
-              <div 
-                className="absolute bottom-0 left-0 right-0 h-px"
-                style={{
-                  background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.1) 80%, transparent)'
-                }}
-              />
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden">
-              <div className="p-6">
-                {module ? renderContent() : null}
               </div>
-            </div>
 
-            {/* Footer gradient fade */}
-            <div className="absolute bottom-0 left-0 right-0">
-              <div className="h-16 bg-gradient-to-t from-[rgba(20,20,22,0.9)] to-transparent pointer-events-none" />
+              {/* Content with inner padding */}
+              {!isMinimized && (
+                <div className="flex-1 overflow-y-auto overflow-x-hidden rounded-2xl bg-black/10">
+                  <div className="p-6">
+                    {module ? renderContent() : null}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

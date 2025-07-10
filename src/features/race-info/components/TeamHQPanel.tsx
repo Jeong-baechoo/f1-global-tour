@@ -130,12 +130,12 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
         // 배경을 투명하게 하여 부모의 프로스티드 글라스 효과가 보이도록
         <div className="flex flex-col h-full w-full bg-transparent">
             {/* --- HEADER --- */}
-            <div className="p-6 space-y-4 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+            <div className="px-6 pt-2 pb-6 space-y-4 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
                 <div className="relative">
                     <div className="absolute -top-6 -left-6 w-32 h-32 opacity-10"
                          style={{ background: `radial-gradient(ellipse at center, ${teamColor} 0%, transparent 70%)` }} />
                     <div className="relative">
-                        <h1 className="text-6xl font-black tracking-tighter mb-3 leading-none" style={{ color: teamColor }}>
+                        <h1 className="text-6xl font-black tracking-tight mb-3 leading-none" style={{ color: teamColor }}>
                             {getText(data.name, language)}
                         </h1>
                         <div className="flex items-center gap-4 mb-3">
@@ -160,7 +160,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                         <h3 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-3">
                             {language === 'ko' ? '2025 드라이버' : '2025 DRIVERS'}
                         </h3>
-                        <div className="flex flex-col gap-3">
+                        <div className="grid grid-cols-2 gap-3">
                             {data.drivers2025.map((driver, index) => (
                                 <DriverCard key={index} driver={driver} teamColors={data.colors} />
                             ))}
@@ -179,7 +179,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
             </div>
 
             {/* --- DYNAMIC CONTENT AREA --- */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 py-6 overflow-y-auto">
                 {activeTab === 'car' && data.car2025 && (
                     <div className="animate-fade-in">
                         <div className="relative -mx-6 px-6 mb-6">
@@ -232,16 +232,16 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                 </div>
                                 
                                 <div className="relative z-10">
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-2">
-                                            <p className="text-[80px] font-black leading-none" style={{color: teamColor}}>
+                                    <div className="flex items-center justify-between gap-8">
+                                        <div className="space-y-3">
+                                            <p className="text-[100px] lg:text-[120px] font-black leading-none" style={{color: teamColor}}>
                                                 P{data.id === 'mclaren' ? '1' : data.id === 'ferrari' ? '2' : data.id === 'red-bull' ? '3' : data.id === 'mercedes' ? '4' : '5'}
                                             </p>
-                                            <p className="text-sm text-white/60 uppercase tracking-[0.3em]">Constructor Standing</p>
+                                            <p className="text-sm text-white/60 uppercase tracking-[0.3em] font-medium">Constructor Standing</p>
                                         </div>
-                                        <div className="text-right space-y-1">
-                                            <p className="text-6xl font-black text-white leading-none">{data.championships2025.totalPoints}</p>
-                                            <p className="text-sm text-white/60 uppercase tracking-[0.3em]">Total Points</p>
+                                        <div className="text-right space-y-2 flex-shrink-0">
+                                            <p className="text-7xl lg:text-8xl font-black text-white leading-none">{data.championships2025.totalPoints}</p>
+                                            <p className="text-sm text-white/60 uppercase tracking-[0.3em] font-medium">Total Points</p>
                                         </div>
                                     </div>
                                 </div>
@@ -259,10 +259,10 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                 <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                      style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
                                 <div className="relative z-10 text-center">
-                                    <p className="text-4xl font-black mb-1" style={{ color: teamColor }}>
+                                    <p className="text-5xl lg:text-6xl font-black mb-2" style={{ color: teamColor }}>
                                         {data.id === 'mclaren' ? '8' : data.id === 'ferrari' ? '6' : data.id === 'red-bull' ? '7' : '2'}
                                     </p>
-                                    <p className="text-xs text-white/50 uppercase tracking-wider">Wins</p>
+                                    <p className="text-xs text-white/50 uppercase tracking-wider font-medium">Wins</p>
                                 </div>
                             </div>
                             <div className="relative p-5 rounded-xl border transform hover:scale-[1.05] transition-all duration-300 group"
@@ -274,10 +274,10 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                 <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                      style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
                                 <div className="relative z-10 text-center">
-                                    <p className="text-4xl font-black mb-1" style={{ color: teamColor }}>
+                                    <p className="text-5xl lg:text-6xl font-black mb-2" style={{ color: teamColor }}>
                                         {data.id === 'mclaren' ? '21' : data.id === 'ferrari' ? '20' : data.id === 'red-bull' ? '19' : '18'}
                                     </p>
-                                    <p className="text-xs text-white/50 uppercase tracking-wider">Podiums</p>
+                                    <p className="text-xs text-white/50 uppercase tracking-wider font-medium">Podiums</p>
                                 </div>
                             </div>
                             <div className="relative p-5 rounded-xl border transform hover:scale-[1.05] transition-all duration-300 group"
@@ -289,10 +289,10 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                 <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                      style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
                                 <div className="relative z-10 text-center">
-                                    <p className="text-4xl font-black mb-1" style={{ color: teamColor }}>
+                                    <p className="text-5xl lg:text-6xl font-black mb-2" style={{ color: teamColor }}>
                                         {data.id === 'mclaren' ? '5' : data.id === 'ferrari' ? '4' : data.id === 'red-bull' ? '3' : '1'}
                                     </p>
-                                    <p className="text-xs text-white/50 uppercase tracking-wider">Poles</p>
+                                    <p className="text-xs text-white/50 uppercase tracking-wider font-medium">Poles</p>
                                 </div>
                             </div>
                         </div>
