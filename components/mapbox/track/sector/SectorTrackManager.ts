@@ -88,7 +88,7 @@ export class SectorTrackManager {
       // Create sector layers
       const sectorLayers: string[] = [];
       
-      sectorData.forEach((sector) => {
+      sectorData.forEach((sector: any) => {
         const sectorTrackId = `${trackId}-sector-${sector.sector}`;
         const color = sector.color; // Use the color from sector data
 

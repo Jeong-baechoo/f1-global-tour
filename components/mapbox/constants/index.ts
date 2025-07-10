@@ -5,5 +5,4 @@ export * from './dimensions';
 export * from './map';
 export * from './zoom';
 export * from './ui';
-export * from './track';
 export * from './circuit';

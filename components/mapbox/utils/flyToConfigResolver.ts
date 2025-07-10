@@ -116,6 +116,6 @@ export class FlyToConfigResolver {
    * 새로운 서킷 설정을 런타임에 추가 (확장성)
    */
   static addCircuitConfig(circuitId: string, config: ResponsiveFlyToConfig): void {
-    CIRCUIT_CAMERA_CONFIGS[circuitId] = config;
+    CIRCUIT_CAMERA_CONFIGS[circuitId] = config as any;
   }
 }

@@ -33,6 +33,15 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { language } = useLanguage();
 
+  // Debug log
+  React.useEffect(() => {
+    console.log('📍 CircuitInfoPanel Debug:', {
+      isVisible,
+      isCollapsed,
+      isExpanded,
+      currentCircuit: currentCircuit?.name
+    });
+  }, [isVisible, isCollapsed, isExpanded, currentCircuit]);
 
   if (!isVisible) return null;
 

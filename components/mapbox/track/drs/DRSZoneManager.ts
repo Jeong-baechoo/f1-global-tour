@@ -2,7 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { getDRSZones } from '../../utils/data/trackDataLoader';
 import { interpolateCoordinates } from '../../utils/animations/globeAnimation';
 import { trackStateManager } from '../state/TrackStateManager';
-import { trackManager } from '../../utils/map/trackManager';
+import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
 import { DRS_COLORS, OPACITY } from '../../constants';
 
 // DRS zone index definitions
@@ -156,7 +156,9 @@ export class DRSZoneManager {
           }
         });
         
-        trackManager.addTrackLayer(trackId.replace('-track', ''), layerId);
+        const circuitId = trackId.replace('-track', '');
+        circuitTrackManager.addTrackLayer(circuitId, layerId);
+        circuitTrackManager.addTrackSource(circuitId, `${drsId}-symbols`);
         currentDrsLayers.push(layerId);
       }
     });
@@ -167,6 +169,11 @@ export class DRSZoneManager {
         trackId,
         drsLayers: currentDrsLayers
       });
+      
+      // Register DRS elements with CircuitTrackManager
+      const circuitId = trackId.replace('-track', '');
+      const drsIds = drsZones.map((_, index) => `${trackId}-drs-${index}`);
+      circuitTrackManager.addDRSElements(circuitId, drsIds);
     }
   }
 

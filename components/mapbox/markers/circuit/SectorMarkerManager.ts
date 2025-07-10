@@ -7,7 +7,7 @@ import {
   type DRSDetectionInfo,
   type SpeedTrapInfo
 } from '../../utils/data/dynamicSectorLoader';
-import { trackManager } from '../../utils/map/trackManager';
+import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
 
 interface SectorMarkerManagerProps {
   map: mapboxgl.Map;
@@ -69,17 +69,37 @@ export const getSpeedTrapData = async (circuitId: string): Promise<SpeedTrapInfo
   }
 };
 
+// DRS 정보 토글 상태를 저장하는 전역 변수
+let drsInfoEnabled = false;
+
+// DRS 토글 상태를 업데이트하는 리스너
+window.addEventListener('toggleDRSZones', ((event: CustomEvent) => {
+  drsInfoEnabled = event.detail.enabled;
+}) as EventListener);
+
 // DRS Detection과 Speed Trap 마커들을 애니메이션 완료 후 표시하는 함수
-export const showDRSAndSpeedTrapMarkers = () => {
-  // DRS Detection 마커 표시
-  window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
-    detail: { enabled: true } 
-  }));
+export const showDRSAndSpeedTrapMarkers = (map?: mapboxgl.Map) => {
+  // Check zoom level before showing markers
+  if (map) {
+    const currentZoom = map.getZoom();
+    if (currentZoom < 10) {
+      console.log('⚠️ Preventing DRS/Speed Trap marker visibility at low zoom:', currentZoom);
+      return;
+    }
+  }
   
-  // Speed Trap 마커 표시
-  window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', { 
-    detail: { enabled: true } 
-  }));
+  // DRS 정보가 활성화되어 있을 때만 마커 표시
+  if (drsInfoEnabled) {
+    // DRS Detection 마커 표시
+    window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
+      detail: { enabled: true } 
+    }));
+    
+    // Speed Trap 마커 표시
+    window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', { 
+      detail: { enabled: true } 
+    }));
+  }
 };
 
 // 순차적으로 섹터 마커를 표시하는 함수
@@ -111,11 +131,18 @@ export const addSectorMarkersProgressively = async ({
     markers.push({ marker, sector, visible: false });
   });
   
-  // trackManager에 섹터 마커들 등록
-  trackManager.addSectorMarkers(circuitId, markers.map(m => m.marker));
+  // circuitTrackManager에 섹터 마커들 등록
+  circuitTrackManager.addSectorMarkers(circuitId, markers.map(m => m.marker));
   
   // 마커 표시/숨김 제어 함수 (토글용)
   const toggleVisibility = (visible: boolean) => {
+    // Check zoom level before showing markers
+    const currentZoom = map.getZoom();
+    if (visible && currentZoom < 10) {
+      console.log('⚠️ Preventing sector marker visibility at low zoom:', currentZoom);
+      return;
+    }
+    
     markers.forEach(({ marker }) => {
       const element = marker.getElement();
       element.style.display = visible ? 'flex' : 'none';
@@ -127,7 +154,7 @@ export const addSectorMarkersProgressively = async ({
   // 전역 이벤트 리스너 등록 - showSectorMarker (개별 마커 표시용)
   const showEventHandler = (event: CustomEvent) => {
     const { sectorId } = event.detail;
-    showSectorMarker(markers, sectorId);
+    showSectorMarker(markers, sectorId, map);
   };
   
   // 전역 이벤트 리스너 등록 - toggleSectorMarkers (전체 토글용)
@@ -151,7 +178,8 @@ export const addSectorMarkersProgressively = async ({
 // 특정 섹터 마커를 표시하는 함수
 export const showSectorMarker = (
   markers: { marker: mapboxgl.Marker; sector: SectorInfo; visible: boolean }[],
-  sectorId: string
+  sectorId: string,
+  map?: mapboxgl.Map
 ) => {
   const markerData = markers.find(m => {
     // ID로 비교
@@ -168,6 +196,15 @@ export const showSectorMarker = (
   });
   
   if (markerData && !markerData.visible) {
+    // Check zoom level if map is provided
+    if (map) {
+      const currentZoom = map.getZoom();
+      if (currentZoom < 10) {
+        console.log('⚠️ Preventing individual sector marker visibility at low zoom:', currentZoom);
+        return;
+      }
+    }
+    
     const element = markerData.marker.getElement();
     
     // 마커 표시 준비 (여전히 투명한 상태)
@@ -617,8 +654,8 @@ export const addDRSDetectionMarkers = async ({ map, circuitId }: SectorMarkerMan
     markers.push({ marker, element });
   });
 
-  // trackManager에 DRS Detection 마커들 등록
-  trackManager.addDRSDetectionMarkers(circuitId, markers.map(m => m.marker));
+  // circuitTrackManager에 DRS Detection 마커들 등록
+  circuitTrackManager.addDRSDetectionMarkers(circuitId, markers.map(m => m.marker));
 
   // 마커 표시/숨김 제어 함수
   const toggleVisibility = (visible: boolean) => {
@@ -663,8 +700,8 @@ export const addSpeedTrapMarkers = async ({ map, circuitId }: SectorMarkerManage
     markers.push({ marker, element });
   });
 
-  // trackManager에 Speed Trap 마커들 등록
-  trackManager.addSpeedTrapMarkers(circuitId, markers.map(m => m.marker));
+  // circuitTrackManager에 Speed Trap 마커들 등록
+  circuitTrackManager.addSpeedTrapMarkers(circuitId, markers.map(m => m.marker));
 
   // 마커 표시/숨김 제어 함수
   const toggleVisibility = (visible: boolean) => {

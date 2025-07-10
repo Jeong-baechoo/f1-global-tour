@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import InteractivePanel from '@/components/InteractivePanel';
+import { InteractivePanel } from '@/src/features/race-info/components/InteractivePanel';
 import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/components/mapbox/types';
 import LanguageSelector from '@/components/ui/LanguageSelector';
@@ -11,9 +11,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/types/panel';
 
-// Dynamic import to avoid SSR issues with Mapbox
+// Dynamic imports for better code splitting
 const Map = dynamic(
-  () => import('@/components/mapbox/Map'),
+  () => import('@/src/features/map/components/Map'),
   {
     ssr: false,
     loading: () => (
@@ -46,6 +46,13 @@ export default function Home() {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
   const [nextRaceCircuitId, setNextRaceCircuitId] = useState<string | null>(null);
+  
+  // Circuit 관련 상태
+  const [isCircuitView, setIsCircuitView] = useState(false);
+  const [currentCircuit, setCurrentCircuit] = useState<any>(null);
+  const [drsZoneCount, setDrsZoneCount] = useState(0);
+  const [drsDetectionCount, setDrsDetectionCount] = useState(0);
+  const [isTrackAnimating, setIsTrackAnimating] = useState(false);
 
   // 드래그 스크롤을 위한 상태
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -84,6 +91,8 @@ export default function Home() {
   }, []);
 
   const handleMarkerClick = useCallback((item: PanelData) => {
+    console.log('🎯 handleMarkerClick called with:', item);
+    console.log('Current panel state:', { panelOpen, panelModule, panelData });
     if (!item.type) return;
     
     // 초기 포커싱 중단
@@ -96,6 +105,8 @@ export default function Home() {
     const currentModule = item.type === 'team' ? 'team-hq' : 'circuit-detail';
     const isSameMarker = panelData?.id === item.id && panelModule === currentModule;
     const shouldToggle = panelOpen && isSameMarker && !languageChangedFlag;
+    
+    console.log('Panel state:', { panelOpen, currentModule, shouldToggle });
     
     // 언어 변경 플래그 리셋
     if (languageChangedFlag) {
@@ -113,6 +124,12 @@ export default function Home() {
       scrollToCircuit(item.id);
     }
 
+    // 팀 클릭 시 팀 본부로 이동
+    if (item.type === 'team' && item.id && mapRef.current) {
+      mapRef.current.flyToTeam(item.id);
+    }
+
+
     // 토글 로직
     if (shouldToggle) {
       if (panelMinimized) {
@@ -121,6 +138,7 @@ export default function Home() {
         setPanelOpen(false);
       }
     } else {
+      console.log('Opening panel with module:', currentModule);
       setPanelOpen(true);
       setPanelMinimized(false);
     }
@@ -138,6 +156,16 @@ export default function Home() {
   useEffect(() => {
     setLanguageChangedFlag(true);
   }, [language]);
+
+  // 패널 상태 디버깅
+  useEffect(() => {
+    console.log('🔴 Panel state changed:', { 
+      panelOpen, 
+      panelModule, 
+      panelData: panelData ? { type: panelData.type, id: panelData.id } : null,
+      timestamp: new Date().toISOString()
+    });
+  }, [panelOpen, panelModule, panelData]);
 
   const handleExploreCircuit = () => {
     if (!nextRaceCircuitId) return;
@@ -303,12 +331,19 @@ export default function Home() {
 
     // Show next race panel after 1 second to ensure map is loaded
     const timer = setTimeout(() => {
+      console.log('Next race timer fired', { 
+        hasMapRef: !!mapRef.current, 
+        hasUserInteracted 
+      });
+      
       if (!mapRef.current || hasUserInteracted) return;
 
       const nextRace = findNextRace();
+      console.log('Next race found:', nextRace);
 
       setNextRaceCircuitId(nextRace.id); // 다음 레이스 서킷 ID 저장
 
+      console.log('Setting panel for next race');
       setPanelModule('next-race');
       setPanelData({
         grandPrix: nextRace.grandPrix,
@@ -317,6 +352,7 @@ export default function Home() {
         raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
       });
       setPanelOpen(true);
+      console.log('Panel should be open now');
 
       // Add a small delay for flyTo to ensure map is ready
       const flyToTimer = setTimeout(() => {
@@ -339,13 +375,32 @@ export default function Home() {
   }, [hasUserInteracted]);
 
   return (
-    <main className="relative w-full h-screen overflow-hidden">
-      {/* 전체 화면 지도 */}
-      <Map
+    <>
+      <main className="relative w-full h-screen overflow-hidden">
+        {/* 전체 화면 지도 */}
+        <Map
         ref={mapRef}
         onMarkerClick={handleMarkerClick}
         onCinematicModeChange={setIsCinematicMode}
         onUserInteraction={handleUserInteraction}
+        // Circuit 관련 props
+        isCircuitView={isCircuitView}
+        currentCircuit={currentCircuit}
+        drsZoneCount={drsZoneCount}
+        drsDetectionCount={drsDetectionCount}
+        onCircuitSelect={(circuit) => {
+          setCurrentCircuit(circuit);
+          scrollToCircuit(circuit.id);
+        }}
+        setIsCircuitView={setIsCircuitView}
+        setCurrentCircuit={setCurrentCircuit}
+        setDrsZoneCount={setDrsZoneCount}
+        setDrsDetectionCount={setDrsDetectionCount}
+        resetPanelStates={() => {
+          setPanelOpen(false);
+          setPanelMinimized(false);
+        }}
+        setIsTrackAnimating={setIsTrackAnimating}
       />
 
       {/* F1 로고 - 모바일 */}
@@ -380,6 +435,7 @@ export default function Home() {
         />
       </div>
 
+
       {/* 언어 선택 버튼 - 데스크탑 */}
       <div className="hidden sm:block absolute bottom-32 left-6 z-10">
         <LanguageSelector
@@ -388,24 +444,31 @@ export default function Home() {
         />
       </div>
 
-      {/* 하단 서킷 타임라인 바 */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 z-50"
+      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[80%] max-w-5xl z-50"
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 그라데이션 배경 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
-
-        {/* 가운데 70% 영역 컨테이너 */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-20">
+        <div className="relative rounded-3xl shadow-2xl p-1.5 transition-shadow duration-300"
+             style={{
+               backgroundColor: 'rgba(20, 20, 22, 0.75)',
+               backdropFilter: 'blur(12px)',
+               WebkitBackdropFilter: 'blur(12px)',
+               border: '1px solid rgba(255, 255, 255, 0.1)',
+               filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.3))'
+             }}>
           {/* 서킷 이름 스크롤 컨테이너 */}
           <div
             ref={scrollRef}
-            className={`absolute inset-0 overflow-x-auto overflow-y-hidden scrollbar-hide fade-edges ${
+            className={`overflow-x-auto overflow-y-hidden scrollbar-hide rounded-2xl ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
+            style={{
+              maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)'
+            }}
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
@@ -423,12 +486,12 @@ export default function Home() {
               handleTouchEnd();
             }}
           >
-            <div className="flex items-center gap-12 px-32 py-4 whitespace-nowrap">
+            <div className="flex items-center gap-8 px-12 py-3 whitespace-nowrap">
               {circuitsData.circuits.map((circuit) => (
               <div
                 key={circuit.id}
                 data-circuit-id={circuit.id}
-                className="flex flex-col items-center cursor-pointer select-none group"
+                className="flex flex-col items-center cursor-pointer select-none group px-4 py-2 rounded-lg hover:bg-white/[0.05] transition-all duration-300"
                 onClick={(e) => {
                   // 드래그 중이 아닐 때만 클릭 이벤트 처리
                   if (isDragging) {
@@ -464,7 +527,7 @@ export default function Home() {
                 }}
               >
                 {/* 날짜 표시 */}
-                <span className="text-white/70 text-sm font-bold mb-1 group-hover:text-white/90 transition-colors">
+                <span className="text-[#C0C0C0]/80 text-xs font-medium mb-1 group-hover:text-white/90 transition-colors">
                   {circuit.raceDate2025 ? (() => {
                     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
                     const date = new Date(circuit.raceDate2025 + 'T00:00:00Z');
@@ -472,7 +535,7 @@ export default function Home() {
                   })() : 'TBD'}
                 </span>
                 {/* Grand Prix 이름 */}
-                <span className="text-white text-2xl font-black uppercase tracking-tight group-hover:text-white transition-colors pb-4 drop-shadow-lg" style={{ fontFamily: 'Oswald, sans-serif' }}>
+                <span className="text-white/90 text-lg font-bold uppercase tracking-tight group-hover:text-white transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
                   {getText(circuit.grandPrix, language)}
                 </span>
               </div>
@@ -482,10 +545,16 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Interactive Panel */}
+      </main>
+
+
+      {/* Interactive Panel - Outside of main to avoid overflow clipping */}
       <InteractivePanel
         isOpen={panelOpen}
-        onCloseAction={() => setPanelOpen(false)}
+        onCloseAction={() => {
+          console.log('Panel close action');
+          setPanelOpen(false);
+        }}
         onMinimize={() => setPanelMinimized(!panelMinimized)}
         isMinimized={panelMinimized}
         module={panelModule}
@@ -500,6 +569,6 @@ export default function Home() {
           }
         }}
       />
-    </main>
+    </>
   );
 }

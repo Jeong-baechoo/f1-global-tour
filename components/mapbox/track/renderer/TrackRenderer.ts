@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { interpolateCoordinates } from '../../utils/animations/globeAnimation';
 import { ANIMATION_CONFIG, TRACK_LINE_WIDTHS, OPACITY, BLUR, ZOOM_THRESHOLDS } from '../../constants';
-import { trackManager } from '../../utils/map/trackManager';
+import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
 import { trackStateManager } from '../state/TrackStateManager';
 import { DRSZoneManager } from '../drs/DRSZoneManager';
 import { DRSAnimationController } from '../animation/DRSAnimationController';
@@ -53,6 +53,9 @@ export class TrackRenderer {
 
     const delay = animationDelay || 0;
 
+    // Register track with CircuitTrackManager
+    circuitTrackManager.registerTrack(circuitId, trackId);
+
     setTimeout(async () => {
       const smoothCoordinates = interpolateCoordinates(coordinates);
       const trackCoordinates = coordinates;
@@ -84,7 +87,7 @@ export class TrackRenderer {
           type: 'geojson',
           data: geoJSON
         });
-        trackManager.addTrackSource(circuitId, trackId);
+        circuitTrackManager.addTrackSource(circuitId, trackId);
       }
 
       // Add track layers
@@ -176,7 +179,7 @@ export class TrackRenderer {
           ]
         }
       });
-      trackManager.addTrackLayer(circuitId, `${trackId}-outline`);
+      circuitTrackManager.addTrackLayer(circuitId, `${trackId}-outline`);
     }
 
     // Main track layer
@@ -210,7 +213,7 @@ export class TrackRenderer {
           ]
         }
       });
-      trackManager.addTrackLayer(circuitId, `${trackId}-main`);
+      circuitTrackManager.addTrackLayer(circuitId, `${trackId}-main`);
     }
   }
 
@@ -268,12 +271,16 @@ export class TrackRenderer {
             // 1. The sector index is between previous and current index (inclusive)
             // 2. Or we've just reached exactly the sector index
             if (sectorIdx >= previousIndex && sectorIdx <= currentIndex) {
-              // Dispatch event to show sector marker
-              const sectorId = sector.id || sector.name;
-              
-              window.dispatchEvent(new CustomEvent('showSectorMarker', {
-                detail: { sectorId: sectorId }
-              }));
+              // Only show sector markers if zoom level is high enough
+              const currentZoom = map.getZoom();
+              if (currentZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
+                // Dispatch event to show sector marker
+                const sectorId = sector.id || sector.name;
+                
+                window.dispatchEvent(new CustomEvent('showSectorMarker', {
+                  detail: { sectorId: sectorId }
+                }));
+              }
 
               passedSectors.add(sectorKey);
               
@@ -293,7 +300,7 @@ export class TrackRenderer {
       if (currentZoom < ZOOM_THRESHOLDS.TRACK_VISIBLE) {
         // Remove track if zoom is too low
         const circuitId = trackId.replace('-track', '');
-        trackManager.removeTrack(circuitId);
+        circuitTrackManager.removeTrack(circuitId);
         return; // Stop animation
       }
 

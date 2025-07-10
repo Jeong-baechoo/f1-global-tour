@@ -490,6 +490,26 @@ export class ElevationTrackManager {
   }
 
   /**
+   * Show 3D elevation track
+   */
+  static show3DElevationTrack(
+    trackId: string,
+    map: mapboxgl.Map
+  ): void {
+    this.toggle3DElevationTrack(map, trackId, true);
+  }
+
+  /**
+   * Hide 3D elevation track
+   */
+  static hide3DElevationTrack(
+    trackId: string,
+    map: mapboxgl.Map
+  ): void {
+    this.toggle3DElevationTrack(map, trackId, false);
+  }
+
+  /**
    * Remove 3D elevation track completely
    */
   static remove3DElevationTrack(
