@@ -52,11 +52,12 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
       <div className="fixed left-4 top-1/3 transform -translate-y-1/2 transition-all duration-300 ease-in-out z-50">
         <button
           onClick={() => setIsCollapsed(false)}
-          className="w-12 h-12 flex items-center justify-center text-white bg-blue-600/90 hover:bg-blue-500/90 rounded-lg shadow-2xl border-2 border-blue-400/50 transition-all duration-200"
+          className="w-12 h-12 flex items-center justify-center text-white bg-red-600/90 rounded-lg shadow-2xl border-2 border-red-400/50"
           aria-label="Show circuit info panel"
         >
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"></div>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
@@ -65,28 +66,28 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
 
   return (
     <div className={`fixed left-4 top-1/3 transform -translate-y-1/2 transition-all duration-300 ease-in-out z-50 ${
-      isExpanded ? 'w-80' : 'w-20'
+      isExpanded ? 'w-80' : 'w-12'
     }`}>
       {/* 토글 버튼 - 더 눈에 띄게 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-20 h-20 flex items-center justify-center text-white rounded-xl transition-all duration-200 shadow-2xl border-2 ${
+        className={`w-12 h-12 flex items-center justify-center text-white rounded-lg shadow-2xl border-2 ${
           isExpanded 
-            ? 'bg-blue-600/90 border-blue-400/50 hover:bg-blue-500/90' 
-            : 'bg-red-600/90 border-red-400/50 hover:bg-red-500/90 animate-pulse'
+            ? 'bg-blue-600/90 border-blue-400/50' 
+            : 'bg-red-600/90 border-red-400/50'
         }`}
         aria-label={isExpanded ? 'Close circuit info panel' : 'Open circuit info panel'}
       >
         {!isExpanded && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"></div>
         )}
         <svg 
-          className={`w-10 h-10 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-6 h-6 ${isExpanded ? 'rotate-180' : ''}`}
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
@@ -94,7 +95,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
       {isExpanded && (
         <div className="absolute top-0 left-0 w-80 bg-black/90 backdrop-blur-sm rounded-lg border-2 border-white/30 shadow-2xl">
           {/* 빈 공간 (버튼 자리) */}
-          <div className="w-20 h-20"></div>
+          <div className="w-12 h-12"></div>
           
           {/* 패널 콘텐츠 */}
           <div className="p-4 pt-0">
