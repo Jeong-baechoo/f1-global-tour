@@ -17,20 +17,31 @@ npm run lint      # Run ESLint
 
 ## Architecture & Key Components
 
-### Map Implementation (components/Map.tsx)
-The core visualization component that:
-- Initializes Mapbox GL with satellite-v9 style for optimal performance
-- Implements auto-rotating globe animation when idle
-- Handles marker interactions with flyTo animations
-- Currently displays Red Bull Racing HQ and Nürburgring circuit
-- Uses cleanup functions to prevent memory leaks
+### Map Implementation (Feature-based Architecture)
+The project has been refactored to use a feature-based architecture:
 
-Performance optimizations include:
+#### Core Map Components (src/features/map/)
+- `components/Map.tsx`: Main map component that orchestrates all features
+- `components/MapCanvas.tsx`: Core Mapbox GL instance management
+- `components/MapContainer.tsx`: Layout wrapper for map and controls
+- `services/MapService.ts`: Centralized map operations service
+- `store/`: Zustand store for map state management
+
+#### Feature Modules
+- `src/features/teams/`: Team markers and related functionality
+- `src/features/circuits/`: Circuit markers and track rendering
+- `src/features/race-info/`: Interactive panels and race information
+
+#### Shared Map Utilities (components/mapbox/)
+- Track rendering and animations
+- Marker management utilities
+- Map constants and configurations
+
+Performance optimizations:
 - GPU acceleration via `translateZ(0)` 
 - Reduced tile cache size (50)
-- Disabled anti-aliasing and fade animations
-- Single track layer instead of multiple layers
-- Event listener cleanup on unmount
+- CircuitTrackManager for zoom-based visibility control
+- Event delegation and cleanup patterns
 
 ### Data Structure
 - `data/teams.json`: 10 F1 teams with headquarters locations, colors, principals
@@ -38,10 +49,11 @@ Performance optimizations include:
 - `data/nurburgring-track.json`: Track coordinates for animation
 
 ### Current Implementation Status
-- ✅ Red Bull Racing marker with custom styling
-- ✅ Nürburgring with animated track drawing
-- ⚠️ Other teams/circuits data exists but not rendered
-- ⚠️ MapContainer component exists but unused
+- ✅ All 10 F1 teams with custom markers and styling
+- ✅ All 24 circuits with animated track drawing
+- ✅ Dynamic sector markers, DRS zones, and elevation
+- ✅ Zoom-based visibility management
+- ✅ Feature-based architecture fully implemented
 
 ## Performance Considerations
 
@@ -61,15 +73,16 @@ Requires Mapbox access token:
 ## Common Tasks
 
 ### Adding New Team Markers
-1. Team data already exists in `data/teams.json`
-2. Follow Red Bull marker pattern in Map.tsx (lines 126-248)
-3. Create custom marker element with team branding
-4. Add to markers ref array for cleanup
+1. Team data exists in `data/teams.json`
+2. Markers are created via `src/features/teams/hooks/useTeamMarkers.tsx`
+3. Styling configuration in `components/mapbox/markers/team/teamMarkerConfig.ts`
+4. Automatic cleanup handled by MarkerService
 
 ### Adding Circuit Markers
-1. Circuit data in `data/circuits.json` 
-2. Currently only Nürburgring is implemented (lines 251-519)
-3. For track animations, create GeoJSON coordinate arrays like `nurburgring-track.json`
+1. Circuit data in `data/circuits.json`
+2. Markers created via `src/features/circuits/hooks/useCircuitMarkers.tsx`
+3. Track data in `data/circuits/[circuit-id]/[circuit-id]-track.geojson`
+4. CircuitTrackManager handles zoom-based visibility
 
 ### Modifying Map Behavior
 - Globe rotation: Adjust `secondsPerRevolution` (currently 180)
