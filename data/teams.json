@@ -32,6 +32,8 @@
       "championships2025": {
         "totalPoints": 162,
         "raceResults": [
+          { "race": "British GP", "points": 10 },
+          { "race": "Austrian GP", "points": 8 },
           { "race": "Canada", "points": 18 },
           { "race": "Spain", "points": 1 },
           { "race": "Monaco", "points": 12 },
@@ -77,6 +79,8 @@
       "championships2025": {
         "totalPoints": 183,
         "raceResults": [
+          { "race": "British GP", "points": 8 },
+          { "race": "Austrian GP", "points": 12 },
           { "race": "Canada", "points": 18 },
           { "race": "Spain", "points": 23 },
           { "race": "Monaco", "points": 28 },
@@ -122,6 +126,8 @@
       "championships2025": {
         "totalPoints": 199,
         "raceResults": [
+          { "race": "British GP", "points": 18 },
+          { "race": "Austrian GP", "points": 15 },
           { "race": "Canada", "points": 40 },
           { "race": "Spain", "points": 12 },
           { "race": "Monaco", "points": 0 },
@@ -165,8 +171,10 @@
       "foundingYear": 1963,
       "description": "One of F1's most successful teams, McLaren has won 12 drivers' championships and 8 constructors' championships, with a rich history of innovation and racing excellence.",
       "championships2025": {
-        "totalPoints": 243,
+        "totalPoints": 374,
         "raceResults": [
+          { "race": "British GP", "points": 44 },
+          { "race": "Austrian GP", "points": 35 },
           { "race": "Canada", "points": 12 },
           { "race": "Spain", "points": 43 },
           { "race": "Monaco", "points": 40 },
@@ -361,15 +369,15 @@
       }
     },
     {
-      "id": "alfa-romeo",
+      "id": "sauber",
       "name": {
-        "en": "Alfa Romeo",
-        "ko": "알파 로메오"
+        "en": "Sauber",
+        "ko": "자우버"
       },
-      "fullName": "Stake F1 Team Kick Sauber",
+      "fullName": "Stake F1 Team KICK Sauber",
       "colors": {
-        "primary": "#57a316",
-        "secondary": "#00FF00"
+        "primary": "#52E252",
+        "secondary": "#000000"
       },
       "headquarters": {
         "city": {
@@ -387,11 +395,13 @@
         "en": "Alessandro Alunni Bravi",
         "ko": "알레산드로 알루니 브라비"
       },
-      "foundingYear": 2019,
-      "description": "Operating from the former Sauber facilities, Alfa Romeo returned to F1 as a constructor in 2019, bringing Italian racing heritage combined with Swiss engineering precision.",
+      "foundingYear": 1993,
+      "description": "The Swiss-based Sauber team, now operating as Stake F1 Team KICK Sauber, will become the Audi factory team from 2026. Known for developing young talent and Swiss precision engineering.",
       "championships2025": {
-        "totalPoints": 20,
+        "totalPoints": 35,
         "raceResults": [
+          { "race": "British GP", "points": 15 },
+          { "race": "Austrian GP", "points": 0 },
           { "race": "Canada", "points": 1 },
           { "race": "Spain", "points": 2 },
           { "race": "Monaco", "points": 4 },

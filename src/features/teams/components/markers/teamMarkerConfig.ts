@@ -284,15 +284,15 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     },
   },
 
-  'alfa-romeo': {
-    teamId: 'alfa-romeo',
+  'sauber': {
+    teamId: 'sauber',
     style: {
       className: 'sauber-marker',
       logoUrl: '/team-logos/2023_Stake_F1_Team_Kick_Sauber_logo.png',
-      backgroundColor: '#57a316',
-      borderColor: '#3d7010',
-      shadowColor: 'rgba(87,163,22,0.4)',
-      shadowColorHover: 'rgba(87,163,22,0.6)',
+      backgroundColor: '#52E252',
+      borderColor: '#32A332',
+      shadowColor: 'rgba(82,226,82,0.4)',
+      shadowColorHover: 'rgba(82,226,82,0.6)',
     },
     drivers2025: [
       {

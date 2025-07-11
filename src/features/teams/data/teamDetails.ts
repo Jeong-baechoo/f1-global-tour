@@ -183,8 +183,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
     }
   },
 
-  'alfa-romeo': {
-    teamId: 'alfa-romeo',
+  'sauber': {
+    teamId: 'sauber',
     drivers2025: [
       {
         name: "Nico Hulkenberg",

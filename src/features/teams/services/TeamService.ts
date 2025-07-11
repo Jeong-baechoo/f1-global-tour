@@ -93,7 +93,7 @@ export class TeamService {
       'alpine': { primary: '#0090FF', secondary: '#FF87BC' },
       'williams': { primary: '#005AFF', secondary: '#000000' },
       'alphatauri': { primary: '#2B4562', secondary: '#FFFFFF' },
-      'alfa-romeo': { primary: '#900000', secondary: '#FFFFFF' },
+      'sauber': { primary: '#52E252', secondary: '#000000' },
       'haas': { primary: '#FFFFFF', secondary: '#FF0000' },
     };
     

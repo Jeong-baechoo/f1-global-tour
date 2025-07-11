@@ -74,7 +74,6 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
   const [isMobile, setIsMobile] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
-
   const {
     sheetRef,
     sheetState,
@@ -95,7 +94,6 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
 
   // Zustand 스토어와 동기화
   useEffect(() => {
@@ -146,7 +144,6 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
     }
   };
 
-
   // Get header configuration
   const headerConfig = getHeaderConfig(module, data || null, language);
   const HeaderIcon = headerConfig.icon;
@@ -159,10 +156,10 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
       {/* Desktop Panel - Slide from right with enhanced design */}
       {!isMobile && isOpen && (
         <div
-          className={`fixed transform transition-all duration-300 ease-out translate-x-0 opacity-100 visible`}
+          className="fixed transform transition-all duration-300 ease-out translate-x-0 opacity-100 visible"
           style={{
             width: isMinimized ? '320px' : '420px',
-            height: isMinimized ? 'auto' : undefined,
+            height: isMinimized ? '102px' : undefined,
             zIndex: 9999,
             pointerEvents: 'auto',
             right: '20px',
@@ -171,89 +168,121 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
             filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.3)) drop-shadow(0 15px 30px rgba(0,0,0,0.2))'
           }}
         >
-        <div className={`h-full rounded-3xl overflow-hidden relative border shadow-2xl ${isMinimized ? 'cursor-pointer' : ''}`}
-             style={{
-               backgroundColor: 'rgba(18, 18, 20, 0.65)',
-               backdropFilter: 'blur(20px) saturate(180%)',
-               WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-               borderColor: 'rgba(255, 255, 255, 0.08)',
-               boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05)'
-             }}
-             onClick={isMinimized ? onMinimize : undefined}
+          <div 
+            className={`h-full rounded-3xl overflow-hidden relative border shadow-2xl ${isMinimized ? 'cursor-pointer' : ''}`}
+            style={{
+              backgroundColor: 'rgba(18, 18, 20, 0.65)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+              boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05)'
+            }}
+            onClick={isMinimized ? onMinimize : undefined}
           >
-          {/* Inner container */}
-          <div className="relative h-full rounded-3xl overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF1801]/10 rounded-full blur-3xl transform translate-x-32 -translate-y-32" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#FF1801]/5 rounded-full blur-2xl transform -translate-x-24 translate-y-24" />
+            {/* Inner container */}
+            <div className="relative h-full rounded-3xl overflow-hidden">
+              {/* Inner padding wrapper */}
+              <div className={`h-full ${isMinimized ? 'px-6 py-0 flex items-center justify-between' : 'p-4 flex flex-col'}`}>
+                {isMinimized ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <HeaderIcon
+                          className="text-white/60 transition-all duration-300 w-5 h-5"
+                          strokeWidth={1.5}
+                          style={{ color: headerConfig.accentColor }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white/90 uppercase tracking-wider text-xs leading-tight mb-1">
+                          {headerConfig.title}
+                        </h3>
+                        {headerConfig.subtitle && (
+                          <p className="font-medium text-white/70 truncate text-lg leading-tight">
+                            {headerConfig.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        onClick={onMinimize}
+                        className="p-1.5 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
+                      >
+                        <Maximize2
+                          className="text-white/30 group-hover:text-white/60 transition-colors w-4 h-4"
+                          strokeWidth={1.5}
+                        />
+                      </button>
+                      <button
+                        onClick={onCloseAction}
+                        className="p-1.5 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
+                      >
+                        <X
+                          className="text-white/30 group-hover:text-[#FF1801] transition-colors w-4 h-4"
+                          strokeWidth={1.5}
+                        />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative px-6 pt-3 pb-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="mt-1">
+                            <HeaderIcon
+                              className="text-white/60 transition-all duration-300 w-5 h-5"
+                              strokeWidth={1.5}
+                              style={{ color: headerConfig.accentColor }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-white/90 uppercase tracking-wider text-sm mb-1">
+                              {headerConfig.title}
+                            </h3>
+                            {headerConfig.subtitle && (
+                              <p className="font-medium text-white/70 text-lg">
+                                {headerConfig.subtitle}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={onMinimize}
+                            className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
+                          >
+                            <Minus
+                              className="text-white/30 group-hover:text-white/60 transition-colors w-3.5 h-3.5"
+                              strokeWidth={1.5}
+                            />
+                          </button>
+                          <button
+                            onClick={onCloseAction}
+                            className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
+                          >
+                            <X
+                              className="text-white/30 group-hover:text-[#FF1801] transition-colors w-3.5 h-3.5"
+                              strokeWidth={1.5}
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
 
-            {/* Inner padding wrapper */}
-            <div className="h-full p-4 flex flex-col">
-              {/* Enhanced Dynamic Header with better spacing */}
-              <div className={`relative px-6 pt-4 ${isMinimized ? 'pb-4' : 'pb-6'}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-start gap-4">
-                  {/* Dynamic icon with better presence */}
-                  <div className="mt-1">
-                    <HeaderIcon 
-                      className="w-5 h-5 text-white/60 transition-all duration-300" 
-                      strokeWidth={1.5}
-                      style={{ color: headerConfig.accentColor }}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1">
-                      {headerConfig.title}
-                    </h3>
-                    {headerConfig.subtitle && (
-                      <p className="text-lg font-medium text-white/70">
-                        {headerConfig.subtitle}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={onMinimize}
-                    className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
-                  >
-                    {isMinimized ? (
-                      <Maximize2 
-                        className="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 transition-colors" 
-                        strokeWidth={1.5}
-                      />
-                    ) : (
-                      <Minus 
-                        className="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 transition-colors" 
-                        strokeWidth={1.5}
-                      />
-                    )}
-                  </button>
-                  <button
-                    onClick={onCloseAction}
-                    className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 group"
-                  >
-                    <X 
-                      className="w-3.5 h-3.5 text-white/30 group-hover:text-[#FF1801] transition-colors" 
-                      strokeWidth={1.5}
-                    />
-                  </button>
-                </div>
+                    {/* Content with inner padding */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden rounded-2xl bg-black/10">
+                      <div className="p-6">
+                        {module ? renderContent() : null}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              </div>
-
-              {/* Content with inner padding */}
-              {!isMinimized && (
-                <div className="flex-1 overflow-y-auto overflow-x-hidden rounded-2xl bg-black/10">
-                  <div className="p-6">
-                    {module ? renderContent() : null}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Mobile Panel - Interactive Bottom Sheet */}
@@ -268,114 +297,113 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
                     sheetState === 'full' ? `${SHEET_HEIGHTS.full}vh` : '0',
           }}
         >
-        {/* Drag Handle Area */}
-        <div className="sticky top-0 z-10 bg-[#1A1A1A]/60 backdrop-blur-sm rounded-t-2xl">
-          {/* Handle Bar - 드래그 영역을 핸들 바로만 제한 */}
-          <div
-            className="handle-bar flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
-            style={{ touchAction: 'none' }}
-            onTouchStart={handleDragStart}
-            onTouchEnd={handleDragEnd}
-            onMouseDown={handleDragStart}
-            onMouseMove={isDragging ? handleDragMove : undefined}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
-          >
-            <div className="w-12 h-1 bg-[#FF1801]/30 rounded-full" />
-          </div>
+          {/* Drag Handle Area */}
+          <div className="sticky top-0 z-10 bg-[#1A1A1A]/60 backdrop-blur-sm rounded-t-2xl">
+            {/* Handle Bar - 드래그 영역을 핸들 바로만 제한 */}
+            <div
+              className="handle-bar flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
+              style={{ touchAction: 'none' }}
+              onTouchStart={handleDragStart}
+              onTouchEnd={handleDragEnd}
+              onMouseDown={handleDragStart}
+              onMouseMove={isDragging ? handleDragMove : undefined}
+              onMouseUp={handleDragEnd}
+              onMouseLeave={handleDragEnd}
+            >
+              <div className="w-12 h-1 bg-[#FF1801]/30 rounded-full" />
+            </div>
 
-          {/* Peek State - Dynamic title */}
-          {sheetState === 'peek' && (
-            <div className="px-4 pb-3" onClick={handleHeaderClick}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-1 h-5 rounded-full" 
-                    style={{ backgroundColor: headerConfig.accentColor }}
-                  />
-                  <div className="flex items-center gap-2">
-                    <HeaderIcon className="w-4 h-4 text-white/50" strokeWidth={1.5} />
-                    <div>
-                      <h3 className="text-white font-semibold text-base">
-                        {headerConfig.subtitle || headerConfig.title}
-                      </h3>
-                      {module === 'circuit-detail' && data?.location && (
-                        <p className="text-xs text-[#C0C0C0] mt-0.5">
-                          {typeof data.location === 'string' ? data.location :
-                           typeof data.location === 'object' && 'city' in data.location ?
-                           `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
-                           ''}
-                        </p>
-                      )}
+            {/* Peek State - Dynamic title */}
+            {sheetState === 'peek' && (
+              <div className="px-4 pb-3" onClick={handleHeaderClick}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-1 h-5 rounded-full" 
+                      style={{ backgroundColor: headerConfig.accentColor }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <HeaderIcon className="w-4 h-4 text-white/50" strokeWidth={1.5} />
+                      <div>
+                        <h3 className="text-white font-semibold text-base">
+                          {headerConfig.subtitle || headerConfig.title}
+                        </h3>
+                        {module === 'circuit-detail' && data?.location && (
+                          <p className="text-xs text-[#C0C0C0] mt-0.5">
+                            {typeof data.location === 'string' ? data.location :
+                             typeof data.location === 'object' && 'city' in data.location ?
+                             `${getText(data.location.city, language)}, ${getText(data.location.country, language)}` :
+                             ''}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCloseAction();
+                    }}
+                    className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-1.5 -mr-1.5"
+                  >
+                    <X className="w-4 h-4" strokeWidth={1.5} />
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCloseAction();
-                  }}
-                  className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-1.5 -mr-1.5"
-                >
-                  <X className="w-4 h-4" strokeWidth={1.5} />
-                </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Half/Full State - Dynamic header */}
-          {(sheetState === 'half' || sheetState === 'full') && (
-            <div className="px-4 pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div 
-                    className="w-1 h-5 rounded-full transition-all duration-300" 
-                    style={{ backgroundColor: headerConfig.accentColor }}
-                  />
-                  <HeaderIcon 
-                    className="w-4 h-4 text-white/50" 
-                    strokeWidth={1.5}
-                  />
-                  <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
-                    {headerConfig.title}
-                  </span>
+            {/* Half/Full State - Dynamic header */}
+            {(sheetState === 'half' || sheetState === 'full') && (
+              <div className="px-4 pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div 
+                      className="w-1 h-5 rounded-full transition-all duration-300" 
+                      style={{ backgroundColor: headerConfig.accentColor }}
+                    />
+                    <HeaderIcon 
+                      className="w-4 h-4 text-white/50" 
+                      strokeWidth={1.5}
+                    />
+                    <span className="text-xs text-[#C0C0C0] uppercase tracking-widest">
+                      {headerConfig.title}
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCloseAction();
+                    }}
+                    className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-1.5 -mr-1.5"
+                  >
+                    <X className="w-4 h-4" strokeWidth={1.5} />
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCloseAction();
+                {/* Gradient separator */}
+                <div 
+                  className="absolute bottom-0 left-4 right-4 h-px"
+                  style={{
+                    background: 'linear-gradient(to right, transparent, rgba(255,26,1,0.2) 20%, rgba(255,26,1,0.2) 80%, transparent)'
                   }}
-                  className="text-[#C0C0C0] hover:text-[#FF1801] transition-colors p-1.5 -mr-1.5"
-                >
-                  <X className="w-4 h-4" strokeWidth={1.5} />
-                </button>
+                />
               </div>
-              {/* Gradient separator */}
-              <div 
-                className="absolute bottom-0 left-4 right-4 h-px"
-                style={{
-                  background: 'linear-gradient(to right, transparent, rgba(255,26,1,0.2) 20%, rgba(255,26,1,0.2) 80%, transparent)'
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Content Area */}
-        {(sheetState === 'half' || sheetState === 'full') && (
-          <div
-            className="flex-1 overflow-y-auto overflow-x-hidden px-4 scrollbar-hide"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain'
-            }}
-          >
-            <div className="pt-4" style={{ paddingBottom: '60px' }}>
-              {renderContent()}
-            </div>
+            )}
           </div>
-        )}
 
+          {/* Content Area */}
+          {(sheetState === 'half' || sheetState === 'full') && (
+            <div
+              className="flex-1 overflow-y-auto overflow-x-hidden px-4 scrollbar-hide"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehavior: 'contain'
+              }}
+            >
+              <div className="pt-4" style={{ paddingBottom: '60px' }}>
+                {renderContent()}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
