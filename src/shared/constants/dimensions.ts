@@ -80,7 +80,4 @@ export const BREAKPOINTS = {
   DESKTOP: 1024
 } as const;
 
-// Helper function to check if mobile
-export const isMobile = (): boolean => {
-  return typeof window !== 'undefined' && window.innerWidth < BREAKPOINTS.MOBILE;
-};
+// isMobile function removed - use the one from @/src/shared/utils/viewport instead

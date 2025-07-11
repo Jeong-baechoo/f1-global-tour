@@ -14,7 +14,7 @@ export interface PanelData {
   type?: string;
   id?: string;
   name?: string | LocalizedText;
-  principal?: string;
+  principal?: string | LocalizedText;
   location?: string | Location | { city: LocalizedText; country: LocalizedText; lat: number; lng: number };
   headquarters?: Location;
   color?: string;
@@ -36,6 +36,13 @@ export interface PanelData {
     time: string;
     driver: string;
     year: string;
+  };
+  schedule?: {
+    practice1?: string;
+    practice2?: string;
+    practice3?: string;
+    qualifying?: string;
+    race?: string;
   };
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { MAP_CONFIG, LAYERS_TO_REMOVE, SKY_LAYER_CONFIG, FOG_CONFIG } from '../constants';
-import { createGlobeSpinner } from '../utils/animations/globeAnimation';
+import { MAP_CONFIG, LAYERS_TO_REMOVE, SKY_LAYER_CONFIG, FOG_CONFIG } from '@/src/shared/constants';
+import { createGlobeSpinner } from '@/src/shared/utils/animations/globeAnimation';
 
 interface UseMapInitializationProps {
   mapContainer: React.RefObject<HTMLDivElement | null>;
@@ -12,7 +12,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
   const map = useRef<mapboxgl.Map | null>(null);
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
   const onUserInteractionRef = useRef(onUserInteraction);
-  
+
   // onUserInteraction 함수가 변경되면 ref 업데이트
   useEffect(() => {
     onUserInteractionRef.current = onUserInteraction;
@@ -51,9 +51,9 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
     };
 
     // 이벤트 리스너 등록
-    type MapEvent = 'dragstart' | 'pitchstart' | 'rotatestart' | 'zoomstart' | 'touchstart' | 
+    type MapEvent = 'dragstart' | 'pitchstart' | 'rotatestart' | 'zoomstart' | 'touchstart' |
                     'dragend' | 'pitchend' | 'rotateend' | 'zoomend' | 'touchend';
-    
+
     const interactionEvents: MapEvent[] = ['dragstart', 'pitchstart', 'rotatestart', 'zoomstart', 'touchstart'];
     const stopEvents: MapEvent[] = ['dragend', 'pitchend', 'rotateend', 'zoomend', 'touchend'];
 
@@ -84,7 +84,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
         let touchStartBearing = 0;
         let isPinching = false;
         let isRotating = false;
-        
+
         // 두 손가락 터치 거리 계산
         const getTouchDistance = (touches: TouchList) => {
           if (touches.length < 2) return 0;
@@ -92,7 +92,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
           const dy = touches[1].clientY - touches[0].clientY;
           return Math.sqrt(dx * dx + dy * dy);
         };
-        
+
         // touchstart 이벤트 리스너
         const handleTouchStart = (e: TouchEvent) => {
           if (e.touches.length === 2) {
@@ -103,7 +103,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
             isRotating = false;
           }
         };
-        
+
         // touchmove 이벤트 리스너
         const handleTouchMove = (e: TouchEvent) => {
           if (e.touches.length === 2 && touchStartTime > 0) {
@@ -111,7 +111,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
             const distanceChange = Math.abs(currentDistance - touchStartDistance);
             const currentBearing = map.current!.getBearing();
             const bearingChange = Math.abs(currentBearing - touchStartBearing);
-            
+
             // 거리 변화가 더 크면 핀치 줌으로 판단
             if (distanceChange > 20 && !isRotating) {
               isPinching = true;
@@ -126,7 +126,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
             }
           }
         };
-        
+
         // touchend 이벤트 리스너
         const handleTouchEnd = (e: TouchEvent) => {
           if (e.touches.length < 2) {
@@ -135,13 +135,13 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
             isRotating = false;
           }
         };
-        
+
         // 이벤트 리스너 등록
         const mapContainer = map.current.getContainer();
         mapContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
         mapContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
         mapContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
-        
+
         // Cleanup 함수에 이벤트 리스너 제거 추가
         map.current.on('remove', () => {
           mapContainer.removeEventListener('touchstart', handleTouchStart);
@@ -168,7 +168,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
           tileSize: 512,
           maxzoom: 14
         });
-        
+
         // Terrain을 매우 작은 exaggeration으로 설정 - 시각적으로 평평하면서 고도 데이터 접근 가능
         map.current.setTerrain({
           source: 'mapbox-dem',
@@ -180,7 +180,7 @@ export function useMapInitialization({ mapContainer, onUserInteraction }: UseMap
       const style = map.current.getStyle();
       if (style && style.layers) {
         style.layers.forEach(layer => {
-          if (LAYERS_TO_REMOVE.some(pattern => layer.id.includes(pattern))) {
+          if (LAYERS_TO_REMOVE.some((pattern: string) => layer.id.includes(pattern))) {
             try {
               map.current!.removeLayer(layer.id);
             } catch {

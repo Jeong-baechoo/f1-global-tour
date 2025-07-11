@@ -1,4 +1,4 @@
-import { Driver, Car } from '../../types';
+import { Driver, Car } from '@/src/shared/types/common';
 
 // 팀 마커 시각적 설정
 export interface TeamMarkerStyle {

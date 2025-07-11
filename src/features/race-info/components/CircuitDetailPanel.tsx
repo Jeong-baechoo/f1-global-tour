@@ -17,7 +17,6 @@ interface CircuitDetailPanelProps {
 export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
   data,
   isMobile,
-  sheetState: _sheetState,
   isCinematicMode = false,
   onToggleCinematicMode
 }) => {

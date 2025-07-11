@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
+import type { Circuit } from '@/src/shared/types/circuit';
 
 interface CircuitInfoPanelProps {
   isVisible: boolean;
@@ -12,7 +13,7 @@ interface CircuitInfoPanelProps {
   sectorInfoEnabled: boolean;
   drsInfoEnabled: boolean;
   elevationEnabled: boolean;
-  currentCircuit?: any;
+  currentCircuit?: Circuit;
   drsZoneCount: number;
   drsDetectionCount: number;
 }

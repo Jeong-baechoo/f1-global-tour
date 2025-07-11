@@ -10,7 +10,7 @@ import { usePanelDrag, SHEET_HEIGHTS } from '../hooks/usePanelDrag';
 import { Minus, X, Building2, Route, Calendar, Flag, Maximize2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
-import type { PanelData } from '@/types/panel';
+import type { PanelData } from '../types';
 
 interface InteractivePanelProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const getHeaderConfig = (module: string | null, data: PanelData | null, language
       return {
         title: language === 'ko' ? '팀 본부' : 'TEAM HQ',
         icon: Building2,
-        accentColor: data?.colors?.primary || '#FF1801',
+        accentColor: data?.color || '#FF1801',
         subtitle: data?.name ? getText(data.name, language) : ''
       };
     case 'circuit-detail':
@@ -100,7 +100,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
   // Zustand 스토어와 동기화
   useEffect(() => {
     setPanelModule(module);
-    setPanelData(data);
+    setPanelData(data || null);
   }, [module, data, setPanelModule, setPanelData]);
 
   // 드래그 중일 때 글로벌 이벤트 리스너 추가
@@ -148,7 +148,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
 
 
   // Get header configuration
-  const headerConfig = getHeaderConfig(module, data, language);
+  const headerConfig = getHeaderConfig(module, data || null, language);
   const HeaderIcon = headerConfig.icon;
 
   // Early return if not mounted to prevent SSR issues

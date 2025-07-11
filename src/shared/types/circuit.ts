@@ -20,14 +20,8 @@ export interface Circuit {
   elevation?: Elevation;
 }
 
-// 서킷 관련 추가 타입들
-export interface CircuitMarkerData {
-  circuitId: string;
-  name: LocalizedText;
-  location: Location;
-  grandPrix: LocalizedText;
-  raceDate: string | null;
-}
+// 서킷 관련 추가 타입들 - 통합 마커 타입으로 대체됨
+// @deprecated Use CircuitMarkerData from '@/src/shared/types/marker' instead
 
 // 트랙 데이터
 export interface TrackData {

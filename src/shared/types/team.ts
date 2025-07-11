@@ -15,10 +15,5 @@ export interface Team {
   championships2025?: Championship;
 }
 
-// 팀 관련 추가 타입들
-export interface TeamMarkerData {
-  teamId: string;
-  name: LocalizedText;
-  location: Location;
-  color: string;
-}
+// 팀 관련 추가 타입들 - 통합 마커 타입으로 대체됨
+// @deprecated Use TeamMarkerData from '@/src/shared/types/marker' instead

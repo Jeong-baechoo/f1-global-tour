@@ -3,15 +3,17 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useMapStore } from '../store';
 import { MapControls } from './MapControls';
+import type { PanelData } from '@/src/features/race-info/types';
+import type { Circuit } from '@/src/features/circuits/types';
 
 interface MapContainerProps {
   children?: React.ReactNode;
-  onMarkerClick?: (item: any) => void;
+  onMarkerClick?: (item: PanelData) => void;
   onCinematicModeChange?: (enabled: boolean) => void;
   onUserInteraction?: () => void;
   // Circuit 관련 props
   isCircuitView?: boolean;
-  currentCircuit?: any;
+  currentCircuit?: Circuit | null;
   drsZoneCount?: number;
   drsDetectionCount?: number;
 }
@@ -22,7 +24,6 @@ interface MapContainerProps {
  */
 export const MapContainer: React.FC<MapContainerProps> = ({
   children,
-  onMarkerClick,
   onCinematicModeChange,
   onUserInteraction,
   isCircuitView = false,

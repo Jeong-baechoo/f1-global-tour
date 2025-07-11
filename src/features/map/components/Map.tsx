@@ -1,12 +1,12 @@
 'use client';
 
-import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useCallback } from 'react';
 import { MapContainer } from './MapContainer';
 import { MapCanvas } from './MapCanvas';
 import { MapAPI } from '@/src/shared/types';
 import { useMapStore } from '../store';
 import { useMapAnimation } from '../hooks/useMapAnimation';
-import { useMapInteraction } from '../hooks/useMapInteraction';
+import { useMapInteraction } from '@/src/features/map/hooks';
 import { useTeamMarkers } from '@/src/features/teams/hooks/useTeamMarkers';
 import { useTeams } from '@/src/features/teams/hooks/useTeams';
 import { useCircuitMarkers } from '@/src/features/circuits/hooks/useCircuitMarkers';
@@ -14,7 +14,7 @@ import { useCircuits } from '@/src/features/circuits/hooks/useCircuits';
 import { MarkerService } from '../services/MarkerService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Circuit } from '@/src/features/circuits/types';
-import type { PanelData } from '@/types/panel';
+import type { PanelData } from '@/src/features/race-info/types';
 
 interface MapProps {
   onMarkerClick?: (item: PanelData) => void;
@@ -25,9 +25,9 @@ interface MapProps {
   currentCircuit?: Circuit | null;
   drsZoneCount?: number;
   drsDetectionCount?: number;
-  onCircuitSelect?: (circuit: Circuit) => void;
+  onCircuitSelect?: (circuit: unknown) => void;
   setIsCircuitView?: (isCircuitView: boolean) => void;
-  setCurrentCircuit?: (circuit: Circuit | null) => void;
+  setCurrentCircuit?: (circuit: unknown) => void;
   setDrsZoneCount?: (count: number) => void;
   setDrsDetectionCount?: (count: number) => void;
   resetPanelStates?: () => void;
@@ -41,13 +41,24 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
   const { map, isMapLoaded } = useMapStore();
   const markerServiceRef = React.useRef<MarkerService | null>(null);
   const globeSpinnerRef = React.useRef<unknown>(null);
-  
+
+  // Destructure props to avoid exhaustive deps warnings
+  const { onMarkerClick } = props;
+
   // Get language from context
   const { language } = useLanguage();
-  
-  
+
+  // Memoized callbacks to prevent useEffect re-runs
+  const handleMapLoad = useCallback(() => {
+    console.log('Map loaded with MapCanvas');
+  }, []);
+
+  const handleGlobeSpinnerReady = useCallback((spinner: unknown) => {
+    globeSpinnerRef.current = spinner;
+  }, []);
+
   // 새로운 훅들 사용
-  const { flyToLocation, flyToCircuit, flyToTeam, resetView } = useMapAnimation({ 
+  const { flyToLocation, flyToCircuit, flyToTeam, resetView } = useMapAnimation({
     map: { current: map },
     globeSpinner: globeSpinnerRef,
     onCircuitSelect: props.onCircuitSelect,
@@ -58,20 +69,20 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
     resetPanelStates: props.resetPanelStates,
     setIsTrackAnimating: props.setIsTrackAnimating
   });
-  
-  const { 
-    getCurrentBounds, 
-    getCurrentZoom, 
+
+  const {
+    getCurrentBounds,
+    getCurrentZoom,
     getCurrentCenter,
-    toggleCinematicMode 
-  } = useMapInteraction({ 
+    toggleCinematicMode
+  } = useMapInteraction({
     map: { current: map }
   });
-  
+
   // Teams 모듈 훅
   const { teams } = useTeams();
   const { createTeamMarkers } = useTeamMarkers(map);
-  
+
   // Circuits 모듈 훅
   const { circuits } = useCircuits();
   const { createCircuitMarkers } = useCircuitMarkers(map);
@@ -83,23 +94,23 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       console.log('Skipping team markers creation - conditions not met');
       return;
     }
-    
+
     // MarkerService 인스턴스 생성
     if (!markerServiceRef.current) {
       markerServiceRef.current = new MarkerService();
       markerServiceRef.current.setMap(map);
     }
-    
+
     // 팀 마커 생성
     if (teams.length > 0) {
       console.log('Creating team markers for', teams.length, 'teams');
       createTeamMarkers(teams, {}, (panelData) => {
         console.log('Map received panel data:', panelData);
-        props.onMarkerClick?.(panelData);
-      }, language);
+        onMarkerClick?.(panelData);
+      });
     }
-  }, [map, isMapLoaded, teams, createTeamMarkers, props.onMarkerClick, language]);
-  
+  }, [map, isMapLoaded, teams, createTeamMarkers, onMarkerClick]);
+
   // Map 로드 시 서킷 마커 생성
   useEffect(() => {
     console.log('Circuit markers effect:', { map: !!map, isMapLoaded, circuitsLength: circuits.length });
@@ -107,12 +118,12 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       console.log('Skipping circuit markers creation - conditions not met');
       return;
     }
-    
+
     // 서킷 마커 생성
     if (circuits.length > 0) {
       console.log('Creating circuit markers for', circuits.length, 'circuits');
       createCircuitMarkers(circuits, {}, (circuit) => {
-        props.onMarkerClick?.({
+        onMarkerClick?.({
           type: 'circuit',
           id: circuit.id,
           name: circuit.name,
@@ -122,11 +133,15 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
           corners: circuit.corners,
           laps: circuit.laps,
           totalDistance: circuit.totalDistance,
-          lapRecord: circuit.lapRecord
+          lapRecord: circuit.lapRecord ? {
+            time: circuit.lapRecord.time,
+            driver: circuit.lapRecord.driver,
+            year: circuit.lapRecord.year.toString()
+          } : undefined
         });
       }, language);
     }
-  }, [map, isMapLoaded, circuits, createCircuitMarkers, props.onMarkerClick, language]);
+  }, [map, isMapLoaded, circuits, createCircuitMarkers, onMarkerClick, language]);
 
   // 기존 Map API를 새로운 훅으로 연결
   useImperativeHandle(ref, () => ({
@@ -152,7 +167,11 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       return map ? getCurrentZoom() : 0;
     },
     getCurrentCenter: () => {
-      return map ? getCurrentCenter() : null;
+      if (map) {
+        const center = getCurrentCenter();
+        return center ? [center[0], center[1]] : null;
+      }
+      return null;
     },
     resetView: () => {
       if (map) {
@@ -177,13 +196,9 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       drsZoneCount={props.drsZoneCount}
       drsDetectionCount={props.drsDetectionCount}
     >
-      <MapCanvas 
-        onLoad={(_mapInstance) => {
-          console.log('Map loaded with MapCanvas');
-        }}
-        onGlobeSpinnerReady={(spinner) => {
-          globeSpinnerRef.current = spinner;
-        }}
+      <MapCanvas
+        onLoad={handleMapLoad}
+        onGlobeSpinnerReady={handleGlobeSpinnerReady}
       />
     </MapContainer>
   );

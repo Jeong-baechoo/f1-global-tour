@@ -24,8 +24,8 @@ export interface Car {
 
 // 챔피언십 정보
 export interface Championship {
-  totalPoints?: number;
-  raceResults?: RaceResult[];
+  totalPoints: number;
+  raceResults: RaceResult[];
   constructors?: number;
   drivers?: number;
 }

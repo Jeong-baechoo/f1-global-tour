@@ -5,6 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import CinematicModeButton from '@/src/shared/components/ui/map/CinematicModeButton';
 import ZoomScrollbar from '@/src/shared/components/ui/map/ZoomScrollbar';
 import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
+import type { Circuit } from '@/src/features/circuits/types';
 
 interface MapControlsProps {
   map: mapboxgl.Map | null;
@@ -15,7 +16,7 @@ interface MapControlsProps {
   sectorInfoEnabled: boolean;
   drsInfoEnabled: boolean;
   elevationEnabled: boolean;
-  currentCircuit: any;
+  currentCircuit: Circuit | null;
   drsZoneCount: number;
   drsDetectionCount: number;
   onToggleSectorInfo: (enabled: boolean) => void;
@@ -52,7 +53,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
         sectorInfoEnabled={sectorInfoEnabled}
         drsInfoEnabled={drsInfoEnabled}
         elevationEnabled={elevationEnabled}
-        currentCircuit={currentCircuit}
+        currentCircuit={currentCircuit || undefined}
         drsZoneCount={drsZoneCount}
         drsDetectionCount={drsDetectionCount}
       />

@@ -1,8 +1,9 @@
 import mapboxgl from 'mapbox-gl';
-import { MarkerData } from '../../types';
-import { isMobile } from '../../utils/viewport';
-import type { Circuit } from '@/types/f1';
+import { isMobile } from '@/src/shared/utils/viewport';
+import type { Circuit } from '@/src/shared/types/circuit';
 import { getText, type Language } from '@/utils/i18n';
+import { CircuitMarkerData } from '@/src/shared/types/marker';
+import { circuitToMarkerData } from '@/src/shared/utils/markerDataConverters';
 
 // 실제 F1 서킷 코너 정보
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,7 +42,7 @@ interface CircuitMarkerProps {
   circuit: Circuit;
   isNextRace?: boolean;
   language?: Language;
-  onMarkerClick?: (item: MarkerData) => void;
+  onMarkerClick?: (item: CircuitMarkerData) => void;
   onMarkerCreated?: (marker: mapboxgl.Marker) => void;
 }
 
@@ -230,21 +231,7 @@ export const createCircuitMarker = ({
   // 클릭 이벤트
   if (onMarkerClick) {
     el.addEventListener('click', () => {
-      const markerData: MarkerData = {
-        type: 'circuit',
-        id: circuit.id,
-        name: circuit.name, // LocalizedText 객체를 그대로 전달
-        grandPrix: circuit.grandPrix, // LocalizedText 객체를 그대로 전달
-        length: circuit.length,
-        laps: circuit.laps,
-        corners: circuit.corners || 10,
-        totalDistance: circuit.laps && circuit.length ? Math.round((circuit.laps * circuit.length) * 10) / 10 : 0,
-        location: circuit.location, // LocalizedText 객체를 그대로 전달
-        lapRecord: circuit.lapRecord ? {
-          ...circuit.lapRecord,
-          year: circuit.lapRecord.year.toString()
-        } : undefined
-      };
+      const markerData: CircuitMarkerData = circuitToMarkerData(circuit);
       onMarkerClick(markerData);
     });
   }
@@ -259,27 +246,27 @@ export const createCircuitMarker = ({
   // 줌 레벨에 따른 라벨 표시/숨김 처리
   const updateLabelVisibility = () => {
     const zoom = map.getZoom();
-    
+
     if (zoom <= 5) {
       // 줌 5 이하: 라벨과 연결선 숨기기
       labelContainer.style.display = 'none';
       line.style.display = 'none';
-      
+
       // 컨테이너 크기 조정
       el.style.gap = '0';
     } else {
       // 줌 5 초과: 라벨과 연결선 표시
       labelContainer.style.display = 'flex';
       line.style.display = 'block';
-      
+
       // 컨테이너 gap 복원
       el.style.gap = '0';
     }
   };
-  
+
   // 초기 설정
   updateLabelVisibility();
-  
+
   // 줌 이벤트 리스너
   map.on('zoom', updateLabelVisibility);
 

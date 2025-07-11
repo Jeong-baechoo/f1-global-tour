@@ -11,6 +11,55 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
   const { setCircuitMarkers } = useCircuitStore();
   
   /**
+   * Update markers in store
+   */
+  const updateStoreMarkers = useCallback(() => {
+    const circuits = useCircuitStore.getState().circuits;
+    const markers = Array.from(markersRef.current.entries()).map(([circuitId, marker]) => {
+      const circuit = circuits.find(c => c.id === circuitId);
+      return {
+        id: `circuit-marker-${circuitId}`,
+        circuitId,
+        location: circuit ? circuit.location : {
+          lat: marker.getLngLat().lat,
+          lng: marker.getLngLat().lng,
+          city: { en: '', ko: '' },
+          country: { en: '', ko: '' }
+        },
+        marker,
+      };
+    });
+    
+    setCircuitMarkers(markers);
+  }, [setCircuitMarkers]);
+  
+  /**
+   * Remove a circuit marker
+   */
+  const removeCircuitMarker = useCallback((circuitId: string) => {
+    const marker = markersRef.current.get(circuitId);
+    if (marker) {
+      // Get element and cleanup event handlers
+      const el = marker.getElement();
+      if (el && map) {
+        const zoomHandler = (el as unknown as { _zoomHandler?: () => void })._zoomHandler;
+        const renderHandler = (el as unknown as { _renderHandler?: () => void })._renderHandler;
+        
+        if (zoomHandler) {
+          map.off('zoom', zoomHandler);
+        }
+        if (renderHandler) {
+          map.off('render', renderHandler);
+        }
+      }
+      
+      marker.remove();
+      markersRef.current.delete(circuitId);
+      updateStoreMarkers();
+    }
+  }, [map, updateStoreMarkers]);
+  
+  /**
    * Create a marker for a circuit
    */
   const createCircuitMarker = useCallback((
@@ -222,14 +271,14 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     map.on('render', renderHandler);
     
     // Store handlers for cleanup
-    (el as any)._zoomHandler = zoomHandler;
-    (el as any)._renderHandler = renderHandler;
+    (el as unknown as { _zoomHandler?: () => void; _renderHandler?: () => void })._zoomHandler = zoomHandler;
+    (el as unknown as { _zoomHandler?: () => void; _renderHandler?: () => void })._renderHandler = renderHandler;
     
     // Update store
     updateStoreMarkers();
     
     return marker;
-  }, [map]);
+  }, [map, updateStoreMarkers, removeCircuitMarker]);
   
   /**
    * Create markers for multiple circuits
@@ -253,32 +302,6 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
   }, [createCircuitMarker]);
   
   /**
-   * Remove a circuit marker
-   */
-  const removeCircuitMarker = useCallback((circuitId: string) => {
-    const marker = markersRef.current.get(circuitId);
-    if (marker) {
-      // Get element and cleanup event handlers
-      const el = marker.getElement();
-      if (el && map) {
-        const zoomHandler = (el as any)._zoomHandler;
-        const renderHandler = (el as any)._renderHandler;
-        
-        if (zoomHandler) {
-          map.off('zoom', zoomHandler);
-        }
-        if (renderHandler) {
-          map.off('render', renderHandler);
-        }
-      }
-      
-      marker.remove();
-      markersRef.current.delete(circuitId);
-      updateStoreMarkers();
-    }
-  }, [map]);
-  
-  /**
    * Remove all circuit markers
    */
   const removeAllCircuitMarkers = useCallback(() => {
@@ -286,8 +309,8 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
       // Get element and cleanup event handlers
       const el = marker.getElement();
       if (el && map) {
-        const zoomHandler = (el as any)._zoomHandler;
-        const renderHandler = (el as any)._renderHandler;
+        const zoomHandler = (el as unknown as { _zoomHandler?: () => void })._zoomHandler;
+        const renderHandler = (el as unknown as { _renderHandler?: () => void })._renderHandler;
         
         if (zoomHandler) {
           map.off('zoom', zoomHandler);
@@ -301,7 +324,7 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     });
     markersRef.current.clear();
     updateStoreMarkers();
-  }, [map]);
+  }, [map, updateStoreMarkers]);
   
   /**
    * Update a circuit marker
@@ -320,29 +343,6 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     // Update data attributes for CSS styling
     element.setAttribute('data-selected', String(isSelected));
   }, []);
-  
-  /**
-   * Update markers in store
-   */
-  const updateStoreMarkers = useCallback(() => {
-    const circuits = useCircuitStore.getState().circuits;
-    const markers = Array.from(markersRef.current.entries()).map(([circuitId, marker]) => {
-      const circuit = circuits.find(c => c.id === circuitId);
-      return {
-        id: `circuit-marker-${circuitId}`,
-        circuitId,
-        location: circuit ? circuit.location : {
-          lat: marker.getLngLat().lat,
-          lng: marker.getLngLat().lng,
-          city: { en: '', ko: '' },
-          country: { en: '', ko: '' }
-        },
-        marker,
-      };
-    });
-    
-    setCircuitMarkers(markers);
-  }, [setCircuitMarkers]);
   
   return {
     createCircuitMarker,

@@ -3,7 +3,7 @@ import teamsData from '@/data/teams.json';
 
 export class TeamService {
   private options: Required<TeamServiceOptions>;
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
+  private cache: Map<string, { data: Team[]; timestamp: number }> = new Map();
   
   constructor(options: TeamServiceOptions = {}) {
     this.options = {
@@ -51,9 +51,10 @@ export class TeamService {
    */
   async getUKTeams(): Promise<Team[]> {
     const teams = await this.getTeams();
-    return teams.filter(team => 
-      (team.headquarters.country as any).en === 'United Kingdom'
-    );
+    return teams.filter(team => {
+      const country = team.headquarters.country;
+      return typeof country === 'object' && country.en === 'United Kingdom';
+    });
   }
 
   /**
@@ -61,9 +62,10 @@ export class TeamService {
    */
   async getTeamsByCountry(country: string): Promise<Team[]> {
     const teams = await this.getTeams();
-    return teams.filter(team => 
-      (team.headquarters.country as any).en === country
-    );
+    return teams.filter(team => {
+      const teamCountry = team.headquarters.country;
+      return typeof teamCountry === 'object' && teamCountry.en === country;
+    });
   }
   
   /**
@@ -73,7 +75,7 @@ export class TeamService {
     const teams = await this.getTeams();
     return teams.filter(team => 
       team.championships2025 && 
-      team.championships2025.totalPoints > 0
+      (team.championships2025.totalPoints ?? 0) > 0
     );
   }
   
@@ -108,7 +110,7 @@ export class TeamService {
   /**
    * Get data from cache if valid
    */
-  private getFromCache(key: string): any | null {
+  private getFromCache(key: string): Team[] | null {
     const cached = this.cache.get(key);
     if (!cached) return null;
     
@@ -124,7 +126,7 @@ export class TeamService {
   /**
    * Set data in cache
    */
-  private setCache(key: string, data: any): void {
+  private setCache(key: string, data: Team[]): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),

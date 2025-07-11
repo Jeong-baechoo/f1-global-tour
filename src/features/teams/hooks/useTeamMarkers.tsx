@@ -2,19 +2,61 @@ import { useCallback, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Team, TeamMarkerOptions } from '../types';
 import { useTeamStore } from '../store/useTeamStore';
-import { type Language } from '@/utils/i18n';
 import { isMobile } from '@/src/shared/utils/viewport';
 import { getTeamMarkerConfig } from '../components/markers/teamMarkerConfig';
 import { ZOOM_THRESHOLDS, MARKER_DIMENSIONS } from '@/src/shared/constants';
 import { getTeamDetails } from '../data/teamDetails';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { getUKTeamAdjustedPosition } from '../components/markers/UKTeamLayout';
-import type { PanelData } from '@/types/panel';
+import type { PanelData } from '@/src/features/race-info/types';
 
 export const useTeamMarkers = (map: mapboxgl.Map | null) => {
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const { setTeamMarkers } = useTeamStore();
-  const { language: _contextLanguage } = useLanguage();
+  
+  /**
+   * Update markers in store
+   */
+  const updateStoreMarkers = useCallback(() => {
+    // Skip if map is null or markers ref is empty
+    if (!map || markersRef.current.size === 0) {
+      return;
+    }
+    
+    const teams = useTeamStore.getState().teams;
+    const markers = Array.from(markersRef.current.entries()).map(([teamId, marker]) => {
+      const team = teams.find(t => t.id === teamId);
+      return {
+        id: `team-marker-${teamId}`,
+        teamId,
+        location: team ? team.headquarters : {
+          lat: marker.getLngLat().lat,
+          lng: marker.getLngLat().lng,
+          city: { en: '', ko: '' },
+          country: { en: '', ko: '' }
+        },
+        marker,
+      };
+    });
+    
+    setTeamMarkers(markers);
+  }, [map, setTeamMarkers]);
+  
+  /**
+   * Remove a team marker
+   */
+  const removeTeamMarker = useCallback((teamId: string) => {
+    const marker = markersRef.current.get(teamId);
+    if (marker) {
+      // Get element and cleanup zoom handler
+      const el = marker.getElement();
+      if (el && (el as HTMLElement & { _zoomHandler?: () => void })._zoomHandler && map) {
+        map.off('zoom', (el as HTMLElement & { _zoomHandler: () => void })._zoomHandler);
+      }
+      
+      marker.remove();
+      markersRef.current.delete(teamId);
+    }
+  }, [map]);
   
   /**
    * Create a marker for a team
@@ -22,8 +64,7 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
   const createTeamMarker = useCallback((
     team: Team,
     options: TeamMarkerOptions = {},
-    onMarkerClick?: (panelData: PanelData) => void,
-    language: Language = 'en'
+    onMarkerClick?: (panelData: PanelData) => void
   ): mapboxgl.Marker | null => {
     if (!map) return null;
     
@@ -170,13 +211,10 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     map.on('zoom', zoomHandler);
     
     // Store zoom handler for cleanup
-    (el as unknown)._zoomHandler = zoomHandler;
-    
-    // Update store
-    updateStoreMarkers();
+    (el as HTMLDivElement & { _zoomHandler: () => void })._zoomHandler = zoomHandler;
     
     return marker;
-  }, [map]);
+  }, [map, removeTeamMarker]);
   
   /**
    * Create markers for multiple teams
@@ -184,47 +222,33 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
   const createTeamMarkers = useCallback((
     teams: Team[],
     options: TeamMarkerOptions = {},
-    onMarkerClick?: (panelData: PanelData) => void,
-    language: Language = 'en'
+    onMarkerClick?: (panelData: PanelData) => void
   ) => {
     teams.forEach(team => {
-      createTeamMarker(team, options, onMarkerClick, language);
+      createTeamMarker(team, options, onMarkerClick);
     });
-  }, [createTeamMarker]);
-  
-  /**
-   * Remove a team marker
-   */
-  const removeTeamMarker = useCallback((teamId: string) => {
-    const marker = markersRef.current.get(teamId);
-    if (marker) {
-      // Get element and cleanup zoom handler
-      const el = marker.getElement();
-      if (el && (el as unknown)._zoomHandler && map) {
-        map.off('zoom', (el as unknown)._zoomHandler);
-      }
-      
-      marker.remove();
-      markersRef.current.delete(teamId);
+    
+    // Update store after all markers are created (with delay to ensure markers are added to ref)
+    setTimeout(() => {
       updateStoreMarkers();
-    }
-  }, [map]);
+    }, 0);
+  }, [createTeamMarker, updateStoreMarkers]);
   
   /**
    * Remove all team markers
    */
   const removeAllTeamMarkers = useCallback(() => {
-    markersRef.current.forEach((marker, teamId) => {
+    markersRef.current.forEach((marker) => {
       // Get element and cleanup zoom handler
       const el = marker.getElement();
-      if (el && (el as unknown)._zoomHandler && map) {
-        map.off('zoom', (el as unknown)._zoomHandler);
+      if (el && (el as HTMLElement & { _zoomHandler?: () => void })._zoomHandler && map) {
+        map.off('zoom', (el as HTMLElement & { _zoomHandler: () => void })._zoomHandler);
       }
       marker.remove();
     });
     markersRef.current.clear();
     updateStoreMarkers();
-  }, [map]);
+  }, [map, updateStoreMarkers]);
   
   /**
    * Update a team marker
@@ -289,29 +313,6 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
       essential: true,
     });
   }, [map]);
-  
-  /**
-   * Update markers in store
-   */
-  const updateStoreMarkers = useCallback(() => {
-    const teams = useTeamStore.getState().teams;
-    const markers = Array.from(markersRef.current.entries()).map(([teamId, marker]) => {
-      const team = teams.find(t => t.id === teamId);
-      return {
-        id: `team-marker-${teamId}`,
-        teamId,
-        location: team ? team.headquarters : {
-          lat: marker.getLngLat().lat,
-          lng: marker.getLngLat().lng,
-          city: { en: '', ko: '' },
-          country: { en: '', ko: '' }
-        },
-        marker,
-      };
-    });
-    
-    setTeamMarkers(markers);
-  }, [setTeamMarkers]);
   
   return {
     createTeamMarker,

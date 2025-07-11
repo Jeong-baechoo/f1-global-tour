@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { ZOOM_LEVELS, PITCH_ANGLES, FOG_CONFIG, SKY_LAYER_CONFIG, LAYERS_TO_REMOVE } from '@/src/shared/constants';
+import { FOG_CONFIG, SKY_LAYER_CONFIG, LAYERS_TO_REMOVE } from '@/src/shared/constants';
 import { debounce } from '@/src/shared/utils/performance';
 
 export interface MapConfig {
@@ -267,7 +267,7 @@ export class MapService {
   /**
    * Fly to location
    */
-  public flyToLocation(coords: [number, number], options?: any): void {
+  public flyToLocation(coords: [number, number], options?: Record<string, unknown>): void {
     if (!this.map) {
       console.error('Map is not initialized');
       return;

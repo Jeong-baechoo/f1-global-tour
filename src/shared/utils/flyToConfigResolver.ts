@@ -4,6 +4,21 @@ import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '../config/teamFlyToConfi
 import { CIRCUIT_CAMERA_CONFIGS, DEFAULT_CIRCUIT_CAMERA } from '../config/circuitCameraConfig';
 import { CameraConfig } from './map/camera';
 
+// Circuit-specific ResponsiveFlyToConfig interface
+interface CircuitCameraConfig {
+  zoom: number;
+  pitch: number;
+  bearing: number;
+  speed?: number;
+  curve?: number;
+  duration?: number;
+}
+
+interface CircuitResponsiveFlyToConfig {
+  desktop: CircuitCameraConfig;
+  mobile?: CircuitCameraConfig;
+}
+
 // MapboxGL FlyTo options type definition
 type FlyToOptions = {
   center: [number, number];
@@ -115,7 +130,7 @@ export class FlyToConfigResolver {
   /**
    * 새로운 서킷 설정을 런타임에 추가 (확장성)
    */
-  static addCircuitConfig(circuitId: string, config: ResponsiveFlyToConfig): void {
-    CIRCUIT_CAMERA_CONFIGS[circuitId] = config as any;
+  static addCircuitConfig(circuitId: string, config: CircuitResponsiveFlyToConfig): void {
+    CIRCUIT_CAMERA_CONFIGS[circuitId] = config;
   }
 }

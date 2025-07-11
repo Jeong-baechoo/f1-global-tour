@@ -1,17 +1,18 @@
 import mapboxgl from 'mapbox-gl';
-import { Circuit } from '@/types/f1';
-import { MarkerData } from '../../types';
+import { Circuit } from '@/src/shared/types/circuit';
+import { CircuitMarkerData } from '@/src/shared/types/marker';
+import { circuitToMarkerData } from '@/src/shared/utils/markerDataConverters';
 import { getText, type Language } from '@/utils/i18n';
-import { 
-  ZOOM_THRESHOLDS, 
-  OCCLUSION_SETTINGS, 
+import { isMobile } from '@/src/shared/utils/viewport';
+import {
+  ZOOM_THRESHOLDS,
+  OCCLUSION_SETTINGS,
   ANIMATION_TIMINGS,
   ZoomLevel,
-  MarkerOcclusionState,
-  isMobile 
+  MarkerOcclusionState
 } from '@/src/shared/constants';
 
-interface CircuitMarkerData {
+interface CircuitMarkerState {
   element: HTMLElement;
   circuit: Circuit;
   marker: mapboxgl.Marker;
@@ -25,11 +26,11 @@ interface CircuitMarkerData {
 
 export class CircuitMarkerManager {
   private map: mapboxgl.Map | null = null;
-  private markers = new Map<string, CircuitMarkerData>();
-  private onMarkerClick?: (item: MarkerData) => void;
+  private markers = new Map<string, CircuitMarkerState>();
+  private onMarkerClick?: (item: CircuitMarkerData) => void;
   private hoverTimeouts = new Map<string, NodeJS.Timeout>();
   private language: Language = 'en';
-  
+
   // Event handlers stored for cleanup
   private zoomHandler?: () => void;
   private renderHandler?: () => void;
@@ -48,10 +49,10 @@ export class CircuitMarkerManager {
     this.attachEventHandlers();
   }
 
-  setOnMarkerClick(handler: (item: MarkerData) => void) {
+  setOnMarkerClick(handler: (item: CircuitMarkerData) => void) {
     this.onMarkerClick = handler;
   }
-  
+
   setLanguage(language: Language) {
     this.language = language;
     // Update existing markers' labels
@@ -59,14 +60,14 @@ export class CircuitMarkerManager {
       this.updateMarkerLanguage(data);
     });
   }
-  
-  private updateMarkerLanguage(data: CircuitMarkerData) {
+
+  private updateMarkerLanguage(data: CircuitMarkerState) {
     const { circuit, cityLabel, countryLabel, element } = data;
-    
+
     // Update text content
     cityLabel.textContent = getText(circuit.location.city, this.language);
     countryLabel.textContent = getText(circuit.location.country, this.language).toUpperCase();
-    
+
     // Update aria-label
     const cityText = getText(circuit.location.city, this.language);
     const countryText = getText(circuit.location.country, this.language);
@@ -78,10 +79,10 @@ export class CircuitMarkerManager {
     // 이벤트 위임 설정은 map이 설정된 후로 연기
     this.eventHandlersAttached = false;
   }
-  
+
   private attachEventHandlers() {
     if (this.eventHandlersAttached || !this.mapContainer) return;
-    
+
     // Map container에 이벤트 위임
     this.mapContainer.addEventListener('mouseenter', this.handleMouseEnter, true);
     this.mapContainer.addEventListener('mouseleave', this.handleMouseLeave, true);
@@ -101,7 +102,7 @@ export class CircuitMarkerManager {
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
-      
+
       rafId = requestAnimationFrame(() => {
         const zoom = this.map!.getZoom();
         this.markers.forEach((data) => {
@@ -116,14 +117,14 @@ export class CircuitMarkerManager {
     let renderRafId: number | null = null;
     this.renderHandler = () => {
       if (!this.map || this.map.getZoom() > ZOOM_THRESHOLDS.GLOBE_TO_2D) return; // Globe view에서만 체크
-      
+
       // Throttle render checks to every 3rd frame for performance
       if (renderRafId === null) {
         renderRafId = requestAnimationFrame(() => {
           this.markers.forEach((data) => {
             this.checkGlobeOcclusion(data);
           });
-          
+
           // Skip next 2 frames
           setTimeout(() => {
             renderRafId = null;
@@ -189,10 +190,10 @@ export class CircuitMarkerManager {
 
     this.triggerMarkerClick(circuitId);
   };
-  
+
   private handleKeyDown = (e: KeyboardEvent) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    
+
     const markerEl = (e.target as HTMLElement).closest('[data-circuit-id]');
     if (!markerEl) return;
 
@@ -202,40 +203,24 @@ export class CircuitMarkerManager {
     e.preventDefault();
     this.triggerMarkerClick(circuitId);
   };
-  
+
   private triggerMarkerClick(circuitId: string) {
     const data = this.markers.get(circuitId);
     if (!data || !this.onMarkerClick) return;
 
-    const markerData: MarkerData = {
-      type: 'circuit',
-      id: data.circuit.id,
-      name: data.circuit.name, // LocalizedText object
-      grandPrix: data.circuit.grandPrix, // LocalizedText object
-      length: data.circuit.length,
-      laps: data.circuit.laps,
-      corners: data.circuit.corners || 10,
-      totalDistance: data.circuit.laps && data.circuit.length 
-        ? Math.round((data.circuit.laps * data.circuit.length) * 10) / 10 
-        : 0,
-      location: data.circuit.location, // LocalizedText object
-      lapRecord: data.circuit.lapRecord ? {
-        ...data.circuit.lapRecord,
-        year: data.circuit.lapRecord.year.toString()
-      } : undefined
-    };
+    const markerData: CircuitMarkerData = circuitToMarkerData(data.circuit);
 
     this.onMarkerClick(markerData);
   }
 
-  private applyHoverEffect(data: CircuitMarkerData, isHover: boolean) {
+  private applyHoverEffect(data: CircuitMarkerState, isHover: boolean) {
     const { element } = data;
-    
+
     // data-hover 속성으로 호버 상태 관리 - CSS가 처리
     element.setAttribute('data-hover', isHover.toString());
   }
 
-  private updateMarkerVisibility(data: CircuitMarkerData, zoom: number) {
+  private updateMarkerVisibility(data: CircuitMarkerState, zoom: number) {
     const { element } = data;
 
     if (zoom <= ZOOM_THRESHOLDS.GLOBE_TO_2D) {
@@ -256,36 +241,36 @@ export class CircuitMarkerManager {
     }
   }
 
-  private checkGlobeOcclusion(data: CircuitMarkerData) {
+  private checkGlobeOcclusion(data: CircuitMarkerState) {
     if (!this.map) return;
 
     const { element, circuit } = data;
-    
+
     // 지도의 중심점과 뷰포트 정보
     const center = this.map.getCenter();
     const zoom = this.map.getZoom();
     const pitch = this.map.getPitch();
-    
+
     // Globe view에서만 작동 (줌 레벨 5.5 이하)
     if (zoom > ZOOM_THRESHOLDS.GLOBE_TO_2D) {
       element.style.visibility = MarkerOcclusionState.VISIBLE;
       element.removeAttribute('data-occluded');
       return;
     }
-    
+
     // 마커와 지도 중심 사이의 경도 차이 계산
     let lngDiff = circuit.location.lng - center.lng;
-    
+
     // 경도 차이를 -180 ~ 180 범위로 정규화
     while (lngDiff > 180) lngDiff -= 360;
     while (lngDiff < -180) lngDiff += 360;
-    
+
     // 위도 차이도 고려
     const latDiff = circuit.location.lat - center.lat;
-    
+
     // 피치가 있을 때는 위도 차이도 고려하여 occlusion 계산
     let occlusionThreshold = OCCLUSION_SETTINGS.BASE_THRESHOLD;
-    
+
     // 피치가 있으면 위쪽/아래쪽 마커의 가시성 조정
     if (pitch > 0) {
       // 북쪽 마커는 더 멀리까지 보이고, 남쪽 마커는 더 빨리 숨김
@@ -295,13 +280,13 @@ export class CircuitMarkerManager {
         occlusionThreshold = OCCLUSION_SETTINGS.BASE_THRESHOLD - (pitch * OCCLUSION_SETTINGS.PITCH_FACTOR);
       }
     }
-    
+
     // 경도 차이가 임계값 이상이면 마커는 globe 뒤쪽에 있음
     const isOccluded = Math.abs(lngDiff) > occlusionThreshold;
-    
+
     // 가시성 설정
     element.style.visibility = isOccluded ? 'hidden' : MarkerOcclusionState.VISIBLE;
-    
+
     // 디버깅을 위한 데이터 속성 추가
     element.setAttribute('data-occluded', isOccluded.toString());
   }
@@ -337,7 +322,7 @@ export class CircuitMarkerManager {
     const zoom = this.map.getZoom();
     const markerData = this.markers.get(circuit.id)!;
     this.updateMarkerVisibility(markerData, zoom);
-    
+
     // Globe view에서는 초기 occlusion 체크도 수행
     if (zoom <= ZOOM_THRESHOLDS.GLOBE_TO_2D) {
       this.checkGlobeOcclusion(markerData);
@@ -354,7 +339,7 @@ export class CircuitMarkerManager {
     element.className = 'circuit-marker';
     element.setAttribute('data-next-race', isNextRace.toString());
     element.setAttribute('data-zoom-level', ZoomLevel.NORMAL);
-    
+
     // Accessibility attributes
     element.setAttribute('role', 'button');
     const cityText = getText(circuit.location.city, this.language);
@@ -398,7 +383,7 @@ export class CircuitMarkerManager {
     const countryLabel = document.createElement('div');
     countryLabel.className = `circuit-marker__country circuit-marker__country--${mobile ? 'mobile' : 'desktop'}`;
     countryLabel.textContent = getText(circuit.location.country, this.language).toUpperCase();
-    
+
     labelContainer.appendChild(cityLabel);
     labelContainer.appendChild(countryLabel);
 
@@ -455,7 +440,7 @@ export class CircuitMarkerManager {
       this.mapContainer.removeEventListener('keydown', this.handleKeyDown, true);
       this.eventHandlersAttached = false;
     }
-    
+
     this.map = null;
     this.mapContainer = undefined;
   }

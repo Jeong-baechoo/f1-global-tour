@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
-import type { PanelData } from '@/types/panel';
+import type { PanelData } from '@/src/features/race-info/types';
 
 interface ModuleHeaderProps {
   module: 'next-race' | 'circuit-detail' | 'team-hq';

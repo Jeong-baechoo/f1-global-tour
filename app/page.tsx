@@ -9,7 +9,7 @@ import { MapAPI } from '@/src/shared/types';
 import LanguageSelector from '@/src/shared/components/ui/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
-import type { PanelData } from '@/types/panel';
+import type { PanelData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
 
 // Dynamic imports for better code splitting
@@ -392,11 +392,11 @@ export default function Home() {
         drsZoneCount={drsZoneCount}
         drsDetectionCount={drsDetectionCount}
         onCircuitSelect={(circuit) => {
-          setCurrentCircuit(circuit);
-          scrollToCircuit(circuit.id);
+          setCurrentCircuit(circuit as Circuit | null);
+          scrollToCircuit((circuit as Circuit).id);
         }}
         setIsCircuitView={setIsCircuitView}
-        setCurrentCircuit={setCurrentCircuit}
+        setCurrentCircuit={(circuit) => setCurrentCircuit(circuit as Circuit | null)}
         setDrsZoneCount={setDrsZoneCount}
         setDrsDetectionCount={setDrsDetectionCount}
         resetPanelStates={() => {

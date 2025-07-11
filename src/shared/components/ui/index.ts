@@ -1,7 +1,7 @@
 // Export all UI components
 export { default as LanguageSelector } from './LanguageSelector';
 export { default as LocalizedText } from './LocalizedText';
-export { default as ModuleHeader } from './ModuleHeader';
+export { ModuleHeader } from './ModuleHeader';
 export * from './sheet';
 
 // Map-specific UI components

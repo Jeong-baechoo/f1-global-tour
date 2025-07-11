@@ -16,8 +16,6 @@ interface NextRacePanelProps {
 
 export const NextRacePanel: React.FC<NextRacePanelProps> = ({
   data,
-  isMobile: _isMobile,
-  sheetState: _sheetState,
   onExploreCircuit
 }) => {
   const { language } = useLanguage();

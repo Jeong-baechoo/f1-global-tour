@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { ChevronRight, Car, Trophy, Newspaper, Store } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getText } from '@/utils/i18n';
+import { getText, type LocalizedText } from '@/utils/i18n';
 import { TeamHQData } from '../types';
 
 // 국가 코드를 국기 이모지로 변환하는 함수
@@ -45,7 +45,7 @@ const TabButton = ({ icon: Icon, label, isActive, onClick }: { icon: React.Eleme
 );
 
 // 선수 카드 컴포넌트 with 3D tilt effect
-const DriverCard = ({ driver, teamColors }: { driver: any, teamColors: any }) => {
+const DriverCard = ({ driver, teamColors }: { driver: unknown, teamColors: unknown }) => {
     const [tiltStyle, setTiltStyle] = React.useState({});
     
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -86,28 +86,28 @@ const DriverCard = ({ driver, teamColors }: { driver: any, teamColors: any }) =>
         >
             <div
                 className="absolute -top-1/2 -left-1/2 w-full h-full bg-radial-gradient from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-spin-slow"
-                style={{ background: `radial-gradient(ellipse at center, ${teamColors?.primary || '#FF1801'}15 0%, transparent 70%)` }}
+                style={{ background: `radial-gradient(ellipse at center, ${(teamColors as { primary?: string })?.primary || '#FF1801'}15 0%, transparent 70%)` }}
             />
             <div className="relative flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 shadow-lg group-hover:shadow-xl transition-all flex-shrink-0"
                      style={{ 
-                         borderColor: teamColors?.primary || '#FF1801',
-                         boxShadow: `0 4px 8px ${teamColors?.primary || '#FF1801'}20`
+                         borderColor: (teamColors as { primary?: string })?.primary || '#FF1801',
+                         boxShadow: `0 4px 8px ${(teamColors as { primary?: string })?.primary || '#FF1801'}20`
                      }}>
                     <Image
-                        src={driver.image}
-                        alt={driver.name}
+                        src={(driver as { image: string }).image}
+                        alt={(driver as { name: string }).name}
                         width={48}
                         height={48}
                         className="w-full h-full object-cover"
                     />
                 </div>
                 <div className="flex-1">
-                    <p className="text-white font-bold text-base leading-tight">{driver.name}</p>
+                    <p className="text-white font-bold text-base leading-tight">{(driver as { name: string }).name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm">{getFlagEmoji(driver.nationality)}</span>
-                        <span className="text-xl font-black" style={{ color: teamColors?.primary || '#FF1801' }}>
-                            {driver.number}
+                        <span className="text-sm">{getFlagEmoji((driver as { nationality: string }).nationality)}</span>
+                        <span className="text-xl font-black" style={{ color: (teamColors as { primary?: string })?.primary || '#FF1801' }}>
+                            {(driver as { number: number }).number}
                         </span>
                     </div>
                 </div>
@@ -142,11 +142,11 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                             <p className="text-sm text-white/60">
                                 {getText(data.headquarters.city, language)}, {getText(data.headquarters.country, language)}
                             </p>
-                            {data.teamPrincipal && (
+                            {data.principal && (
                                 <>
                                     <div className="w-1 h-1 rounded-full bg-white/40" />
                                     <p className="text-sm text-white/60">
-                                        <span className="text-white/40">{language === 'ko' ? '팀 대표' : 'Principal'}:</span> {getText(data.teamPrincipal, language)}
+                                        <span className="text-white/40">{language === 'ko' ? '팀 대표' : 'Principal'}:</span> {typeof data.principal === 'string' ? data.principal : getText(data.principal as LocalizedText, language)}
                                     </p>
                                 </>
                             )}
@@ -206,8 +206,8 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                         </div>
                         <p className="text-sm text-white/70">
                             {language === 'ko' ?
-                                `${data.car2025.name}은(는) ${data.name} 팀의 2025 시즌을 위한 최신 기술의 집약체입니다. 공기역학적 효율성과 파워 유닛의 성능을 극대화하는 데 초점을 맞추었습니다.` :
-                                `The ${data.car2025.name} is the pinnacle of engineering for the ${data.name} team's 2025 campaign, focusing on aerodynamic efficiency and power unit performance.`
+                                `${data.car2025.name}은(는) ${getText(data.name, language)} 팀의 2025 시즌을 위한 최신 기술의 집약체입니다. 공기역학적 효율성과 파워 유닛의 성능을 극대화하는 데 초점을 맞추었습니다.` :
+                                `The ${data.car2025.name} is the pinnacle of engineering for the ${getText(data.name, language)} team's 2025 campaign, focusing on aerodynamic efficiency and power unit performance.`
                             }
                         </p>
                     </div>

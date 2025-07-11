@@ -1,11 +1,12 @@
 import mapboxgl from 'mapbox-gl';
 import { MarkerData } from '../../types';
-import { Team } from '@/types/f1';
+import { teamToMarkerData } from '@/src/shared/utils/markerDataConverters';
+import { Team } from '@/src/shared/types/team';
 import { TeamMarkerConfig, getTeamMarkerConfig } from './teamMarkerConfig';
-import { isMobile } from '../../utils/viewport';
-import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '../../config/teamFlyToConfig';
-import { getText, type Language } from '@/utils/i18n';
-import { MARKER_DIMENSIONS, ZOOM_THRESHOLDS } from '../../constants';
+import { isMobile } from '@/src/shared/utils/viewport';
+import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '@/src/shared/config/teamFlyToConfig';
+import { type Language } from '@/utils/i18n';
+import { MARKER_DIMENSIONS, ZOOM_THRESHOLDS } from '@/src/shared/constants';
 
 interface TeamMarkerFactoryProps {
   map: mapboxgl.Map;
@@ -247,28 +248,7 @@ export class TeamMarkerFactory {
     el.addEventListener('click', () => {
       // 마커 클릭 콜백 실행
       if (onMarkerClick) {
-        const markerData: MarkerData = {
-          type: 'team',
-          id: team.id,
-          name: team.fullName,
-          principal: getText(team.teamPrincipal, language),
-          location: {
-            city: getText(team.headquarters.city, language),
-            country: getText(team.headquarters.country, language)
-          },
-          headquarters: {
-            city: getText(team.headquarters.city, language),
-            country: getText(team.headquarters.country, language),
-            lat: team.headquarters.lat,
-            lng: team.headquarters.lng
-          },
-          color: team.colors.primary,
-          drivers: config.drivers2025?.map(d => d.name) || [],
-          drivers2025: config.drivers2025,
-          car2025: config.car2025,
-          championships2025: team.championships2025
-        };
-        
+        const markerData: MarkerData = teamToMarkerData(team);
         onMarkerClick(markerData);
       }
 

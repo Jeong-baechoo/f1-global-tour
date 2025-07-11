@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useMapStore } from '../store';
 import teamsData from '@/data/teams.json';
@@ -10,10 +10,10 @@ import { getDRSInfo } from '@/src/shared/utils/data/dynamicSectorLoader';
 
 interface UseMapAnimationProps {
   map: React.MutableRefObject<mapboxgl.Map | null>;
-  globeSpinner?: React.MutableRefObject<any>;
-  onCircuitSelect?: (circuit: any) => void;
+  globeSpinner?: React.MutableRefObject<unknown>;
+  onCircuitSelect?: (circuit: unknown) => void;
   setIsCircuitView?: (isCircuitView: boolean) => void;
-  setCurrentCircuit?: (circuit: any) => void;
+  setCurrentCircuit?: (circuit: unknown) => void;
   setDrsZoneCount?: (count: number) => void;
   setDrsDetectionCount?: (count: number) => void;
   resetPanelStates?: () => void;
@@ -28,10 +28,13 @@ export const useMapAnimation = ({
   setCurrentCircuit,
   setDrsZoneCount,
   setDrsDetectionCount,
-  resetPanelStates,
+  resetPanelStates: _resetPanelStates,
   setIsTrackAnimating,
 }: UseMapAnimationProps) => {
   const { setUserInteracting } = useMapStore();
+  
+  // Suppress unused variable warning
+  void _resetPanelStates;
 
   // FlyTo 특정 위치
   const flyToLocation = useCallback((coordinates: [number, number], zoom: number = 15) => {
@@ -92,15 +95,15 @@ export const useMapAnimation = ({
 
       // flyTo 완료 시 글로브 스피너 재개
       map.current.once('moveend', () => {
-        globeSpinner?.current?.stopInteracting();
+        (globeSpinner?.current as { stopInteracting?: () => void })?.stopInteracting?.();
         setTimeout(() => setUserInteracting(false), 1000);
       });
     } else {
       // 일반 flyTo는 트랙 그리기 포함
-      globeSpinner?.current?.startInteracting();
+      (globeSpinner?.current as { startInteracting?: () => void })?.startInteracting?.();
       setIsCircuitView?.(true);
       
-      flyToCircuitWithTrack(map.current, circuit, undefined, (enabled: boolean) => {
+      flyToCircuitWithTrack(map.current, circuit, undefined, () => {
         // 시네마틱 모드 토글 처리
       });
       
@@ -120,7 +123,6 @@ export const useMapAnimation = ({
     setCurrentCircuit,
     setDrsZoneCount,
     setDrsDetectionCount,
-    resetPanelStates,
     setIsTrackAnimating
   ]);
 
@@ -135,7 +137,7 @@ export const useMapAnimation = ({
     const mobile = typeof window !== 'undefined' && window.innerWidth < 640;
     
     // 글로브 스피너 일시 중단
-    globeSpinner?.current?.startInteracting();
+    (globeSpinner?.current as { startInteracting?: () => void })?.startInteracting?.();
     
     // 중앙화된 FlyTo 설정 사용
     const teamConfig = TEAM_FLYTO_CONFIGS[teamId];
@@ -161,7 +163,7 @@ export const useMapAnimation = ({
 
     // flyTo 완료 시 글로브 스피너 재개
     map.current.once('moveend', () => {
-      globeSpinner?.current?.stopInteracting();
+      (globeSpinner?.current as { stopInteracting?: () => void })?.stopInteracting?.();
       setTimeout(() => setUserInteracting(false), 1000);
     });
   }, [map, setUserInteracting, globeSpinner]);
@@ -185,7 +187,7 @@ export const useMapAnimation = ({
 
     // flyTo 완료 시 글로브 스피너 재개
     map.current.once('moveend', () => {
-      globeSpinner?.current?.stopInteracting();
+      (globeSpinner?.current as { stopInteracting?: () => void })?.stopInteracting?.();
       setIsCircuitView?.(false);
       setTimeout(() => setUserInteracting(false), 1000);
     });

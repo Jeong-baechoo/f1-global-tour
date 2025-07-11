@@ -21,9 +21,9 @@ const createStore = (set: (partial: Partial<AppState>) => void) => ({
   language: 'en' as Language,
   
   // 액션 구현
-  setLoading: (loading: boolean) => set({ isLoading: loading }, false, 'setLoading'),
-  setError: (error: string | null) => set({ error }, false, 'setError'),
-  setLanguage: (language: Language) => set({ language }, false, 'setLanguage'),
+  setLoading: (loading: boolean) => set({ isLoading: loading }),
+  setError: (error: string | null) => set({ error }),
+  setLanguage: (language: Language) => set({ language }),
 });
 
 // devtools 일시적으로 비활성화

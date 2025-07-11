@@ -3,7 +3,7 @@ import circuitsData from '@/data/circuits.json';
 
 export class CircuitService {
   private options: Required<CircuitServiceOptions>;
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
+  private cache: Map<string, { data: unknown; timestamp: number }> = new Map();
   
   constructor(options: CircuitServiceOptions = {}) {
     this.options = {
@@ -21,7 +21,7 @@ export class CircuitService {
   async getCircuits(): Promise<Circuit[]> {
     if (this.options.cacheEnabled) {
       const cached = this.getFromCache('circuits');
-      if (cached) return cached;
+      if (cached) return cached as Circuit[];
     }
     
     try {
@@ -35,7 +35,7 @@ export class CircuitService {
       return circuits as Circuit[];
     } catch (error) {
       console.error('Error fetching circuits:', error);
-      throw error;
+      return [];
     }
   }
   
@@ -55,7 +55,7 @@ export class CircuitService {
     
     if (this.options.cacheEnabled) {
       const cached = this.getFromCache(cacheKey);
-      if (cached) return cached;
+      if (cached) return cached as TrackData;
     }
     
     try {
@@ -140,7 +140,7 @@ export class CircuitService {
     };
     
     // Custom views for specific circuits
-    const customViews: Record<string, any> = {
+    const customViews: Record<string, { zoom?: number; pitch?: number; bearing?: number }> = {
       'monaco': { zoom: 16, pitch: 45, bearing: -20 },
       'spa': { zoom: 14.5, pitch: 30, bearing: 45 },
       'suzuka': { zoom: 15, pitch: 40, bearing: 0 },
@@ -160,7 +160,7 @@ export class CircuitService {
   /**
    * Get data from cache if valid
    */
-  private getFromCache(key: string): any | null {
+  private getFromCache(key: string): unknown | null {
     const cached = this.cache.get(key);
     if (!cached) return null;
     
@@ -176,7 +176,7 @@ export class CircuitService {
   /**
    * Set data in cache
    */
-  private setCache(key: string, data: any): void {
+  private setCache(key: string, data: unknown): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),

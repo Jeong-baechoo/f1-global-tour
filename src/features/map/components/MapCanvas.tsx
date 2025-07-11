@@ -24,7 +24,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({ onLoad, onGlobe
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapService = useRef<MapService | null>(null);
   const globeSpinner = useRef<ReturnType<typeof createGlobeSpinner> | null>(null);
-  const { setMap, setMapLoaded, center, zoom, bearing, pitch, isCinematicMode, isUserInteracting } = useMapStore();
+  const { setMap, setMapLoaded, center, zoom, bearing, pitch } = useMapStore();
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -120,7 +120,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({ onLoad, onGlobe
       setMap(null);
       setMapLoaded(false);
     };
-  }, []); // 의도적으로 한 번만 실행
+  }, [onLoad, onGlobeSpinnerReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div 
