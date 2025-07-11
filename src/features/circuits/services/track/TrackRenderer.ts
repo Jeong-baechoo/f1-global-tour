@@ -1,13 +1,13 @@
 import mapboxgl from 'mapbox-gl';
-import { interpolateCoordinates } from '@/components/mapbox/utils/animations/globeAnimation';
-import { ANIMATION_CONFIG, TRACK_LINE_WIDTHS, OPACITY, BLUR, ZOOM_THRESHOLDS } from '@/components/mapbox/constants';
+import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
+import { ANIMATION_CONFIG, TRACK_LINE_WIDTHS, OPACITY, BLUR, ZOOM_THRESHOLDS } from '@/src/shared/constants';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
 import { trackStateManager } from './state/TrackStateManager';
 import { DRSZoneManager } from './drs/DRSZoneManager';
 import { DRSAnimationController } from './animation/DRSAnimationController';
 import { SectorTrackManager } from './sector/SectorTrackManager';
 import { TrackEventBus } from './events/TrackEventBus';
-import { getSectorData as getSectorMarkerData } from '@/components/mapbox/markers/circuit/SectorMarkerManager';
+import { getSectorData as getSectorMarkerData } from '../../components/markers/SectorMarkerManager';
 import { ElevationTrackManager } from './elevation/ElevationTrackManager';
 
 // New TrackDrawOptions interface for the refactored version

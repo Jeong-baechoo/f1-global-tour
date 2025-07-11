@@ -1,13 +1,13 @@
 import mapboxgl from 'mapbox-gl';
-import { drawAnimatedTrack as drawTrack, clearAllTrackState } from '@/components/mapbox/utils/map/trackDrawing';
-import { createCircuitRotation } from '@/components/mapbox/utils/animations/globeAnimation';
-import { getTrackCoordinates } from '@/components/mapbox/utils/data/trackDataLoader';
-import { getCircuitCameraConfig } from '@/components/mapbox/utils/map/camera';
-import { getCircuitColor } from '@/components/mapbox/utils/map/circuitColors';
-import { addSectorMarkersProgressively } from '@/components/mapbox/markers/circuit/SectorMarkerManager';
+import { drawAnimatedTrack as drawTrack, clearAllTrackState } from '@/src/shared/utils/map/trackDrawing';
+import { createCircuitRotation } from '@/src/shared/utils/animations/globeAnimation';
+import { getTrackCoordinates } from '@/src/shared/utils/data/trackDataLoader';
+import { getCircuitCameraConfig } from '@/src/shared/utils/map/camera';
+import { getCircuitColor } from '@/src/shared/utils/map/circuitColors';
+import { addSectorMarkersProgressively } from '../components/markers/SectorMarkerManager';
 import { cleanupSectorMarkers } from '@/src/features/circuits/utils/circuitManagerExtensions';
 import { circuitTrackManager } from './CircuitTrackManager';
-import { ZOOM_THRESHOLDS, ANIMATION_TIMINGS, CIRCUIT_VIEW } from '@/components/mapbox/constants';
+import { ZOOM_THRESHOLDS, ANIMATION_TIMINGS, CIRCUIT_VIEW } from '@/src/shared/constants';
 
 // 타입 정의
 interface CircuitRotationHandlers {
@@ -134,7 +134,7 @@ export class CircuitAnimationService {
         // 뉘르부르크링을 제외한 모든 서킷에서 DRS Detection과 Speed Trap 마커 지원
         if (circuit.id !== 'nurburgring' && currentZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
           // DRS Detection 마커 추가 (숨김 상태로 생성)
-          const { addDRSDetectionMarkers, addSpeedTrapMarkers } = await import('@/components/mapbox/markers/circuit/SectorMarkerManager');
+          const { addDRSDetectionMarkers, addSpeedTrapMarkers } = await import('../components/markers/SectorMarkerManager');
 
           drsDetectionCleanup = await addDRSDetectionMarkers({
             map,
@@ -160,7 +160,7 @@ export class CircuitAnimationService {
               
               // 트랙 그리기 완료 후 DRS Detection과 Speed Trap 마커 표시 (뉘르부르크링 제외)
               if (circuit.id !== 'nurburgring' && finalZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
-                import('@/components/mapbox/markers/circuit/SectorMarkerManager').then(({ showDRSAndSpeedTrapMarkers }) => {
+                import('../components/markers/SectorMarkerManager').then(({ showDRSAndSpeedTrapMarkers }) => {
                   setTimeout(() => {
                     showDRSAndSpeedTrapMarkers(map);
                   }, CIRCUIT_VIEW.MARKER_DELAY); // 트랙 그리기 완료 후 0.5초 딜레이

@@ -1,9 +1,9 @@
 import mapboxgl from 'mapbox-gl';
-import { getSectorData } from '@/components/mapbox/utils/data/trackDataLoader';
-import { loadCircuitGeoJSON } from '@/components/mapbox/utils/data/dynamicSectorLoader';
+import { getSectorData } from '@/src/shared/utils/data/trackDataLoader';
+import { loadCircuitGeoJSON } from '@/src/shared/utils/data/dynamicSectorLoader';
 import { trackStateManager } from '../state/TrackStateManager';
-import { trackManager } from '@/components/mapbox/utils/map/trackManager';
-import { SECTOR_COLORS } from '@/components/mapbox/constants/colors';
+import { trackManager } from '@/src/shared/utils/map/trackManager';
+import { SECTOR_COLORS } from '@/src/shared/constants/colors';
 
 // Sector colors array for easier indexing
 const SECTOR_COLOR_ARRAY = [

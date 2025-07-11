@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { ZOOM_THRESHOLDS } from '@/components/mapbox/constants';
+import { ZOOM_THRESHOLDS } from '@/src/shared/constants';
 
 interface TrackState {
   circuitId: string;

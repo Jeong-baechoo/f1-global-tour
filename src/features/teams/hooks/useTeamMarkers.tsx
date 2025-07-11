@@ -3,12 +3,12 @@ import mapboxgl from 'mapbox-gl';
 import { Team, TeamMarkerOptions } from '../types';
 import { useTeamStore } from '../store/useTeamStore';
 import { type Language } from '@/utils/i18n';
-import { isMobile } from '@/components/mapbox/utils/viewport';
-import { getTeamMarkerConfig } from '@/components/mapbox/markers/team/teamMarkerConfig';
-import { ZOOM_THRESHOLDS, MARKER_DIMENSIONS } from '@/components/mapbox/constants';
+import { isMobile } from '@/src/shared/utils/viewport';
+import { getTeamMarkerConfig } from '../components/markers/teamMarkerConfig';
+import { ZOOM_THRESHOLDS, MARKER_DIMENSIONS } from '@/src/shared/constants';
 import { getTeamDetails } from '../data/teamDetails';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getUKTeamAdjustedPosition } from '@/components/mapbox/markers/team/UKTeamLayout';
+import { getUKTeamAdjustedPosition } from '../components/markers/UKTeamLayout';
 import type { PanelData } from '@/types/panel';
 
 export const useTeamMarkers = (map: mapboxgl.Map | null) => {

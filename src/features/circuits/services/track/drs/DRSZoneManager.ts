@@ -1,9 +1,9 @@
 import mapboxgl from 'mapbox-gl';
-import { getDRSZones } from '@/components/mapbox/utils/data/trackDataLoader';
-import { interpolateCoordinates } from '@/components/mapbox/utils/animations/globeAnimation';
+import { getDRSZones } from '@/src/shared/utils/data/trackDataLoader';
+import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
 import { trackStateManager } from '../state/TrackStateManager';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { DRS_COLORS, OPACITY } from '@/components/mapbox/constants';
+import { DRS_COLORS, OPACITY } from '@/src/shared/constants';
 
 // DRS zone index definitions
 const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround?: boolean }> | 'dynamic' } = {

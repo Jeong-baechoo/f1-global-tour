@@ -3,8 +3,8 @@ import mapboxgl from 'mapbox-gl';
 import { Circuit, CircuitMarkerOptions } from '../types';
 import { useCircuitStore } from '../store/useCircuitStore';
 import { getText, type Language } from '@/utils/i18n';
-import { isMobile } from '@/components/mapbox/utils/viewport';
-import { ZOOM_THRESHOLDS, ZoomLevel } from '@/components/mapbox/constants';
+import { isMobile } from '@/src/shared/utils/viewport';
+import { ZOOM_THRESHOLDS, ZoomLevel } from '@/src/shared/constants';
 
 export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());

@@ -1,4 +1,4 @@
-import { isMobile } from '@/components/mapbox/utils/viewport';
+import { isMobile } from '@/src/shared/utils/viewport';
 
 // 모바일 설정 적용 헬퍼 함수
 const getMobileConfig = (config: CircuitConfig, mobile: boolean): CircuitConfig => {

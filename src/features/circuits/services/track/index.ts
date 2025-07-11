@@ -10,7 +10,7 @@ export { ElevationTrackManager } from './elevation/ElevationTrackManager';
 // Main function that replaces the old drawAnimatedTrack
 import mapboxgl from 'mapbox-gl';
 import { TrackRenderer } from './TrackRenderer';
-import { TrackDrawOptions as OldTrackDrawOptions } from '@/components/mapbox/types';
+import { TrackDrawOptions as OldTrackDrawOptions } from '@/src/shared/types/circuit';
 import { trackStateManager } from './state/TrackStateManager';
 import { TrackEventBus } from './events/TrackEventBus';
 import { DRSAnimationController } from './animation/DRSAnimationController';

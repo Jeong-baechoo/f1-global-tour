@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { interpolateCoordinates } from '@/components/mapbox/utils/animations/globeAnimation';
+import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
 
 export class ElevationTrackManager {
   // Mapbox Terrain API를 사용하여 실제 고도 가져오기

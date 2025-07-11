@@ -3,10 +3,10 @@ import mapboxgl from 'mapbox-gl';
 import { useMapStore } from '../store';
 import teamsData from '@/data/teams.json';
 import circuitsData from '@/data/circuits.json';
-import { ZOOM_LEVELS, ANIMATION_SPEEDS, PITCH_ANGLES } from '@/components/mapbox/constants';
-import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '@/components/mapbox/config/teamFlyToConfig';
+import { ZOOM_LEVELS, ANIMATION_SPEEDS, PITCH_ANGLES } from '@/src/shared/constants';
+import { TEAM_FLYTO_CONFIGS, DEFAULT_TEAM_FLYTO } from '@/src/shared/config/teamFlyToConfig';
 import { flyToCircuitWithTrack } from '@/src/features/circuits/services/CircuitAnimationService';
-import { getDRSInfo } from '@/components/mapbox/utils/data/dynamicSectorLoader';
+import { getDRSInfo } from '@/src/shared/utils/data/dynamicSectorLoader';
 
 interface UseMapAnimationProps {
   map: React.MutableRefObject<mapboxgl.Map | null>;

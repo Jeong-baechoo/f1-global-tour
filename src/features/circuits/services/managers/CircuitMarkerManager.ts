@@ -9,7 +9,7 @@ import {
   ZoomLevel,
   MarkerOcclusionState,
   isMobile 
-} from '@/components/mapbox/constants';
+} from '@/src/shared/constants';
 
 interface CircuitMarkerData {
   element: HTMLElement;

@@ -1,4 +1,4 @@
-import type { Driver, Car } from '@/components/mapbox/types';
+import type { Driver, Car } from '@/src/shared/types';
 import type { LocalizedText } from '@/utils/i18n';
 
 export interface PanelData {

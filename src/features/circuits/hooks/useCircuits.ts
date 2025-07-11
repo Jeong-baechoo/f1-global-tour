@@ -16,11 +16,6 @@ export const useCircuits = () => {
     setError,
   } = useCircuitStore();
   
-  // Load circuits on mount
-  useEffect(() => {
-    loadCircuits();
-  }, [loadCircuits]);
-  
   const loadCircuits = useCallback(async () => {
     try {
       setLoading(true);
@@ -35,6 +30,11 @@ export const useCircuits = () => {
       setLoading(false);
     }
   }, [setLoading, setError, setCircuits]);
+  
+  // Load circuits on mount
+  useEffect(() => {
+    loadCircuits();
+  }, [loadCircuits]);
   
   const selectCircuitById = async (circuitId: string) => {
     try {

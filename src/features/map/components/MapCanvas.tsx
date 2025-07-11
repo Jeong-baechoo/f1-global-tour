@@ -5,7 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import { useMapStore } from '../store';
 import { MapService } from '../services/MapService';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { createGlobeSpinner } from '@/components/mapbox/utils/animations/globeAnimation';
+import { createGlobeSpinner } from '@/src/shared/utils/animations/globeAnimation';
 
 // Mapbox 토큰
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 

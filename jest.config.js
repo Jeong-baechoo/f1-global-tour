@@ -12,7 +12,6 @@ const customJestConfig = {
   moduleNameMapper: {
     // Handle module aliases
     '^@/(.*)$': '<rootDir>/$1',
-    '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/data/(.*)$': '<rootDir>/data/$1',
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
@@ -36,9 +35,7 @@ const customJestConfig = {
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
-    'components/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
-    '!components/**/*.d.ts',
     '!src/**/index.ts',
     '!src/**/__tests__/**',
   ],

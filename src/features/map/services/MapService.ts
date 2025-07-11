@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { ZOOM_LEVELS, PITCH_ANGLES, FOG_CONFIG, SKY_LAYER_CONFIG, LAYERS_TO_REMOVE } from '@/components/mapbox/constants';
+import { ZOOM_LEVELS, PITCH_ANGLES, FOG_CONFIG, SKY_LAYER_CONFIG, LAYERS_TO_REMOVE } from '@/src/shared/constants';
 import { debounce } from '@/src/shared/utils/performance';
 
 export interface MapConfig {

@@ -1,13 +1,13 @@
 import mapboxgl from 'mapbox-gl';
-import { drawAnimatedTrack as drawTrack, clearAllTrackState } from '@/components/mapbox/utils/map/trackDrawing';
-import { createCircuitRotation } from '@/components/mapbox/utils/animations/globeAnimation';
-import { getTrackCoordinates } from '@/components/mapbox/utils/data/trackDataLoader';
-import { getCircuitCameraConfig } from '@/components/mapbox/utils/map/camera';
-import { getCircuitColor } from '@/components/mapbox/utils/map/circuitColors';
-import { addSectorMarkersProgressively } from '@/components/mapbox/markers/circuit/SectorMarkerManager';
+import { drawAnimatedTrack as drawTrack, clearAllTrackState } from '@/src/shared/utils/map/trackDrawing';
+import { createCircuitRotation } from '@/src/shared/utils/animations/globeAnimation';
+import { getTrackCoordinates } from '@/src/shared/utils/data/trackDataLoader';
+import { getCircuitCameraConfig } from '@/src/shared/utils/map/camera';
+import { getCircuitColor } from '@/src/shared/utils/map/circuitColors';
+import { addSectorMarkersProgressively } from '../../components/markers/SectorMarkerManager';
 import { cleanupSectorMarkers } from '../circuitManagerExtensions';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { ZOOM_THRESHOLDS, ANIMATION_TIMINGS, CIRCUIT_VIEW } from '@/components/mapbox/constants';
+import { ZOOM_THRESHOLDS, ANIMATION_TIMINGS, CIRCUIT_VIEW } from '@/src/shared/constants';
 
 // 타입 정의
 interface CircuitRotationHandlers {

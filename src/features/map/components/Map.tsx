@@ -3,7 +3,7 @@
 import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { MapContainer } from './MapContainer';
 import { MapCanvas } from './MapCanvas';
-import { MapAPI } from '@/components/mapbox/types';
+import { MapAPI } from '@/src/shared/types';
 import { useMapStore } from '../store';
 import { useMapAnimation } from '../hooks/useMapAnimation';
 import { useMapInteraction } from '../hooks/useMapInteraction';

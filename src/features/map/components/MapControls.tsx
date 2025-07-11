@@ -2,9 +2,9 @@
 
 import React from 'react';
 import mapboxgl from 'mapbox-gl';
-import CinematicModeButton from '@/components/mapbox/controls/CinematicModeButton';
-import ZoomScrollbar from '@/components/mapbox/controls/ZoomScrollbar';
-import CircuitInfoPanel from '@/components/mapbox/controls/CircuitInfoPanel';
+import CinematicModeButton from '@/src/shared/components/ui/map/CinematicModeButton';
+import ZoomScrollbar from '@/src/shared/components/ui/map/ZoomScrollbar';
+import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
 
 interface MapControlsProps {
   map: mapboxgl.Map | null;

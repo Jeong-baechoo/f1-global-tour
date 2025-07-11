@@ -1,4 +1,4 @@
-import { TrackLayerInfo, DRSLayerInfo, OriginalTrackData, DRSAnimationInfo } from '@/components/mapbox/types';
+import { TrackLayerInfo, DRSLayerInfo, OriginalTrackData, DRSAnimationInfo } from '@/src/shared/types/circuit';
 
 /**
  * Centralized state management for track-related data

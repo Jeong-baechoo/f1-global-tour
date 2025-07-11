@@ -1,7 +1,7 @@
 import circuitsData from '@/data/circuits.json';
 import { CircuitMarkerManager } from '../services/managers/CircuitMarkerManager';
-import { F1_2025_CIRCUITS } from '@/components/mapbox/utils/data/circuitMapping';
-import { addSectorMarkers, addDRSDetectionMarkers, addSpeedTrapMarkers } from '@/components/mapbox/markers/circuit/SectorMarkerManager';
+import { F1_2025_CIRCUITS } from '@/src/shared/utils/data/circuitMapping';
+import { addSectorMarkers, addDRSDetectionMarkers, addSpeedTrapMarkers } from '../components/markers/SectorMarkerManager';
 import type { Language } from '@/utils/i18n';
 
 // 섹터 마커 cleanup 함수들을 저장할 배열
