@@ -109,7 +109,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
             <div className="bg-gradient-to-br from-[#1A1A1A]/60 to-[#0A0A0A]/80 backdrop-blur-xl rounded-xl p-4 border border-white/10 hover:border-[#FF1801]/30 transition-all duration-300 hover:transform hover:-translate-y-0.5 flex-shrink-0 min-w-[120px]">
               <div className="text-center">
                 <div className="text-2xl font-black text-white mb-1">
-                  {Math.round(parseFloat(data.totalDistance))}<span className="text-xs font-medium text-white/70">km</span>
+                  {Math.round(parseFloat(String(data.totalDistance)))}<span className="text-xs font-medium text-white/70">km</span>
                 </div>
                 <div className="text-[10px] uppercase text-white/50 font-medium tracking-wider">
                   {language === 'ko' ? '총 거리' : 'TOTAL DIST'}
@@ -121,7 +121,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
             <div className="bg-gradient-to-br from-[#1A1A1A]/60 to-[#0A0A0A]/80 backdrop-blur-xl rounded-xl p-4 border border-white/10 hover:border-[#FF1801]/30 transition-all duration-300 hover:transform hover:-translate-y-0.5 flex-shrink-0 min-w-[120px]">
               <div className="text-center">
                 <div className="text-2xl font-black text-white mb-1">
-                  {Math.round(parseFloat(data.length) * 10) / 10}<span className="text-xs font-medium text-white/70">km</span>
+                  {Math.round(parseFloat(String(data.length)) * 10) / 10}<span className="text-xs font-medium text-white/70">km</span>
                 </div>
                 <div className="text-[10px] uppercase text-white/50 font-medium tracking-wider">
                   {language === 'ko' ? '랩 길이' : 'LAP LENGTH'}
