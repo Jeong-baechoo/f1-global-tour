@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Camera, CameraOff } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { CircuitDetailData } from '../types';
@@ -10,15 +9,11 @@ interface CircuitDetailPanelProps {
   data: CircuitDetailData;
   isMobile: boolean;
   sheetState?: 'closed' | 'peek' | 'half' | 'full';
-  isCinematicMode?: boolean;
-  onToggleCinematicMode?: () => void;
 }
 
 export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
   data,
-  isMobile,
-  isCinematicMode = false,
-  onToggleCinematicMode
+  isMobile
 }) => {
   const { language } = useLanguage();
 
@@ -205,29 +200,6 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
         </div>
       </div>
 
-      {/* Cinematic Mode Toggle - 데스크톱 패널에만 표시 */}
-      {!isMobile && onToggleCinematicMode && (
-        <button
-          onClick={onToggleCinematicMode}
-          className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wider border ${
-            isCinematicMode
-              ? 'bg-[#FF1801] text-white border-[#FF1801] hover:bg-[#FF1801]/90'
-              : 'bg-[#1A1A1A] text-white border-[#FF1801]/20 hover:bg-[#2A2A2A]'
-          }`}
-        >
-          {isCinematicMode ? (
-            <>
-              <CameraOff className="w-5 h-5" />
-              {language === 'ko' ? '시네마틱 투어 정지' : 'STOP CINEMATIC TOUR'}
-            </>
-          ) : (
-            <>
-              <Camera className="w-5 h-5" />
-              {language === 'ko' ? '시네마틱 투어 시작' : 'START CINEMATIC TOUR'}
-            </>
-          )}
-        </button>
-      )}
 
       <div className="flex gap-3">
         <button className="flex-1 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white font-medium py-2 px-4 rounded border border-[#FF1801]/20 transition-colors text-sm">

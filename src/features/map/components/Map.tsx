@@ -18,7 +18,6 @@ import type { PanelData } from '@/src/features/race-info/types';
 
 interface MapProps {
   onMarkerClick?: (item: PanelData) => void;
-  onCinematicModeChange?: (enabled: boolean) => void;
   onUserInteraction?: () => void;
   // Circuit 관련 props
   isCircuitView?: boolean;
@@ -73,8 +72,7 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
   const {
     getCurrentBounds,
     getCurrentZoom,
-    getCurrentCenter,
-    toggleCinematicMode
+    getCurrentCenter
   } = useMapInteraction({
     map: { current: map }
   });
@@ -178,18 +176,11 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
         resetView();
       }
     },
-    toggleCinematicMode: () => {
-      if (map) {
-        return toggleCinematicMode();
-      }
-      return false;
-    }
-  }), [map, flyToLocation, flyToCircuit, flyToTeam, getCurrentBounds, getCurrentZoom, getCurrentCenter, resetView, toggleCinematicMode]);
+  }), [map, flyToLocation, flyToCircuit, flyToTeam, getCurrentBounds, getCurrentZoom, getCurrentCenter, resetView]);
 
   return (
     <MapContainer
       onMarkerClick={props.onMarkerClick}
-      onCinematicModeChange={props.onCinematicModeChange}
       onUserInteraction={props.onUserInteraction}
       isCircuitView={props.isCircuitView}
       currentCircuit={props.currentCircuit}

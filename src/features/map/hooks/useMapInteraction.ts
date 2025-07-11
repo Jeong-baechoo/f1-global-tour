@@ -8,7 +8,6 @@ interface UseMapInteractionProps {
 
 export const useMapInteraction = ({ map }: UseMapInteractionProps) => {
   const store = useMapStore();
-  const toggleCinematicMode = store.toggleCinematicMode;
   const setUserInteracting = store.setUserInteracting;
 
   // 현재 맵 경계 가져오기
@@ -62,12 +61,6 @@ export const useMapInteraction = ({ map }: UseMapInteractionProps) => {
     return () => clearTimeout(timeoutId);
   }, [setUserInteracting]);
 
-  // 시네마틱 모드 토글 핸들러
-  const handleCinematicModeToggle = useCallback((): boolean => {
-    trackInteraction();
-    const newMode = toggleCinematicMode();
-    return newMode;
-  }, [toggleCinematicMode, trackInteraction]);
 
   return {
     getCurrentBounds,
@@ -76,7 +69,6 @@ export const useMapInteraction = ({ map }: UseMapInteractionProps) => {
     getCurrentBearing,
     getCurrentPitch,
     getMapState,
-    trackInteraction,
-    toggleCinematicMode: handleCinematicModeToggle
+    trackInteraction
   };
 };

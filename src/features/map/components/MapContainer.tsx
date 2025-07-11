@@ -9,7 +9,6 @@ import type { Circuit } from '@/src/features/circuits/types';
 interface MapContainerProps {
   children?: React.ReactNode;
   onMarkerClick?: (item: PanelData) => void;
-  onCinematicModeChange?: (enabled: boolean) => void;
   onUserInteraction?: () => void;
   // Circuit 관련 props
   isCircuitView?: boolean;
@@ -24,7 +23,6 @@ interface MapContainerProps {
  */
 export const MapContainer: React.FC<MapContainerProps> = ({
   children,
-  onCinematicModeChange,
   onUserInteraction,
   isCircuitView = false,
   currentCircuit = null,
@@ -32,7 +30,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   drsDetectionCount = 0,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setUserInteracting, isCinematicMode, setIsCinematicMode, map, isMapLoaded } = useMapStore();
+  const { setUserInteracting, map, isMapLoaded } = useMapStore();
   
   // Circuit Info Panel states
   const [sectorInfoEnabled, setSectorInfoEnabled] = useState(false);
@@ -100,10 +98,6 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     }
   }, [setUserInteracting, onUserInteraction]);
 
-  // 시네마틱 모드 변경 알림
-  useEffect(() => {
-    onCinematicModeChange?.(isCinematicMode);
-  }, [isCinematicMode, onCinematicModeChange]);
 
   // 초기화 시 DRS 토글 상태 이벤트 발생
   useEffect(() => {
@@ -138,11 +132,6 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         <MapControls
           map={map}
           isCircuitView={isCircuitView}
-          onCinematicModeToggle={() => {
-            const newMode = !isCinematicMode;
-            setIsCinematicMode(newMode);
-            onCinematicModeChange?.(newMode);
-          }}
           sectorInfoEnabled={sectorInfoEnabled}
           drsInfoEnabled={drsInfoEnabled}
           elevationEnabled={elevationEnabled}

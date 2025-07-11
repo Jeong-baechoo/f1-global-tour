@@ -14,7 +14,6 @@ interface MapState {
   
   // 사용자 인터랙션
   isUserInteracting: boolean;
-  isCinematicMode: boolean;
   
   // 액션
   setMap: (map: mapboxgl.Map | null) => void;
@@ -24,12 +23,10 @@ interface MapState {
   setBearing: (bearing: number) => void;
   setPitch: (pitch: number) => void;
   setUserInteracting: (interacting: boolean) => void;
-  setIsCinematicMode: (enabled: boolean) => void;
-  toggleCinematicMode: () => boolean;
 }
 
 // devtools 없이 store 생성 (Mapbox GL 객체 직렬화 문제 방지)
-export const useMapStore = create<MapState>((set, get) => ({
+export const useMapStore = create<MapState>((set) => ({
   // 초기 상태
   map: null,
   isMapLoaded: false,
@@ -38,7 +35,6 @@ export const useMapStore = create<MapState>((set, get) => ({
   bearing: 0,
   pitch: 0,
   isUserInteracting: false,
-  isCinematicMode: true,
   
   // 액션 구현
   setMap: (map) => {
@@ -54,10 +50,4 @@ export const useMapStore = create<MapState>((set, get) => ({
   setBearing: (bearing) => set({ bearing }),
   setPitch: (pitch) => set({ pitch }),
   setUserInteracting: (interacting) => set({ isUserInteracting: interacting }),
-  setIsCinematicMode: (enabled) => set({ isCinematicMode: enabled }),
-  toggleCinematicMode: () => {
-    const currentMode = get().isCinematicMode;
-    set({ isCinematicMode: !currentMode });
-    return !currentMode;
-  },
 }));

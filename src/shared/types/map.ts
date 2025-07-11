@@ -11,5 +11,4 @@ export interface MapAPI {
   getCurrentZoom: () => number;
   getCurrentCenter: () => [number, number] | null;
   resetView: () => void;
-  toggleCinematicMode: () => boolean;
 }

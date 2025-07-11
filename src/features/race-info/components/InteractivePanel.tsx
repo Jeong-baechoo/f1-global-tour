@@ -20,8 +20,6 @@ interface InteractivePanelProps {
   module: 'next-race' | 'circuit-detail' | 'team-hq' | null;
   data?: PanelData | null;
   onExploreCircuit?: () => void;
-  isCinematicMode?: boolean;
-  onToggleCinematicMode?: () => void;
 }
 
 // Header configuration based on module type
@@ -65,9 +63,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
   isMinimized = false,
   module,
   data,
-  onExploreCircuit,
-  isCinematicMode = false,
-  onToggleCinematicMode
+  onExploreCircuit
 }) => {
   const { language } = useLanguage();
   const { setPanelModule, setPanelData } = usePanelStore();
@@ -130,8 +126,6 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
           data={data as CircuitDetailData}
           isMobile={isMobile}
           sheetState={isMobile ? sheetState : undefined}
-          isCinematicMode={isCinematicMode}
-          onToggleCinematicMode={onToggleCinematicMode}
         />;
       case 'team-hq':
         return <TeamHQPanel

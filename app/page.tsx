@@ -42,7 +42,6 @@ export default function Home() {
   const [panelMinimized, setPanelMinimized] = useState(false);
   const [panelData, setPanelData] = useState<PanelData | null>(null);
   const mapRef = useRef<MapAPI | null>(null);
-  const [isCinematicMode, setIsCinematicMode] = useState(false);
   const initialFocusTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
@@ -384,7 +383,6 @@ export default function Home() {
         <Map
         ref={mapRef}
         onMarkerClick={handleMarkerClick}
-        onCinematicModeChange={setIsCinematicMode}
         onUserInteraction={handleUserInteraction}
         // Circuit 관련 props
         isCircuitView={isCircuitView}
@@ -575,14 +573,6 @@ export default function Home() {
         module={panelModule}
         data={panelData}
         onExploreCircuit={handleExploreCircuit}
-        isCinematicMode={isCinematicMode}
-        onToggleCinematicMode={() => {
-          // 시네마틱 모드 토글
-          if (mapRef.current?.toggleCinematicMode) {
-            const isEnabled = mapRef.current.toggleCinematicMode();
-            setIsCinematicMode(isEnabled);
-          }
-        }}
       />
     </>
   );
