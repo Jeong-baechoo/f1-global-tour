@@ -9,8 +9,6 @@ interface AppState {
   language: Language;
   
   // 액션
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
   setLanguage: (language: Language) => void;
 }
 
@@ -21,10 +19,9 @@ const createStore = (set: (partial: Partial<AppState>) => void) => ({
   language: 'en' as Language,
   
   // 액션 구현
-  setLoading: (loading: boolean) => set({ isLoading: loading }),
-  setError: (error: string | null) => set({ error }),
   setLanguage: (language: Language) => set({ language }),
 });
 
 // devtools 일시적으로 비활성화
+// 현재 사용하지 않더라도 해당 상수는 유지하는 것이 좋음
 export const useAppStore = create<AppState>()(createStore);

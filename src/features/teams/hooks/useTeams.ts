@@ -1,5 +1,7 @@
 import { useEffect, useCallback } from 'react';
+// noinspection ES6PreferShortImport
 import { useTeamStore } from '../store/useTeamStore';
+// noinspection ES6PreferShortImport
 import { TeamService } from '../services/TeamService';
 
 const teamService = new TeamService();

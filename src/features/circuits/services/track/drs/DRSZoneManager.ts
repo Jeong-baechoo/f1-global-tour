@@ -12,8 +12,8 @@ const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround
 
 // Create chevron SVG
 const createChevronSVG = (color: string = DRS_COLORS.ZONE_ACTIVE, opacity: number = 1): string => {
-  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 15L12 9L18 15" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>
+  return `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 15L12 9L18 15" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${opacity}" style="fill:none"/>
   </svg>`;
 };
 
@@ -189,7 +189,7 @@ export class DRSZoneManager {
     const drsConfig = DRS_ZONES[circuitId];
     if (!drsConfig) return;
 
-    let drsZones: Array<{ start: number; end: number }> = [];
+    let drsZones: Array<{ start: number; end: number }>;
 
     if (drsConfig === 'dynamic') {
       const totalPoints = trackCoordinates.length;

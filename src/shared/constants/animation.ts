@@ -40,16 +40,4 @@ export const ANIMATION_CONFIG = {
   rotationSpeed: ANIMATION_TIMINGS.ROTATION_SPEED
 } as const;
 
-// Globe occlusion animation settings
-export const OCCLUSION_SETTINGS = {
-  BASE_THRESHOLD: 90,     // Base longitude difference threshold in degrees
-  PITCH_FACTOR: 0.3,      // How much pitch affects occlusion threshold
-  RENDER_THROTTLE: 32     // Milliseconds between render checks (~2 frames at 60fps)
-} as const;
 
-// Track animation settings
-export const TRACK_ANIMATION = {
-  INTERPOLATION_FACTOR: 5,
-  SECTOR_THRESHOLD: 0.01,
-  MAX_DISTANCE_THRESHOLD: 0.1
-} as const;

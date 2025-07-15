@@ -46,38 +46,8 @@ export class TeamService {
     return teams.find(team => team.id === id) || null;
   }
 
-  /**
-   * Get UK-based teams
-   */
-  async getUKTeams(): Promise<Team[]> {
-    const teams = await this.getTeams();
-    return teams.filter(team => {
-      const country = team.headquarters.country;
-      return typeof country === 'object' && country.en === 'United Kingdom';
-    });
-  }
 
-  /**
-   * Get teams by country
-   */
-  async getTeamsByCountry(country: string): Promise<Team[]> {
-    const teams = await this.getTeams();
-    return teams.filter(team => {
-      const teamCountry = team.headquarters.country;
-      return typeof teamCountry === 'object' && teamCountry.en === country;
-    });
-  }
   
-  /**
-   * Get teams by championship status
-   */
-  async getChampionshipTeams(): Promise<Team[]> {
-    const teams = await this.getTeams();
-    return teams.filter(team => 
-      team.championships2025 && 
-      (team.championships2025.totalPoints ?? 0) > 0
-    );
-  }
   
   /**
    * Get team colors for map styling
@@ -100,12 +70,6 @@ export class TeamService {
     return colorMap[teamId] || { primary: '#666666' };
   }
   
-  /**
-   * Clear cache
-   */
-  clearCache(): void {
-    this.cache.clear();
-  }
   
   /**
    * Get data from cache if valid

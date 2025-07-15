@@ -1,7 +1,7 @@
 import { DRSZoneManager } from '../drs/DRSZoneManager';
-import { DRSAnimationController } from '../animation/DRSAnimationController';
+import { DRSAnimationController } from '@/src/features/circuits/services';
 import { SectorTrackManager } from '../sector/SectorTrackManager';
-import { ElevationTrackManager } from '../elevation/ElevationTrackManager';
+import { ElevationTrackManager } from '@/src/features/circuits/services';
 import mapboxgl from 'mapbox-gl';
 
 type EventHandler = (event: CustomEvent) => void;
@@ -60,28 +60,7 @@ export class TrackEventBus {
     window.addEventListener('toggleElevation', elevationHandler as EventListener);
   }
 
-  /**
-   * Unregister event handlers for a specific track
-   */
-  static unregisterTrackEventHandlers(trackId: string): void {
-    const handlers = this.eventHandlers.get(trackId);
-    if (!handlers) return;
 
-    // Remove event listeners
-    handlers.forEach((handler, eventName) => {
-      window.removeEventListener(eventName, handler as EventListener);
-    });
-
-    // Clean up
-    this.eventHandlers.delete(trackId);
-  }
-
-  /**
-   * Emit a custom event
-   */
-  static emit(eventName: string, detail: Record<string, unknown>): void {
-    window.dispatchEvent(new CustomEvent(eventName, { detail }));
-  }
 
   /**
    * Clean up all event handlers

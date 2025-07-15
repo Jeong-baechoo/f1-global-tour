@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { usePanelStore } from '../store';
 import { NextRacePanel } from './NextRacePanel';
 import { TeamHQPanel } from './TeamHQPanel';
 import { CircuitDetailPanel } from './CircuitDetailPanel';
@@ -66,7 +65,6 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
   onExploreCircuit
 }) => {
   const { language } = useLanguage();
-  const { setPanelModule, setPanelData } = usePanelStore();
   const [isMobile, setIsMobile] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
@@ -91,11 +89,6 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Zustand 스토어와 동기화
-  useEffect(() => {
-    setPanelModule(module);
-    setPanelData(data || null);
-  }, [module, data, setPanelModule, setPanelData]);
 
   // 드래그 중일 때 글로벌 이벤트 리스너 추가
   useEffect(() => {

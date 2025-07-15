@@ -250,38 +250,9 @@ export class CircuitTrackManager {
     }
   }
 
-  private restoreTerrain() {
-    if (!this.map) return;
 
-    try {
-      // Restore terrain with minimal exaggeration
-      if (this.map.getSource('mapbox-dem')) {
-        this.map.setTerrain({
-          source: 'mapbox-dem',
-          exaggeration: 0.001
-        });
-        console.log('🏔️ Terrain restored');
-      }
-    } catch (error) {
-      console.warn('Failed to restore terrain:', error);
-    }
-  }
 
-  hasTrack(circuitId: string): boolean {
-    return this.tracksState.has(circuitId);
-  }
 
-  canShowTrack(): boolean {
-    return this.map ? this.map.getZoom() >= ZOOM_THRESHOLDS.TRACK_VISIBLE : false;
-  }
-
-  getAllTrackSources(): string[] {
-    const sources: string[] = [];
-    this.tracksState.forEach(state => {
-      sources.push(...state.sources);
-    });
-    return sources;
-  }
 
   cleanup() {
     // Remove all tracks

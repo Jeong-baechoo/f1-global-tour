@@ -138,9 +138,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           currentCircuit={currentCircuit}
           drsZoneCount={drsZoneCount}
           drsDetectionCount={drsDetectionCount}
-          onToggleSectorInfo={handleToggleSectorInfo}
-          onToggleDRSInfo={handleToggleDRSInfo}
-          onToggleElevation={handleToggleElevation}
+          onToggleSectorInfoAction={handleToggleSectorInfo}
+          onToggleDRSInfoAction={handleToggleDRSInfo}
+          onToggleElevationAction={handleToggleElevation}
         />
       )}
     </div>

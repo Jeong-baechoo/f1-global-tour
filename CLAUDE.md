@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-F1 Global Tour is a Next.js web application that visualizes Formula 1 teams and circuits on an interactive 3D globe using Mapbox GL. The project showcases F1's global presence through immersive map interactions.
+F1 Global Tour is a Next.js 15 web application that visualizes Formula 1 teams and circuits on an interactive 3D globe using Mapbox GL. The project showcases F1's global presence through immersive map interactions with comprehensive team and circuit data.
 
 ## Development Commands
 
@@ -15,79 +15,121 @@ npm run start     # Start production server
 npm run lint      # Run ESLint
 ```
 
+## Technology Stack
+
+- **Next.js 15.3.4** with App Router and React 19
+- **TypeScript 5** with strict mode enabled
+- **Mapbox GL JS 3.13.0** for 3D map rendering  
+- **Tailwind CSS 3.4.17** for styling
+- **Zustand 5.0.6** for state management
+- **Radix UI** components for accessible UI elements
+
 ## Architecture & Key Components
 
-### Map Implementation (Feature-based Architecture)
-The project has been refactored to use a feature-based architecture:
+### Feature-Based Architecture (v0.5.0+)
+The project uses a modular feature-based architecture with clear separation of concerns:
 
-#### Core Map Components (src/features/map/)
-- `components/Map.tsx`: Main map component that orchestrates all features
+```
+src/
+├── features/           # Domain-specific features
+│   ├── map/           # Core map functionality
+│   ├── teams/         # Team-related features  
+│   ├── circuits/      # Circuit-related features
+│   └── race-info/     # Race information panels
+└── shared/            # Shared utilities and components
+    ├── components/    # Reusable UI components
+    ├── constants/     # Application constants
+    ├── types/         # TypeScript type definitions
+    └── utils/         # Shared utility functions
+```
+
+#### Core Map Components (`src/features/map/`)
+- `components/Map.tsx`: Main map orchestrator with ref-based API
 - `components/MapCanvas.tsx`: Core Mapbox GL instance management
-- `components/MapContainer.tsx`: Layout wrapper for map and controls
-- `services/MapService.ts`: Centralized map operations service
-- `store/`: Zustand store for map state management
+- `components/MapContainer.tsx`: Layout wrapper with responsive design
+- `services/MapService.ts`: Centralized map operations
+- `store/useMapStore.ts`: Zustand state management
 
 #### Feature Modules
-- `src/features/teams/`: Team markers and related functionality
-- `src/features/circuits/`: Circuit markers and track rendering
-- `src/features/race-info/`: Interactive panels and race information
+- **Teams** (`src/features/teams/`): Team markers, headquarters, driver profiles
+- **Circuits** (`src/features/circuits/`): Circuit markers, track rendering, DRS zones  
+- **Race Info** (`src/features/race-info/`): Interactive panels, countdown timers
 
-#### Shared Map Utilities (components/mapbox/)
-- Track rendering and animations
-- Marker management utilities
-- Map constants and configurations
+#### Shared Architecture (`src/shared/`)
+- **Components**: UI components with LocalizedText, sheet dialogs
+- **Constants**: Zoom levels, colors, animation settings
+- **Utils**: Animation helpers, map utilities, data converters
+- **Types**: Comprehensive TypeScript definitions
 
-Performance optimizations:
-- GPU acceleration via `translateZ(0)` 
-- Reduced tile cache size (50)
-- CircuitTrackManager for zoom-based visibility control
-- Event delegation and cleanup patterns
+### Data Structure & Content
+- `data/teams.json`: 10 F1 teams (2025 season) with headquarters, colors, principals
+- `data/circuits.json`: 24 official circuits + Nürburgring with detailed metadata  
+- `public/data/circuits-geojson/`: Individual circuit track coordinates
+- `public/drivers/`: Driver profile photos (2025 grid)
+- `public/cars/`: F1 car images for each team
+- `public/team-logos/`: High-resolution team logos
 
-### Data Structure
-- `data/teams.json`: 10 F1 teams with headquarters locations, colors, principals
-- `data/circuits.json`: 24 official 2024 circuits + Nürburgring
-- `data/nurburgring-track.json`: Track coordinates for animation
-
-### Current Implementation Status
-- ✅ All 10 F1 teams with custom markers and styling
-- ✅ All 24 circuits with animated track drawing
-- ✅ Dynamic sector markers, DRS zones, and elevation
-- ✅ Zoom-based visibility management
-- ✅ Feature-based architecture fully implemented
-
-## Performance Considerations
-
-The map has been optimized for performance:
-- Removed 3D terrain (setTerrain) for better GPU performance
-- Using satellite-v9 style (minimal layers)
-- Removed all label layers on load
-- FlyTo animations use reduced speed (0.6) and curve (1)
-- Track rendering uses single layer instead of 3
+### Performance Optimizations
+- **GPU acceleration** via `translateZ(0)` transforms
+- **Reduced Mapbox tile cache** (size: 50) for memory efficiency
+- **Zoom-based visibility** control for circuit tracks
+- **Factory pattern** for marker creation (85% code reduction)
+- **Local asset optimization** (5-10x faster than external URLs)
+- **Ref-based state management** to prevent unnecessary re-renders
 
 ## Environment Setup
 
-Requires Mapbox access token:
-- Currently hardcoded in Map.tsx: `pk.eyJ1IjoiYmFlY2hvb2tpbmciLCJhIjoiY21iajAwaTd1MGJrZjJqb2g3M3RsZ2hhaiJ9.B1BuVoKpl3Xt1HSZq6ugeA`
-- Also available in `.env.local` as `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
+### Mapbox Configuration
+Requires Mapbox access token for map rendering:
+- Environment variable: `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` in `.env.local`
+- Fallback hardcoded token available in Map.tsx
+- Uses satellite-v9 style (minimal layers) for performance
 
-## Common Tasks
+### TypeScript Configuration
+- **Strict mode enabled** with comprehensive type checking
+- **Path mapping**: `@/*` points to project root for clean imports
+- **ES2017 target** with modern module resolution
 
-### Adding New Team Markers
-1. Team data exists in `data/teams.json`
-2. Markers are created via `src/features/teams/hooks/useTeamMarkers.tsx`
-3. Styling configuration in `components/mapbox/markers/team/teamMarkerConfig.ts`
-4. Automatic cleanup handled by MarkerService
+## Development Workflow
 
-### Adding Circuit Markers
-1. Circuit data in `data/circuits.json`
-2. Markers created via `src/features/circuits/hooks/useCircuitMarkers.tsx`
-3. Track data in `data/circuits/[circuit-id]/[circuit-id]-track.geojson`
-4. CircuitTrackManager handles zoom-based visibility
+### Branch Strategy
+- **`master`**: Production-ready code (protected)
+- **`develop`**: Active development branch (default, current)
+- **Feature branches**: `feature/*`, `fix/*`, `hotfix/*`
 
-### Modifying Map Behavior
-- Globe rotation: Adjust `secondsPerRevolution` (currently 180)
-- FlyTo animations: Modify speed, curve, duration parameters
-- Marker styles: Update DOM element styles in marker creation
+### Commit Message Format
+Follow conventional commits:
+- `feat:` New features
+- `fix:` Bug fixes  
+- `docs:` Documentation updates
+- `style:` Code style changes
+- `refactor:` Code refactoring
+- `test:` Test additions/modifications
+- `chore:` Build/config changes
+
+## Common Development Tasks
+
+### Adding Team Content
+1. **Team data**: Update `data/teams.json` with new team information
+2. **Markers**: Teams use `TeamMarkerFactory.createMultiple()` pattern
+3. **Assets**: Add team logos to `public/team-logos/`
+4. **Driver profiles**: Add photos to `public/drivers/` directory
+
+### Adding Circuit Content  
+1. **Circuit data**: Update `data/circuits.json` 
+2. **Track coordinates**: Add GeoJSON files to `public/data/circuits-geojson/`
+3. **Circuit markers**: Created via `useCircuitMarkers` hook
+4. **Visibility**: Managed by `CircuitTrackManager` based on zoom level
+
+### Internationalization
+- **Text management**: Use `getText()` from `@/utils/i18n`
+- **Localized content**: Components use `LocalizedText` for multi-language support
+- **Language files**: Located in `locales/en/` and `locales/ko/`
+
+### Map Customization
+- **Globe rotation**: Modify `secondsPerRevolution` in animation constants
+- **FlyTo behavior**: Adjust speed/curve parameters in camera configs
+- **Performance**: All optimizations documented in performance section above
 
 ## Critical Guidelines to Prevent Known Issues
 
@@ -115,9 +157,40 @@ const marker = new mapboxgl.Marker(markerElement, {
 .addTo(map);
 ```
 
-## Git Workflow
+## Key Dependencies & Utilities
 
-Current git status shows:
-- Modified: `app/globals.css`, `components/Map.tsx`
-- Branch: master
-- Use commit format: `<type>: <description>` (feat, fix, docs, style, refactor, test, chore)
+### UI Component Libraries
+- **Radix UI**: Accessible components (`@radix-ui/react-dialog`, `@radix-ui/react-slot`)
+- **Lucide React**: Icon library for consistent iconography
+- **Heroicons**: Additional icon set for specific UI elements
+
+### Styling & Utilities  
+- **clsx & tailwind-merge**: Combined via `cn()` utility in `@/lib/utils`
+- **class-variance-authority**: Component variant system
+- **Tailwind CSS**: Utility-first styling framework
+
+### State Management
+- **Zustand**: Lightweight state management for map, teams, circuits, and panels
+- **React Context**: LanguageContext for internationalization
+
+### Map & Geospatial
+- **Mapbox GL JS**: Core mapping library
+- **@mapbox/mapbox-gl-geocoder**: Search functionality (if needed)
+- **GeoJSON**: Circuit track coordinate data format
+
+## Project Maintenance
+
+### Code Quality
+- ESLint configuration with Next.js recommended rules
+- TypeScript strict mode enforced
+- Conventional commit message format required
+
+### Asset Management  
+- **Local assets preferred** over external URLs for performance
+- **Organized public directory** with clear folder structure
+- **Optimized images** for web delivery
+
+### Documentation
+- Comprehensive README.md with feature overview
+- CHANGELOG.md tracking version history  
+- Architecture documentation in docs/ directory

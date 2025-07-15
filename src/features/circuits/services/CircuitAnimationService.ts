@@ -22,7 +22,6 @@ interface CircuitRotationHandlers {
     enableCinematicMode: () => void;
     disableCinematicMode: () => void;
     toggleCinematicMode: () => boolean;
-    isCinematicModeEnabled: () => boolean;
     cleanup?: () => void;
   };
   onCinematicModeToggle?: (enabled: boolean) => void;
@@ -147,89 +146,89 @@ export class CircuitAnimationService {
           });
         }
 
-        drawTrack(map, {
-            trackId: `${circuit.id}-track`,
-            trackCoordinates: trackData,
-            color: getCircuitColor(circuit.id),
-            delay: CIRCUIT_VIEW.DRAW_DELAY,
-            sectorMarkerCleanup: sectorMarkerCleanup || undefined, // 청리업 함수 전달 (null을 undefined로 변환)
-            onComplete: () => {
-              // Check zoom level before showing markers
-              const finalZoom = map.getZoom();
-              console.log('🎯 Track drawing complete, final zoom:', finalZoom);
-              
-              // 트랙 그리기 완료 후 DRS Detection과 Speed Trap 마커 표시 (뉘르부르크링 제외)
-              if (circuit.id !== 'nurburgring' && finalZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
-                import('../components/markers/SectorMarkerManager').then(({ showDRSAndSpeedTrapMarkers }) => {
-                  setTimeout(() => {
-                    showDRSAndSpeedTrapMarkers(map);
-                  }, CIRCUIT_VIEW.MARKER_DELAY); // 트랙 그리기 완료 후 0.5초 딜레이
-                });
-              }
+        await drawTrack(map, {
+          trackId: `${circuit.id}-track`,
+          trackCoordinates: trackData,
+          color: getCircuitColor(circuit.id),
+          delay: CIRCUIT_VIEW.DRAW_DELAY,
+          sectorMarkerCleanup: sectorMarkerCleanup || undefined, // 청리업 함수 전달 (null을 undefined로 변환)
+          onComplete: () => {
+            // Check zoom level before showing markers
+            const finalZoom = map.getZoom();
+            console.log('🎯 Track drawing complete, final zoom:', finalZoom);
 
-              // 회전 애니메이션 시작
-              if (onRotationStart) {
-                onRotationStart();
-              }
+            // 트랙 그리기 완료 후 DRS Detection과 Speed Trap 마커 표시 (뉘르부르크링 제외)
+            if (circuit.id !== 'nurburgring' && finalZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
+              import('../components/markers/SectorMarkerManager').then(({showDRSAndSpeedTrapMarkers}) => {
+                setTimeout(() => {
+                  showDRSAndSpeedTrapMarkers(map);
+                }, CIRCUIT_VIEW.MARKER_DELAY); // 트랙 그리기 완료 후 0.5초 딜레이
+              });
+            }
 
-              const rotation = createCircuitRotation(
+            // 회전 애니메이션 시작
+            if (onRotationStart) {
+              onRotationStart();
+            }
+
+            const rotation = createCircuitRotation(
                 map,
                 cameraConfig.bearing || 0
-              );
+            );
 
-              // Store event handlers for cleanup
-              const dragStartHandler = () => rotation.stopRotation();
-              const dragEndHandler = () => rotation.startRotation();
-              const zoomStartHandler = () => rotation.stopRotation();
-              const zoomEndHandler = () => rotation.startRotation();
-              const moveHandler = () => rotation.stopRotation();
-              const touchHandler = () => rotation.stopRotation();
+            // Store event handlers for cleanup
+            const dragStartHandler = () => rotation.stopRotation();
+            const dragEndHandler = () => rotation.startRotation();
+            const zoomStartHandler = () => rotation.stopRotation();
+            const zoomEndHandler = () => rotation.startRotation();
+            const moveHandler = () => rotation.stopRotation();
+            const touchHandler = () => rotation.stopRotation();
 
-              const handlersObj = {
-                dragStart: dragStartHandler,
-                dragEnd: dragEndHandler,
-                zoomStart: zoomStartHandler,
-                zoomEnd: zoomEndHandler,
-                moveHandler,
-                touchHandler
-              };
+            const handlersObj = {
+              dragStart: dragStartHandler,
+              dragEnd: dragEndHandler,
+              zoomStart: zoomStartHandler,
+              zoomEnd: zoomEndHandler,
+              moveHandler,
+              touchHandler
+            };
 
-              rotation.setHandlers(handlersObj);
+            rotation.setHandlers(handlersObj);
 
-              // 이벤트 핸들러 등록
-              map.on('dragstart', dragStartHandler);
-              map.on('dragend', dragEndHandler);
-              map.on('zoomstart', zoomStartHandler);
-              map.on('zoomend', zoomEndHandler);
-              map.on('movestart', moveHandler);
-              map.on('touchstart', touchHandler);
+            // 이벤트 핸들러 등록
+            map.on('dragstart', dragStartHandler);
+            map.on('dragend', dragEndHandler);
+            map.on('zoomstart', zoomStartHandler);
+            map.on('zoomend', zoomEndHandler);
+            map.on('movestart', moveHandler);
+            map.on('touchstart', touchHandler);
 
-              // Store handlers and rotation object for potential cleanup later
-              mapWithHandlers._circuitRotationHandlers = {
-                dragStart: dragStartHandler,
-                dragEnd: dragEndHandler,
-                zoomStart: zoomStartHandler,
-                zoomEnd: zoomEndHandler,
-                cleanup: () => {
-                  // 이벤트 핸들러 제거
-                  map.off('dragstart', dragStartHandler);
-                  map.off('dragend', dragEndHandler);
-                  map.off('zoomstart', zoomStartHandler);
-                  map.off('zoomend', zoomEndHandler);
-                  map.off('movestart', moveHandler);
-                  map.off('touchstart', touchHandler);
-                  rotation.cleanup();
+            // Store handlers and rotation object for potential cleanup later
+            mapWithHandlers._circuitRotationHandlers = {
+              dragStart: dragStartHandler,
+              dragEnd: dragEndHandler,
+              zoomStart: zoomStartHandler,
+              zoomEnd: zoomEndHandler,
+              cleanup: () => {
+                // 이벤트 핸들러 제거
+                map.off('dragstart', dragStartHandler);
+                map.off('dragend', dragEndHandler);
+                map.off('zoomstart', zoomStartHandler);
+                map.off('zoomend', zoomEndHandler);
+                map.off('movestart', moveHandler);
+                map.off('touchstart', touchHandler);
+                rotation.cleanup();
 
-                  // 마커 cleanup 함수들 호출
-                  if (sectorMarkerCleanup) sectorMarkerCleanup();
-                  if (drsDetectionCleanup) drsDetectionCleanup();
-                  if (speedTrapCleanup) speedTrapCleanup();
-                },
-                rotation: rotation,
-                onCinematicModeToggle: onCinematicModeToggle
-              };
-            }
-          });
+                // 마커 cleanup 함수들 호출
+                if (sectorMarkerCleanup) sectorMarkerCleanup();
+                if (drsDetectionCleanup) drsDetectionCleanup();
+                if (speedTrapCleanup) speedTrapCleanup();
+              },
+              rotation: rotation,
+              onCinematicModeToggle: onCinematicModeToggle
+            };
+          }
+        });
       } else {
         // No track data - just start rotation animation
         if (onRotationStart) {

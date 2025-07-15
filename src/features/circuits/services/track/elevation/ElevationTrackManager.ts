@@ -509,29 +509,4 @@ export class ElevationTrackManager {
     this.toggle3DElevationTrack(map, trackId, false);
   }
 
-  /**
-   * Remove 3D elevation track completely
-   */
-  static remove3DElevationTrack(
-    map: mapboxgl.Map,
-    trackId: string
-  ): void {
-    const source3DId = `${trackId}-3d`;
-    const extrusionLayerId = `${source3DId}-extrusion`;
-    const topLayerId = `${source3DId}-top`;
-
-    // Remove layers
-    if (map.getLayer(extrusionLayerId)) {
-      map.removeLayer(extrusionLayerId);
-    }
-    
-    if (map.getLayer(topLayerId)) {
-      map.removeLayer(topLayerId);
-    }
-
-    // Remove source
-    if (map.getSource(source3DId)) {
-      map.removeSource(source3DId);
-    }
-  }
 }

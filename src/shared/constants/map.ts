@@ -1,13 +1,5 @@
 // Map configuration constants
 
-// Main map configuration
-export const MAP_CONFIG = {
-  style: 'mapbox://styles/mapbox/dark-v11',
-  center: [0, 20] as [number, number],
-  zoom: 1.5,
-  projection: { name: 'globe' as const }
-} as const;
-
 // Map pitch angles - camera tilt settings
 export const PITCH_ANGLES = {
   default: 0,   // Default (flat)
@@ -58,27 +50,3 @@ export const LAYERS_TO_REMOVE = [
   'transit-label'
 ];
 
-// Terrain configuration
-export const TERRAIN_CONFIG = {
-  source: 'mapbox-dem',
-  sourceConfig: {
-    type: 'raster-dem' as const,
-    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-    tileSize: 512,
-    maxzoom: 14
-  },
-  initialExaggeration: 1.8
-};
-
-// Terrain exaggeration - height exaggeration settings
-export const TERRAIN_EXAGGERATION = {
-  far: 2.0,        // zoom < 5 (globe view)
-  medium: 1.5,     // zoom >= 10 (detail view)
-  transition: 0.1  // transition step between zoom 5-10
-} as const;
-
-// Marker occlusion states
-export enum MarkerOcclusionState {
-  VISIBLE = 'visible',
-  OCCLUDED = 'occluded'
-}

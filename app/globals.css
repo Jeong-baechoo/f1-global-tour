@@ -1,11 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&display=swap');
+@import 'mapbox-gl/dist/mapbox-gl.css';
+@import '../styles/circuit-marker.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Circuit Marker styles */
-@import '../styles/circuit-marker.css';
 
 /* Safe area support for mobile devices */
 .pb-safe {
@@ -115,8 +114,6 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 24, 1, 0.2) transparent;
 }
-
-@import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
   --background: #1A1A1A;

@@ -14,7 +14,6 @@ export { useCircuitStore } from './store/useCircuitStore';
 // Types
 export type {
   Circuit,
-  CircuitMarker as CircuitMarkerType,
   TrackData,
   CircuitView,
   CircuitsState,

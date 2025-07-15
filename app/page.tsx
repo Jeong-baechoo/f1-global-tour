@@ -357,14 +357,11 @@ export default function Home() {
       if (!mapRef.current || hasUserInteracted) return;
 
       // Add a small delay for flyTo to ensure map is ready
-      const flyToTimer = setTimeout(() => {
+      initialFocusTimerRef.current = setTimeout(() => {
         if (nextRace.id && mapRef.current && !hasUserInteracted) {
           mapRef.current.flyToCircuit(nextRace.id, true);
         }
       }, 500);
-
-      // flyToTimer를 정리할 수 있도록 저장
-      initialFocusTimerRef.current = flyToTimer;
     }, 2000);
 
     return () => {

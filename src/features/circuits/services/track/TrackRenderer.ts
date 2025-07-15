@@ -4,11 +4,11 @@ import { ANIMATION_CONFIG, TRACK_LINE_WIDTHS, OPACITY, BLUR, ZOOM_THRESHOLDS } f
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
 import { trackStateManager } from './state/TrackStateManager';
 import { DRSZoneManager } from './drs/DRSZoneManager';
-import { DRSAnimationController } from './animation/DRSAnimationController';
+import { DRSAnimationController } from '@/src/features/circuits/services';
 import { SectorTrackManager } from './sector/SectorTrackManager';
 import { TrackEventBus } from './events/TrackEventBus';
 import { getSectorData as getSectorMarkerData } from '../../components/markers/SectorMarkerManager';
-import { ElevationTrackManager } from './elevation/ElevationTrackManager';
+import { ElevationTrackManager } from '@/src/features/circuits/services';
 
 // New TrackDrawOptions interface for the refactored version
 interface TrackDrawOptions {
@@ -43,8 +43,7 @@ export class TrackRenderer {
     const { 
       coordinates, 
       trackId, 
-      color = '#FF1801', 
-      width = 5, 
+      color = '#FF1801',
       animationDelay = 0,
       onProgress,
       onComplete,
@@ -91,7 +90,7 @@ export class TrackRenderer {
       }
 
       // Add track layers
-      this.addTrackLayers(map, trackId, color, width, circuitId);
+      this.addTrackLayers(map, trackId, color, circuitId);
 
       // Load sector marker data
       const rawSectorData = await getSectorMarkerData(circuitId);
@@ -144,7 +143,6 @@ export class TrackRenderer {
     map: mapboxgl.Map,
     trackId: string,
     color: string,
-    width: number,
     circuitId: string
   ): void {
     // Track outline layer
@@ -311,7 +309,7 @@ export class TrackRenderer {
       }
     };
 
-    animate();
+    await animate();
   }
 
   /**
@@ -380,7 +378,7 @@ export class TrackRenderer {
       // Use hardcoded position for sector 3 on specific circuits
       if (sector.number === 3 && this.HARDCODED_SECTOR3_POSITIONS[circuitId]) {
         originalProgress = this.HARDCODED_SECTOR3_POSITIONS[circuitId];
-        originalTrackIndex = Math.floor(originalProgress * trackCoordinates.length);
+        Math.floor(originalProgress * trackCoordinates.length);
       } else {
         // Normal case: find sector position in original track
         // Handle both array and object formats for position

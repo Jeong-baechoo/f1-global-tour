@@ -17,9 +17,9 @@ interface MapControlsProps {
   currentCircuit: Circuit | null;
   drsZoneCount: number;
   drsDetectionCount: number;
-  onToggleSectorInfo: (enabled: boolean) => void;
-  onToggleDRSInfo: (enabled: boolean) => void;
-  onToggleElevation: (enabled: boolean) => void;
+  onToggleSectorInfoAction: (enabled: boolean) => void;
+  onToggleDRSInfoAction: (enabled: boolean) => void;
+  onToggleElevationAction: (enabled: boolean) => void;
 }
 
 /**
@@ -35,18 +35,18 @@ export const MapControls: React.FC<MapControlsProps> = ({
   currentCircuit,
   drsZoneCount,
   drsDetectionCount,
-  onToggleSectorInfo,
-  onToggleDRSInfo,
-  onToggleElevation,
+  onToggleSectorInfoAction,
+  onToggleDRSInfoAction,
+  onToggleElevationAction,
 }) => {
   return (
     <>
       {/* Circuit Info Panel - 항상 표시 (원본과 동일) */}
       <CircuitInfoPanel
         isVisible={true}
-        onToggleSectorInfo={onToggleSectorInfo}
-        onToggleDRSInfo={onToggleDRSInfo}
-        onToggleElevation={onToggleElevation}
+        onToggleSectorInfoAction={onToggleSectorInfoAction}
+        onToggleDRSInfoAction={onToggleDRSInfoAction}
+        onToggleElevationAction={onToggleElevationAction}
         sectorInfoEnabled={sectorInfoEnabled}
         drsInfoEnabled={drsInfoEnabled}
         elevationEnabled={elevationEnabled}

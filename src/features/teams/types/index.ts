@@ -3,7 +3,6 @@ import { Location } from '@/src/shared/types/common';
 
 // Re-export shared types
 export type { Team } from '@/src/shared/types/team';
-export type { TeamMarkerData as MarkerData } from '@/src/shared/types/marker';
 
 // Teams module specific types
 export interface TeamMarker {
@@ -13,12 +12,6 @@ export interface TeamMarker {
   marker?: mapboxgl.Marker;
 }
 
-export interface TeamHQView {
-  center: [number, number];
-  zoom: number;
-  pitch?: number;
-  bearing?: number;
-}
 
 export interface TeamsState {
   teams: SharedTeam[];

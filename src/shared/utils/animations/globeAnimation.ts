@@ -303,7 +303,6 @@ export const createCircuitRotation = (
     enableCinematicMode,
     disableCinematicMode,
     toggleCinematicMode,
-    isCinematicModeEnabled: () => cinematicModeEnabled,
     cleanup,
     setHandlers: (h: CircuitRotationHandlers) => { handlers = h; }
   };

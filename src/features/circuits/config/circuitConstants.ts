@@ -16,10 +16,3 @@ export const CIRCUIT_VIEW = {
   MARKER_DELAY: 500
 } as const;
 
-// Circuit marker states
-export const CIRCUIT_MARKER_STATES = {
-  DEFAULT: 'default',
-  HOVER: 'hover',
-  ACTIVE: 'active',
-  NEXT_RACE: 'next-race'
-} as const;

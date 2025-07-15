@@ -119,17 +119,4 @@ export class DRSAnimationController {
     }
   }
 
-  /**
-   * Stop and clean up DRS animation
-   */
-  static stopAnimation(trackId: string): void {
-    trackStateManager.removeDRSAnimation(trackId);
-  }
-
-  /**
-   * Clear all DRS animations
-   */
-  static clearAllAnimations(): void {
-    trackStateManager.clearAllDRSAnimations();
-  }
 }

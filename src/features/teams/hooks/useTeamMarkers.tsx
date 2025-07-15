@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Team, TeamMarkerOptions } from '../types';
-import { useTeamStore } from '../store/useTeamStore';
+import { useTeamStore } from '@/src/features/teams';
 import { isMobile } from '@/src/shared/utils/viewport';
 import { getTeamMarkerConfig } from '../components/markers/teamMarkerConfig';
 import { ZOOM_THRESHOLDS, MARKER_DIMENSIONS } from '@/src/shared/constants';

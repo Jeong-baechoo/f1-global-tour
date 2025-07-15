@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { ChevronRight, Car, Trophy, Newspaper, Store } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getText, type LocalizedText } from '@/utils/i18n';
+import { getText } from '@/utils/i18n';
 import { TeamHQData } from '../types';
 
 // 국가 코드를 국기 이모지로 변환하는 함수
@@ -169,7 +169,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                     <p className="text-sm text-white/50 uppercase tracking-[0.15em]">
                                         <span className="text-white/30">{language === 'ko' ? '팀 대표' : 'Principal'}:</span>
                                         <span className="text-white/70 font-medium ml-2">
-                                            {typeof data.principal === 'string' ? data.principal : getText(data.principal as LocalizedText, language)}
+                                            {typeof data.principal === 'string' ? data.principal : getText(data.principal, language)}
                                         </span>
                                     </p>
                                 </div>

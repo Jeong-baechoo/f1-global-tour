@@ -46,24 +46,6 @@ export const ZOOM_THRESHOLDS = {
   HIDE: 14
 } as const;
 
-// Circuit marker visibility settings
-export const CIRCUIT_MARKER_VISIBILITY = {
-  startFade: ZOOM_THRESHOLDS.CIRCUIT_FADE_START,
-  completelyHidden: ZOOM_THRESHOLDS.CIRCUIT_HIDDEN,
-  minOpacityForClick: 0.3
-} as const;
-
-// Zoom animation settings
-export const ZOOM_ANIMATION = {
-  // Scrollbar configuration
-  CENTER_POSITION: 50,
-  BASE_SPEED: 0.001,
-  MAX_SPEED: 0.03,
-  FRAME_RATE: 16,
-  RETURN_DURATION: 800,
-  BUTTON_ZOOM_STEP: 0.5,
-  INTERACTION_TIMEOUT: 100
-} as const;
 
 // Zoom level states enum
 export enum ZoomLevel {

@@ -1,5 +1,7 @@
 import { useEffect, useCallback } from 'react';
+// noinspection ES6PreferShortImport
 import { useCircuitStore } from '../store/useCircuitStore';
+// noinspection ES6PreferShortImport
 import { CircuitService } from '../services/CircuitService';
 
 const circuitService = new CircuitService();
@@ -47,8 +49,7 @@ export const useCircuits = () => {
   
   const getNextRaceCircuit = async () => {
     try {
-      const nextRace = await circuitService.getNextRaceCircuit();
-      return nextRace;
+      return await circuitService.getNextRaceCircuit();
     } catch (err) {
       console.error('Error getting next race:', err);
       return null;

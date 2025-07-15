@@ -20,22 +20,3 @@ export const BLUR = {
   HEAVY: 3
 } as const;
 
-// Timeout values
-export const TIMEOUTS = {
-  markerDelay: 100,
-  mapReadyCheck: 50,
-  mapReadyDelay: 100,
-  languageChangeDelay: 50,
-  trackDrawDelay: 500,
-  drsMarkerDelay: 500,
-  imageLoadTimeout: 100
-} as const;
-
-// Z-index values for layering
-export const Z_INDEX = {
-  MAP: 0,
-  MARKERS: 10,
-  CONTROLS: 20,
-  OVERLAY: 30,
-  MODAL: 40
-} as const;

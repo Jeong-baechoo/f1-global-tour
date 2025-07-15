@@ -3,15 +3,7 @@ import { getSectorData } from '@/src/shared/utils/data/trackDataLoader';
 import { loadCircuitGeoJSON } from '@/src/shared/utils/data/dynamicSectorLoader';
 import { trackStateManager } from '../state/TrackStateManager';
 import { trackManager } from '@/src/shared/utils/map/trackManager';
-import { SECTOR_COLORS } from '@/src/shared/constants/colors';
 
-// Sector colors array for easier indexing
-const SECTOR_COLOR_ARRAY = [
-  SECTOR_COLORS.SECTOR_1,
-  SECTOR_COLORS.SECTOR_2,
-  SECTOR_COLORS.SECTOR_3,
-  SECTOR_COLORS.SECTOR_4
-];
 
 export class SectorTrackManager {
   /**
@@ -44,7 +36,7 @@ export class SectorTrackManager {
               const sectorNumber = feature.properties.sector as number;
               
               // Sector colors
-              let sectorColor = '#FF0000'; // Default red
+              let sectorColor: string; // Default red
               switch (sectorNumber) {
                 case 1:
                   sectorColor = '#FF0000'; // Red
@@ -232,10 +224,4 @@ export class SectorTrackManager {
     }
   }
 
-  /**
-   * Get sector color by index
-   */
-  static getSectorColor(sectorIndex: number): string {
-    return SECTOR_COLOR_ARRAY[sectorIndex] || '#FFFFFF';
-  }
 }

@@ -23,15 +23,6 @@ export interface Circuit {
 // 서킷 관련 추가 타입들 - 통합 마커 타입으로 대체됨
 // @deprecated Use CircuitMarkerData from '@/src/shared/types/marker' instead
 
-// 트랙 데이터
-export interface TrackData {
-  type: 'Feature';
-  properties: Record<string, unknown>;
-  geometry: {
-    type: 'LineString';
-    coordinates: number[][];
-  };
-}
 
 // Track state management types
 export interface TrackLayerInfo {

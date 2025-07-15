@@ -7,9 +7,9 @@ import type { Circuit } from '@/src/shared/types/circuit';
 
 interface CircuitInfoPanelProps {
   isVisible: boolean;
-  onToggleSectorInfo: (enabled: boolean) => void;
-  onToggleDRSInfo: (enabled: boolean) => void;
-  onToggleElevation: (enabled: boolean) => void;
+  onToggleSectorInfoAction: (enabled: boolean) => void;
+  onToggleDRSInfoAction: (enabled: boolean) => void;
+  onToggleElevationAction: (enabled: boolean) => void;
   sectorInfoEnabled: boolean;
   drsInfoEnabled: boolean;
   elevationEnabled: boolean;
@@ -20,9 +20,9 @@ interface CircuitInfoPanelProps {
 
 const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
   isVisible,
-  onToggleSectorInfo,
-  onToggleDRSInfo,
-  onToggleElevation,
+  onToggleSectorInfoAction,
+  onToggleDRSInfoAction,
+  onToggleElevationAction,
   sectorInfoEnabled,
   drsInfoEnabled,
   elevationEnabled,
@@ -125,7 +125,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
                 Sector Information
               </h4>
               <button
-                onClick={() => onToggleSectorInfo(!sectorInfoEnabled)}
+                onClick={() => onToggleSectorInfoAction(!sectorInfoEnabled)}
                 className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
                   sectorInfoEnabled ? 'bg-blue-500' : 'bg-white/20'
                 }`}
@@ -161,7 +161,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
                 DRS Information
               </h4>
               <button
-                onClick={() => onToggleDRSInfo(!drsInfoEnabled)}
+                onClick={() => onToggleDRSInfoAction(!drsInfoEnabled)}
                 className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
                   drsInfoEnabled ? 'bg-green-500' : 'bg-white/20'
                 }`}
@@ -208,7 +208,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
                 3D Elevation Track
               </h4>
               <button
-                onClick={() => onToggleElevation(!elevationEnabled)}
+                onClick={() => onToggleElevationAction(!elevationEnabled)}
                 className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
                   elevationEnabled ? 'bg-purple-500' : 'bg-white/20'
                 }`}

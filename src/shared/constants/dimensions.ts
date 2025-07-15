@@ -67,17 +67,4 @@ export const TRACK_LINE_WIDTHS = {
   }
 } as const;
 
-// DRS zone dimensions
-export const DRS_DIMENSIONS = {
-  CHEVRON_SPACING: 15,
-  ICON_SIZE: 0.8
-} as const;
-
-// UI breakpoints
-export const BREAKPOINTS = {
-  MOBILE: 640,
-  TABLET: 768,
-  DESKTOP: 1024
-} as const;
-
 // isMobile function removed - use the one from @/src/shared/utils/viewport instead

@@ -179,7 +179,7 @@ export const getSectorData = async (circuitId: string): Promise<SectorData[] | n
         
         return sectorFeatures.map((feature: GeoJSONFeature) => {
           // 섹터별 색상 강제 설정
-          let sectorColor = '#FF0000'; // 기본 빨간색
+          let sectorColor: string; // 기본 빨간색
           switch (feature.properties.sector) {
             case 1:
               sectorColor = '#FF0000'; // 빨간색

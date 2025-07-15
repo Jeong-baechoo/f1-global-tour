@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Circuit, CircuitMarkerOptions } from '../types';
-import { useCircuitStore } from '../store/useCircuitStore';
+import { useCircuitStore } from '@/src/features/circuits';
 import { getText, type Language } from '@/utils/i18n';
 import { isMobile } from '@/src/shared/utils/viewport';
 import { ZOOM_THRESHOLDS, ZoomLevel } from '@/src/shared/constants';

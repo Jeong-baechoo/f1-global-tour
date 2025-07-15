@@ -42,8 +42,7 @@ const getSpeedTrapColor = (): string => {
 // 동적으로 GeoJSON에서 섹터 데이터를 가져오는 함수
 export const getSectorData = async (circuitId: string): Promise<SectorInfo[]> => {
   try {
-    const sectors = await getDynamicSectorData(circuitId);
-    return sectors;
+    return await getDynamicSectorData(circuitId);
   } catch {
     return [];
   }
@@ -52,8 +51,7 @@ export const getSectorData = async (circuitId: string): Promise<SectorInfo[]> =>
 // 동적으로 GeoJSON에서 DRS Detection 데이터를 가져오는 함수
 export const getDRSDetectionData = async (circuitId: string): Promise<DRSDetectionInfo[]> => {
   try {
-    const drsZones = await getDynamicDRSDetectionData(circuitId);
-    return drsZones;
+    return await getDynamicDRSDetectionData(circuitId);
   } catch {
     return [];
   }
@@ -62,8 +60,7 @@ export const getDRSDetectionData = async (circuitId: string): Promise<DRSDetecti
 // 동적으로 GeoJSON에서 Speed Trap 데이터를 가져오는 함수
 export const getSpeedTrapData = async (circuitId: string): Promise<SpeedTrapInfo[]> => {
   try {
-    const speedTraps = await getDynamicSpeedTrapData(circuitId);
-    return speedTraps;
+    return await getDynamicSpeedTrapData(circuitId);
   } catch {
     return [];
   }
@@ -724,38 +721,3 @@ export const addSpeedTrapMarkers = async ({ map, circuitId }: SectorMarkerManage
   };
 };
 
-// 기존 함수도 유지 (기존 코드와의 호환성을 위해)
-export const addSectorMarkers = async ({ map, circuitId }: SectorMarkerManagerProps): Promise<(() => void)> => {
-  const sectorData = await getSectorData(circuitId);
-  const markers: { marker: mapboxgl.Marker; element: HTMLElement }[] = [];
-  
-  if (sectorData.length === 0) {
-    return () => {};
-  }
-
-  sectorData.forEach((sector) => {
-    const { marker } = createSectorMarker(map, sector);
-    const element = marker.getElement();
-    markers.push({ marker, element });
-  });
-
-  // 마커 표시/숨김 제어 함수
-  const toggleVisibility = (visible: boolean) => {
-    markers.forEach(({ element }) => {
-      element.style.display = visible ? 'flex' : 'none';
-    });
-  };
-
-  // 전역 이벤트 리스너 등록 (일반 섹터 마커용 - 현재 사용되지 않음)
-  const eventHandler = (event: CustomEvent) => {
-    const { enabled } = event.detail;
-    toggleVisibility(enabled);
-  };
-  
-  window.addEventListener('toggleSectorMarkers', eventHandler as EventListener);
-
-  return () => {
-    window.removeEventListener('toggleSectorMarkers', eventHandler as EventListener);
-    markers.forEach(({ marker }) => marker.remove());
-  };
-};

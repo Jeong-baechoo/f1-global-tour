@@ -1,4 +1,4 @@
-import { Circuit, CircuitServiceOptions, TrackData } from '../types';
+import { Circuit, CircuitServiceOptions } from '../types';
 import circuitsData from '@/data/circuits.json';
 
 export class CircuitService {
@@ -47,45 +47,7 @@ export class CircuitService {
     return circuits.find(circuit => circuit.id === id) || null;
   }
   
-  /**
-   * Get track data for a specific circuit
-   */
-  async getTrackData(circuitId: string): Promise<TrackData | null> {
-    const cacheKey = `track-${circuitId}`;
-    
-    if (this.options.cacheEnabled) {
-      const cached = this.getFromCache(cacheKey);
-      if (cached) return cached as TrackData;
-    }
-    
-    try {
-      // 동적 import 사용
-      const trackData = await import(`@/data/${circuitId}-track.json`)
-        .then(module => module.default)
-        .catch(() => null);
-      
-      if (!trackData) {
-        console.warn(`No track data found for circuit: ${circuitId}`);
-        return null;
-      }
-      
-      if (this.options.cacheEnabled) {
-        this.setCache(cacheKey, trackData);
-      }
-      
-      return trackData;
-    } catch (error) {
-      console.error(`Error fetching track data for ${circuitId}:`, error);
-      return null;
-    }
-  }
   
-  /**
-   * Get next race
-   */
-  async getNextRace(): Promise<Circuit | null> {
-    return this.getNextRaceCircuit();
-  }
 
   /**
    * Get next race circuit
@@ -114,18 +76,6 @@ export class CircuitService {
     return nextRace || circuitsWithDates[0] || null;
   }
   
-  /**
-   * Get circuits by month
-   */
-  async getCircuitsByMonth(month: number): Promise<Circuit[]> {
-    const circuits = await this.getCircuits();
-    
-    return circuits.filter(circuit => {
-      if (!circuit.raceDate2025) return false;
-      const raceDate = new Date(circuit.raceDate2025);
-      return raceDate.getMonth() === month - 1; // JS months are 0-indexed
-    });
-  }
   
   /**
    * Get circuit view configuration
@@ -150,12 +100,6 @@ export class CircuitService {
     return { ...defaultView, ...(customViews[circuit.id] || {}) };
   }
   
-  /**
-   * Clear cache
-   */
-  clearCache(): void {
-    this.cache.clear();
-  }
   
   /**
    * Get data from cache if valid

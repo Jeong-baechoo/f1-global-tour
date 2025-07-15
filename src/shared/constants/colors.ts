@@ -7,13 +7,6 @@ export const F1_COLORS = {
   BLACK: '#000000'
 } as const;
 
-// Sector colors (F1 standard)
-export const SECTOR_COLORS = {
-  SECTOR_1: '#FF0000', // Red
-  SECTOR_2: '#0000FF', // Blue  
-  SECTOR_3: '#FFFF00', // Yellow
-  SECTOR_4: '#00FF00', // Green (if exists)
-} as const;
 
 // DRS zone colors
 export const DRS_COLORS = {

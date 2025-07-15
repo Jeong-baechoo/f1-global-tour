@@ -14,8 +14,6 @@ export { useTeamStore } from './store/useTeamStore';
 // Types
 export type {
   Team,
-  TeamMarker as TeamMarkerType,
-  TeamHQView,
   TeamsState,
   TeamServiceOptions,
   TeamMarkerOptions,

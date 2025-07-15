@@ -19,10 +19,8 @@ export interface MapConfig {
 }
 
 export class MapService {
-  private static instance: MapService | null = null;
   private map: mapboxgl.Map | null = null;
   private resizeHandler: (() => void) | null = null;
-  private isCinematicMode: boolean = false;
   private defaultConfig: Partial<MapConfig> = {
     style: 'mapbox://styles/mapbox/dark-v11',
     center: [0, 20],
@@ -38,15 +36,6 @@ export class MapService {
     crossSourceCollisions: false,
   };
 
-  /**
-   * Get singleton instance
-   */
-  public static getInstance(): MapService {
-    if (!MapService.instance) {
-      MapService.instance = new MapService();
-    }
-    return MapService.instance;
-  }
 
   /**
    * Initialize Mapbox map instance
@@ -93,12 +82,6 @@ export class MapService {
     return this.map;
   }
 
-  /**
-   * Get current map instance
-   */
-  public getMap(): mapboxgl.Map | null {
-    return this.map;
-  }
 
   /**
    * Optimize map performance by removing unnecessary layers
@@ -132,30 +115,7 @@ export class MapService {
     this.map.addControl(nav, position || 'top-right');
   }
 
-  /**
-   * Update map style
-   */
-  public setStyle(style: string): void {
-    if (!this.map) return;
-    this.map.setStyle(style);
-  }
 
-  /**
-   * Set map viewport
-   */
-  public setViewport(options: {
-    center?: [number, number];
-    zoom?: number;
-    bearing?: number;
-    pitch?: number;
-  }): void {
-    if (!this.map) return;
-
-    if (options.center) this.map.setCenter(options.center);
-    if (options.zoom !== undefined) this.map.setZoom(options.zoom);
-    if (options.bearing !== undefined) this.map.setBearing(options.bearing);
-    if (options.pitch !== undefined) this.map.setPitch(options.pitch);
-  }
 
   /**
    * Get current viewport
@@ -172,128 +132,8 @@ export class MapService {
     };
   }
 
-  /**
-   * Add a source to the map
-   */
-  public addSource(id: string, source: mapboxgl.AnySourceData): void {
-    if (!this.map || this.map.getSource(id)) return;
-    this.map.addSource(id, source);
-  }
 
-  /**
-   * Remove a source from the map
-   */
-  public removeSource(id: string): void {
-    if (!this.map || !this.map.getSource(id)) return;
-    
-    // Remove all layers using this source first
-    const layers = this.map.getStyle().layers;
-    layers?.forEach((layer) => {
-      if ('source' in layer && layer.source === id) {
-        this.map?.removeLayer(layer.id);
-      }
-    });
-    
-    this.map.removeSource(id);
-  }
 
-  /**
-   * Add a layer to the map
-   */
-  public addLayer(layer: mapboxgl.AnyLayer, beforeId?: string): void {
-    if (!this.map || this.map.getLayer(layer.id)) return;
-    
-    if (beforeId) {
-      this.map.addLayer(layer, beforeId);
-    } else {
-      this.map.addLayer(layer);
-    }
-  }
-
-  /**
-   * Remove a layer from the map
-   */
-  public removeLayer(id: string): void {
-    if (!this.map || !this.map.getLayer(id)) return;
-    this.map.removeLayer(id);
-  }
-
-  /**
-   * Check if a layer exists
-   */
-  public hasLayer(id: string): boolean {
-    if (!this.map) return false;
-    return !!this.map.getLayer(id);
-  }
-
-  /**
-   * Check if a source exists
-   */
-  public hasSource(id: string): boolean {
-    if (!this.map) return false;
-    return !!this.map.getSource(id);
-  }
-
-  /**
-   * Reset map view to default
-   */
-  public resetView(animate: boolean = true): void {
-    if (!this.map) return;
-
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const options = {
-      center: [0, isPortrait ? 10 : 20] as [number, number],
-      zoom: isPortrait ? 1.2 : 1.5,
-      pitch: 0,
-      bearing: 0,
-      essential: true
-    };
-
-    if (animate) {
-      this.map.flyTo(options);
-    } else {
-      this.setViewport(options);
-    }
-  }
-
-  /**
-   * Fit map to bounds
-   */
-  public fitBounds(bounds: mapboxgl.LngLatBoundsLike, options?: mapboxgl.FitBoundsOptions): void {
-    if (!this.map) return;
-    this.map.fitBounds(bounds, options);
-  }
-
-  /**
-   * Fly to location
-   */
-  public flyToLocation(coords: [number, number], options?: Record<string, unknown>): void {
-    if (!this.map) {
-      console.error('Map is not initialized');
-      return;
-    }
-    
-    this.map.flyTo({
-      center: coords,
-      ...options,
-      essential: true,
-    });
-  }
-
-  /**
-   * Get current zoom level
-   */
-  public getZoom(): number {
-    return this.map?.getZoom() ?? 0;
-  }
-
-  /**
-   * Set cinematic mode
-   */
-  public setCinematicMode(enabled: boolean): void {
-    this.isCinematicMode = enabled;
-    // Cinematic mode logic would go here
-  }
 
   /**
    * Clean up map instance
@@ -311,39 +151,6 @@ export class MapService {
     }
   }
 
-  /**
-   * Check if map is loaded
-   */
-  public isLoaded(): boolean {
-    return this.map?.loaded() ?? false;
-  }
-
-  /**
-   * Wait for map to load
-   */
-  public async waitForLoad(): Promise<void> {
-    if (!this.map) throw new Error('Map not initialized');
-    
-    if (this.map.loaded()) return;
-    
-    return new Promise((resolve) => {
-      this.map!.once('load', () => resolve());
-    });
-  }
-
-  /**
-   * Get map container element
-   */
-  public getContainer(): HTMLElement | null {
-    return this.map?.getContainer() ?? null;
-  }
-
-  /**
-   * Get map canvas element
-   */
-  public getCanvas(): HTMLCanvasElement | null {
-    return this.map?.getCanvas() ?? null;
-  }
 
   /**
    * Setup atmosphere and fog effects

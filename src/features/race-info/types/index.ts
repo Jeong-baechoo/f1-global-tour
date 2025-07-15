@@ -1,14 +1,7 @@
 import type { LocalizedText } from '@/utils/i18n';
 import { Driver, Car, Championship, Location, LapRecord } from '@/src/shared/types';
 
-export type PanelModule = 'next-race' | 'circuit-detail' | 'team-hq';
 
-export interface PanelState {
-  isOpen: boolean;
-  isMinimized: boolean;
-  module: PanelModule | null;
-  data: PanelData | null;
-}
 
 export interface PanelData {
   type?: string;
@@ -71,7 +64,7 @@ export interface TeamHQData extends PanelData {
   id: string;
   name: LocalizedText;
   headquarters: Location;
-  principal: string;
+  principal: string | LocalizedText;
   color: string;
   colors?: {
     primary: string;

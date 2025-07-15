@@ -13,7 +13,6 @@ import { TrackRenderer } from './TrackRenderer';
 import { TrackDrawOptions as OldTrackDrawOptions } from '@/src/shared/types/circuit';
 import { trackStateManager } from './state/TrackStateManager';
 import { TrackEventBus } from './events/TrackEventBus';
-import { DRSAnimationController } from './animation/DRSAnimationController';
 
 // Adapter function to maintain backward compatibility
 export const drawAnimatedTrack = async (
@@ -27,12 +26,6 @@ export const drawAnimatedTrack = async (
     color: options.color,
     width: 5, // default width
     animationDelay: options.delay,
-    onProgress: (progress: number) => {
-      // Progress callback - sector markers are now handled by events in TrackRenderer
-      if (options.onProgress) {
-        options.onProgress(progress);
-      }
-    },
     onComplete: options.onComplete,
     circuitId: options.trackId.replace('-track', '')
   };
@@ -40,15 +33,9 @@ export const drawAnimatedTrack = async (
   return TrackRenderer.drawAnimatedTrack(map, newOptions);
 };
 
-// Alias for backward compatibility
-export const drawTrack = drawAnimatedTrack;
 
 // Export cleanup functions
 export const clearAllTrackState = () => {
   trackStateManager.clearAll();
   TrackEventBus.cleanup();
-};
-
-export const clearAllDRSAnimations = () => {
-  DRSAnimationController.clearAllAnimations();
 };
