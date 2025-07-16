@@ -91,8 +91,6 @@ export default function Home() {
   }, []);
 
   const handleMarkerClick = useCallback((item: PanelData) => {
-    console.log('🎯 handleMarkerClick called with:', item);
-    console.log('Current panel state:', { panelOpen, panelModule, panelData });
     if (!item.type) return;
     
     // 초기 포커싱 중단
@@ -105,8 +103,6 @@ export default function Home() {
     const currentModule = item.type === 'team' ? 'team-hq' : 'circuit-detail';
     const isSameMarker = panelData?.id === item.id && panelModule === currentModule;
     const shouldToggle = panelOpen && isSameMarker && !languageChangedFlag;
-    
-    console.log('Panel state:', { panelOpen, currentModule, shouldToggle });
     
     // 언어 변경 플래그 리셋
     if (languageChangedFlag) {
@@ -140,7 +136,6 @@ export default function Home() {
         setPanelOpen(false);
       }
     } else {
-      console.log('Opening panel with module:', currentModule);
       setPanelOpen(true);
       // 다른 마커 클릭 시에도 최소화 상태 유지
       // setPanelMinimized(false); <- 이 줄을 제거하여 최소화 상태 유지
@@ -160,15 +155,6 @@ export default function Home() {
     setLanguageChangedFlag(true);
   }, [language]);
 
-  // 패널 상태 디버깅
-  useEffect(() => {
-    console.log('🔴 Panel state changed:', { 
-      panelOpen, 
-      panelModule, 
-      panelData: panelData ? { type: panelData.type, id: panelData.id } : null,
-      timestamp: new Date().toISOString()
-    });
-  }, [panelOpen, panelModule, panelData]);
 
   const handleExploreCircuit = () => {
     if (!nextRaceCircuitId) return;

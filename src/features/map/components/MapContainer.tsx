@@ -87,8 +87,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     const container = containerRef.current;
     if (container) {
       container.addEventListener('mousedown', handleInteraction);
-      container.addEventListener('touchstart', handleInteraction);
-      container.addEventListener('wheel', handleInteraction);
+      container.addEventListener('touchstart', handleInteraction, { passive: true });
+      container.addEventListener('wheel', handleInteraction, { passive: true });
 
       return () => {
         container.removeEventListener('mousedown', handleInteraction);
@@ -110,14 +110,6 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     }));
   }, []);
 
-  // Debug log
-  useEffect(() => {
-    console.log('🔍 MapContainer Debug:', {
-      isMapLoaded,
-      isCircuitView,
-      currentCircuit: currentCircuit?.name
-    });
-  }, [isMapLoaded, isCircuitView, currentCircuit]);
 
   return (
     <div 

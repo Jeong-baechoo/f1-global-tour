@@ -104,7 +104,23 @@ const DriverCard = ({ driver, teamColors }: { driver: unknown, teamColors: unkno
                     />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-white font-black text-xl leading-tight tracking-tight mb-2">{(driver as { name: string }).name}</p>
+                    <p className={`text-white font-black leading-tight tracking-tight mb-2 ${
+                        (() => {
+                            const driverName = (driver as { name: string }).name;
+                            // Apply smallest font size for Hulkenberg
+                            if (driverName === 'Nico Hulkenberg') {
+                                return 'text-base';
+                            }
+                            // Apply smaller font size for other specific longer driver names
+                            if (driverName === 'Max Verstappen' || 
+                                driverName === 'Carlos Sainz Jr.' || 
+                                driverName === 'Franco Colapinto' || 
+                                driverName === 'Lewis Hamilton') {
+                                return 'text-lg';
+                            }
+                            return 'text-xl';
+                        })()
+                    }`}>{(driver as { name: string }).name}</p>
                     <div className="flex items-center gap-4">
                         <span className="text-lg">{getFlagEmoji((driver as { nationality: string }).nationality)}</span>
                         <span className="text-white/60 text-sm font-medium">{(driver as { nationality: string }).nationality}</span>
