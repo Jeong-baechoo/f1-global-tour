@@ -51,7 +51,6 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({ onLoad, onGlobe
 
     // 맵 로드 완료 시
     map.on('load', () => {
-      console.log('MapCanvas: Map loaded successfully');
       setMapLoaded(true);
       onLoad?.(map);
       

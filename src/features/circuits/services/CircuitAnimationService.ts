@@ -114,7 +114,6 @@ export class CircuitAnimationService {
         // 줌 레벨이 충분할 때만 섹터 마커 생성
         let sectorMarkerCleanup: (() => void) | undefined = undefined;
         const currentZoom = map.getZoom();
-        console.log('🎯 Current zoom level:', currentZoom, 'Track visible threshold:', ZOOM_THRESHOLDS.TRACK_VISIBLE);
         
         if (currentZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {
           // 섹터 마커를 먼저 생성 (숨김 상태)
@@ -123,7 +122,6 @@ export class CircuitAnimationService {
             circuitId: circuit.id
           });
         } else {
-          console.log('⚠️ Zoom level too low, skipping sector marker creation');
         }
 
         // DRS Detection과 Speed Trap 마커도 생성 (오스트리아, 영국, 호주 서킷)
@@ -155,7 +153,6 @@ export class CircuitAnimationService {
           onComplete: () => {
             // Check zoom level before showing markers
             const finalZoom = map.getZoom();
-            console.log('🎯 Track drawing complete, final zoom:', finalZoom);
 
             // 트랙 그리기 완료 후 DRS Detection과 Speed Trap 마커 표시 (뉘르부르크링 제외)
             if (circuit.id !== 'nurburgring' && finalZoom > ZOOM_THRESHOLDS.TRACK_VISIBLE) {

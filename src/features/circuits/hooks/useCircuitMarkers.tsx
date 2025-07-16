@@ -69,7 +69,6 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     isNextRace?: boolean,
     language: Language = 'en'
   ): mapboxgl.Marker | null => {
-    console.log('Creating circuit marker:', circuit.id, { map: !!map });
     if (!map) return null;
     
     // Remove existing marker if any

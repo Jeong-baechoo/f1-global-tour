@@ -42,7 +42,6 @@ export class DRSZoneManager {
             try {
               map.addImage(state.name, img);
             } catch {
-              console.warn(`Image ${state.name} already exists, skipping...`);
             }
           }
           URL.revokeObjectURL(url);

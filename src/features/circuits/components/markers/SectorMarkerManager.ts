@@ -80,7 +80,6 @@ export const showDRSAndSpeedTrapMarkers = (map?: mapboxgl.Map) => {
   if (map) {
     const currentZoom = map.getZoom();
     if (currentZoom < 10) {
-      console.log('⚠️ Preventing DRS/Speed Trap marker visibility at low zoom:', currentZoom);
       return;
     }
   }
@@ -136,7 +135,6 @@ export const addSectorMarkersProgressively = async ({
     // Check zoom level before showing markers
     const currentZoom = map.getZoom();
     if (visible && currentZoom < 10) {
-      console.log('⚠️ Preventing sector marker visibility at low zoom:', currentZoom);
       return;
     }
     
@@ -197,7 +195,6 @@ export const showSectorMarker = (
     if (map) {
       const currentZoom = map.getZoom();
       if (currentZoom < 10) {
-        console.log('⚠️ Preventing individual sector marker visibility at low zoom:', currentZoom);
         return;
       }
     }

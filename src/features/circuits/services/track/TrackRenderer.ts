@@ -118,7 +118,7 @@ export class TrackRenderer {
           await DRSZoneManager.drawDRSZones(map, trackId, smoothCoordinates, circuitId);
           
           // Draw 3D elevation track
-          ElevationTrackManager.draw3DElevationTrack(map, trackId, smoothCoordinates, circuitId).catch(console.error);
+          ElevationTrackManager.draw3DElevationTrack(map, trackId, smoothCoordinates).catch(console.error);
           
           // Start DRS animation
           setTimeout(() => {

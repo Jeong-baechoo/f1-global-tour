@@ -75,7 +75,6 @@ export class CircuitTrackManager {
       drsDetectionMarkers: [],
       speedTrapMarkers: []
     });
-    console.log(`🎯 Track registered for ${circuitId}`);
   }
 
   addTrackLayer(circuitId: string, layerId: string) {
@@ -111,12 +110,9 @@ export class CircuitTrackManager {
     const state = this.tracksState.get(circuitId);
     if (state) {
       state.sectorMarkers.push(...markers);
-      console.log(`✅ Added ${markers.length} sector markers for ${circuitId}`);
-      console.log(`📍 Current zoom level when adding markers:`, this.map?.getZoom());
 
       // Immediately check zoom level and hide if necessary
       if (this.map && this.map.getZoom() < ZOOM_THRESHOLDS.TRACK_VISIBLE) {
-        console.log(`⚠️ Zoom level too low (${this.map.getZoom()}), hiding markers immediately`);
         markers.forEach(marker => {
           const el = marker.getElement();
           el.style.display = 'none';
@@ -146,22 +142,12 @@ export class CircuitTrackManager {
     const state = this.tracksState.get(circuitId);
     if (!state) return;
 
-    console.log(`🗑️ Removing track for ${circuitId}`, {
-      sectorMarkers: state.sectorMarkers.length,
-      drsDetectionMarkers: state.drsDetectionMarkers.length,
-      speedTrapMarkers: state.speedTrapMarkers.length,
-      layers: state.layers.length,
-      sources: state.sources.length
-    });
 
     // Remove all markers
-    console.log(`🗑️ Removing ${state.sectorMarkers.length} sector markers`);
     state.sectorMarkers.forEach(marker => {
       marker.remove();
     });
-    console.log(`🗑️ Removing ${state.drsDetectionMarkers.length} DRS detection markers`);
     state.drsDetectionMarkers.forEach(marker => marker.remove());
-    console.log(`🗑️ Removing ${state.speedTrapMarkers.length} speed trap markers`);
     state.speedTrapMarkers.forEach(marker => marker.remove());
 
     // Remove layers
@@ -223,7 +209,6 @@ export class CircuitTrackManager {
   private hideAllSectorMarkersImmediately() {
     // Query all sector-related markers in the DOM and hide them
     const sectorMarkers = document.querySelectorAll('.sector-marker, .drs-detection-marker, .speed-trap-marker');
-    console.log(`🗑️ Immediately hiding ${sectorMarkers.length} sector-related markers from DOM`);
 
     sectorMarkers.forEach((marker) => {
       const element = marker as HTMLElement;
@@ -244,9 +229,8 @@ export class CircuitTrackManager {
     try {
       // Remove terrain (set to null)
       this.map.setTerrain(null);
-      console.log('🏔️ Terrain removed at low zoom level');
-    } catch (error) {
-      console.warn('Failed to remove terrain:', error);
+    } catch {
+      // Error handled silently
     }
   }
 

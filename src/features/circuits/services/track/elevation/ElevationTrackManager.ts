@@ -20,7 +20,6 @@ export class ElevationTrackManager {
     // setTerrain이 설정되어 있는지 확인
     const terrainEnabled = map.getTerrain();
     if (!terrainEnabled || terrainEnabled.exaggeration === 0) {
-      console.log('Setting minimal terrain exaggeration for elevation data...');
       map.setTerrain({
         source: 'mapbox-dem',
         exaggeration: 0.001 // 매우 작은 값으로 설정 - 시각적으로는 평평하지만 고도 데이터 접근 가능
@@ -33,7 +32,6 @@ export class ElevationTrackManager {
         // 첫 번째 좌표로 테스트
         const testElevation = map.queryTerrainElevation(coordinates[0] as [number, number]);
         if (testElevation !== null && testElevation !== undefined && testElevation > 0) {
-          console.log('Terrain tiles loaded, test elevation:', testElevation);
           resolve(true);
         } else {
           // 재시도
@@ -90,8 +88,7 @@ export class ElevationTrackManager {
   static async draw3DElevationTrack(
     map: mapboxgl.Map,
     trackId: string,
-    trackCoordinates: number[][],
-    circuitId: string
+    trackCoordinates: number[][]
   ): Promise<void> {
     // 세분화 레벨 조절 (0: 추가 세분화 없음, 1: 각 세그먼트당 1개 중간점 추가)
     const SUBDIVISION_LEVEL = 1; // 각 세그먼트당 1개 중간점 추가
@@ -148,17 +145,15 @@ export class ElevationTrackManager {
     trackCoordinates = finalCoords;
     
     // 항상 실제 고도 데이터 사용
-    console.log(`Circuit ${circuitId}: Using actual terrain data from Mapbox`);
     const actualElevations = await this.getElevationFromMapbox(map, trackCoordinates);
     const minElevation = Math.min(...actualElevations);
-    const maxElevation = Math.max(...actualElevations);
-    const elevationRange = maxElevation - minElevation;
+    // const maxElevation = Math.max(...actualElevations);
+    // const elevationRange = maxElevation - minElevation;
     
     // exaggeration 0.001로 인한 축소를 보정하여 실제 고도 표시
-    const actualMinElev = minElevation * 1000;
-    const actualMaxElev = maxElevation * 1000;
-    const actualRange = elevationRange * 1000;
-    console.log(`Actual elevation range: ${actualMinElev.toFixed(1)}m - ${actualMaxElev.toFixed(1)}m (${actualRange.toFixed(1)}m range)`);
+    // const actualMinElev = minElevation * 1000;
+    // const actualMaxElev = maxElevation * 1000;
+    // const actualRange = elevationRange * 1000;
     
     // 트랙을 세그먼트로 나누어 각각 3D 폴리곤으로 표현
     const segmentWidth = 15; // 트랙 폭 (미터) - 곡선에서의 갈라짐 방지를 위해 줄임

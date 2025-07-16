@@ -38,11 +38,9 @@ export const useMapStore = create<MapState>((set) => ({
   
   // 액션 구현
   setMap: (map) => {
-    console.log('MapStore: Setting map instance', !!map);
     set({ map });
   },
   setMapLoaded: (loaded) => {
-    console.log('MapStore: Setting map loaded state:', loaded);
     set({ isMapLoaded: loaded });
   },
   setCenter: (center) => set({ center }),

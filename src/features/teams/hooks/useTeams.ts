@@ -23,7 +23,6 @@ export const useTeams = () => {
       setLoading(true);
       setError(null);
       const teamsData = await teamService.getTeams();
-      console.log('Loaded teams:', teamsData.length, 'teams');
       setTeams(teamsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load teams');
@@ -42,8 +41,8 @@ export const useTeams = () => {
     try {
       const team = await teamService.getTeamById(teamId);
       selectTeam(team);
-    } catch (err) {
-      console.error('Error selecting team:', err);
+    } catch {
+      // Error handled silently
     }
   };
   
