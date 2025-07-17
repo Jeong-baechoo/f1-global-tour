@@ -132,8 +132,8 @@ export default function Home() {
         // 최소화 상태에서 같은 마커 클릭 시 확대
         setPanelMinimized(false);
       } else {
-        // 일반 상태에서 같은 마커 클릭 시 닫기
-        setPanelOpen(false);
+        // 일반 상태에서 같은 마커 클릭 시에도 패널 유지 (닫지 않음)
+        // setPanelOpen(false); <- 제거하여 패널이 닫히지 않도록 함
       }
     } else {
       setPanelOpen(true);

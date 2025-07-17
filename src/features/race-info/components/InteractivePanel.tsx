@@ -185,7 +185,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
                           {headerConfig.title}
                         </h3>
                         {headerConfig.subtitle && (
-                          <p className="font-medium text-white/70 truncate text-lg leading-tight">
+                          <p className="font-medium text-white/70 text-sm leading-tight line-clamp-2">
                             {headerConfig.subtitle}
                           </p>
                         )}
