@@ -63,6 +63,7 @@ export default function Home() {
   const animationRef = useRef<number | null>(null);
   const lastMoveTime = useRef<number>(0);
   const lastMoveX = useRef<number>(0);
+  
 
   // 스크롤바에서 특정 서킷을 중앙으로 이동
   const scrollToCircuit = useCallback((circuitId: string) => {
@@ -359,6 +360,18 @@ export default function Home() {
     };
   }, [hasUserInteracted]);
 
+  // 언어 변경 시 선택된 그랑프리를 중앙으로 유지
+  useEffect(() => {
+    if (currentCircuit) {
+      // 짧은 지연 후 선택된 서킷을 중앙으로 스크롤 (DOM 업데이트 완료 후)
+      const timeoutId = setTimeout(() => {
+        scrollToCircuit(currentCircuit.id);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [language, currentCircuit, scrollToCircuit]);
+
   return (
     <>
       <main className="relative w-full h-screen overflow-hidden">
@@ -531,7 +544,11 @@ export default function Home() {
                   })() : 'TBD'}
                 </span>
                 {/* Grand Prix 이름 */}
-                <span className="text-white/90 text-lg font-bold uppercase tracking-tight group-hover:text-white transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <span className={`text-lg font-bold uppercase tracking-tight transition-colors ${
+                  currentCircuit?.id === circuit.id 
+                    ? 'text-[#FF1801]' 
+                    : 'text-white/90 group-hover:text-white'
+                }`} style={{ fontFamily: 'Inter, sans-serif' }}>
                   {getText(circuit.grandPrix, language)}
                 </span>
               </div>

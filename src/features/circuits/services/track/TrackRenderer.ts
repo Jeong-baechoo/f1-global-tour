@@ -9,6 +9,7 @@ import { SectorTrackManager } from './sector/SectorTrackManager';
 import { TrackEventBus } from './events/TrackEventBus';
 import { getSectorData as getSectorMarkerData } from '../../components/markers/SectorMarkerManager';
 import { ElevationTrackManager } from '@/src/features/circuits/services';
+import { useMapStore } from '@/src/features/map/store/useMapStore';
 
 // New TrackDrawOptions interface for the refactored version
 interface TrackDrawOptions {
@@ -111,22 +112,52 @@ export class TrackRenderer {
         passedSectors,
         onProgress,
         async () => {
-          // Apply sector colors after animation
-          const sectorApplied = await SectorTrackManager.applySectorColors(map, trackId, circuitId);
+          // 사용자의 현재 토글 상태 확인
+          const { sectorInfoEnabled, drsInfoEnabled, elevationEnabled } = useMapStore.getState();
           
-          // Draw DRS zones
-          await DRSZoneManager.drawDRSZones(map, trackId, smoothCoordinates, circuitId);
+          // Apply sector colors only if sector info is enabled
+          let sectorApplied = false;
+          if (sectorInfoEnabled) {
+            sectorApplied = await SectorTrackManager.applySectorColors(map, trackId, circuitId);
+          }
           
-          // Draw 3D elevation track
-          ElevationTrackManager.draw3DElevationTrack(map, trackId, smoothCoordinates).catch(console.error);
+          // Draw DRS zones only if DRS info is enabled
+          if (drsInfoEnabled) {
+            await DRSZoneManager.drawDRSZones(map, trackId, smoothCoordinates, circuitId);
+            
+            // Start DRS animation only if DRS is enabled
+            setTimeout(() => {
+              DRSAnimationController.startAnimation(map, trackId);
+            }, sectorApplied ? 300 : 500);
+          }
           
-          // Start DRS animation
-          setTimeout(() => {
-            DRSAnimationController.startAnimation(map, trackId);
-          }, sectorApplied ? 300 : 500);
+          // Draw 3D elevation track only if elevation is enabled
+          if (elevationEnabled) {
+            ElevationTrackManager.draw3DElevationTrack(map, trackId, smoothCoordinates).catch(console.error);
+          }
 
           // Register event handlers
           TrackEventBus.registerTrackEventHandlers(trackId, map);
+          
+          // 현재 토글 상태에 맞는 이벤트 dispatch로 UI와 상태 동기화
+          window.dispatchEvent(new CustomEvent('toggleSectorInfo', { 
+            detail: { enabled: sectorInfoEnabled } 
+          }));
+          window.dispatchEvent(new CustomEvent('toggleDRSZones', { 
+            detail: { enabled: drsInfoEnabled } 
+          }));
+          window.dispatchEvent(new CustomEvent('toggleDRSAnimations', { 
+            detail: { enabled: drsInfoEnabled } 
+          }));
+          window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
+            detail: { enabled: drsInfoEnabled } 
+          }));
+          window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', { 
+            detail: { enabled: drsInfoEnabled } 
+          }));
+          window.dispatchEvent(new CustomEvent('toggleElevation', { 
+            detail: { enabled: elevationEnabled } 
+          }));
 
           if (onComplete) {
             onComplete();

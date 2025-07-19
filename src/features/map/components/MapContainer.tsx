@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useMapStore } from '../store';
 import { MapControls } from './MapControls';
 import type { PanelData } from '@/src/features/race-info/types';
@@ -30,12 +30,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   drsDetectionCount = 0,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setUserInteracting, map, isMapLoaded } = useMapStore();
-  
-  // Circuit Info Panel states
-  const [sectorInfoEnabled, setSectorInfoEnabled] = useState(false);
-  const [drsInfoEnabled, setDrsInfoEnabled] = useState(true);  // DRS 정보 기본적으로 켜짐
-  const [elevationEnabled, setElevationEnabled] = useState(false);
+  const { setUserInteracting, map, isMapLoaded, sectorInfoEnabled, drsInfoEnabled, elevationEnabled, setSectorInfoEnabled, setDrsInfoEnabled, setElevationEnabled } = useMapStore();
   
   // Track event dispatchers
   const handleToggleSectorInfo = (enabled: boolean) => {
@@ -99,13 +94,25 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }, [setUserInteracting, onUserInteraction]);
 
 
-  // 초기화 시 DRS 토글 상태 이벤트 발생
+  // 초기화 시 모든 토글 상태 이벤트 발생
   useEffect(() => {
-    // DRS 정보가 기본적으로 켜져 있음을 알림
+    // 모든 정보가 기본적으로 켜져 있음을 알림
+    window.dispatchEvent(new CustomEvent('toggleSectorInfo', { 
+      detail: { enabled: true } 
+    }));
     window.dispatchEvent(new CustomEvent('toggleDRSZones', { 
       detail: { enabled: true } 
     }));
     window.dispatchEvent(new CustomEvent('toggleDRSAnimations', { 
+      detail: { enabled: true } 
+    }));
+    window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
+      detail: { enabled: true } 
+    }));
+    window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', { 
+      detail: { enabled: true } 
+    }));
+    window.dispatchEvent(new CustomEvent('toggleElevation', { 
       detail: { enabled: true } 
     }));
   }, []);

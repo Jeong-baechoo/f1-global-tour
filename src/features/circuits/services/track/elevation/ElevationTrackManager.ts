@@ -1,5 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
+import { trackStateManager } from '../state/TrackStateManager';
+import { useMapStore } from '@/src/features/map/store/useMapStore';
 
 export class ElevationTrackManager {
   // Mapbox Terrain API를 사용하여 실제 고도 가져오기
@@ -68,10 +70,10 @@ export class ElevationTrackManager {
       }
     }
     
-    // 고도가 모두 0인 경우 경고
+    // 고도가 모두 0인 경우 정보 로그
     const hasValidElevation = elevations.some(e => e > 0);
     if (!hasValidElevation) {
-      console.error('All elevations are 0, terrain data may not be available for this region');
+      console.info('Terrain elevation data not available for this circuit region, using flat elevation');
     }
     
     // 데이터를 가져온 후에도 매우 작은 exaggeration 유지
@@ -90,6 +92,11 @@ export class ElevationTrackManager {
     trackId: string,
     trackCoordinates: number[][]
   ): Promise<void> {
+    // 고저차가 비활성화되어 있으면 렌더링하지 않음
+    const { elevationEnabled } = useMapStore.getState();
+    if (!elevationEnabled) {
+      return;
+    }
     // 세분화 레벨 조절 (0: 추가 세분화 없음, 1: 각 세그먼트당 1개 중간점 추가)
     const SUBDIVISION_LEVEL = 1; // 각 세그먼트당 1개 중간점 추가
     
@@ -475,12 +482,29 @@ export class ElevationTrackManager {
     const extrusionLayerId = `${source3DId}-extrusion`;
     const topLayerId = `${source3DId}-top`;
 
-    if (map.getLayer(extrusionLayerId)) {
+    const hasExtrusionLayer = map.getLayer(extrusionLayerId);
+    const hasTopLayer = map.getLayer(topLayerId);
+
+    if (hasExtrusionLayer) {
       map.setLayoutProperty(extrusionLayerId, 'visibility', enabled ? 'visible' : 'none');
     }
     
-    if (map.getLayer(topLayerId)) {
+    if (hasTopLayer) {
       map.setLayoutProperty(topLayerId, 'visibility', enabled ? 'visible' : 'none');
+    }
+
+    // 레이어가 없지만 켜려고 할 때, 다시 그려줌
+    if (enabled && (!hasExtrusionLayer || !hasTopLayer)) {
+      const originalTrackData = trackStateManager.findOriginalTrackData(trackId);
+      
+      if (originalTrackData && 
+          originalTrackData.originalData && 
+          originalTrackData.originalData.geometry && 
+          originalTrackData.originalData.geometry.coordinates &&
+          Array.isArray(originalTrackData.originalData.geometry.coordinates) &&
+          originalTrackData.originalData.geometry.coordinates.length > 0) {
+        this.draw3DElevationTrack(map, trackId, originalTrackData.originalData.geometry.coordinates).catch(console.error);
+      }
     }
   }
 

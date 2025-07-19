@@ -65,6 +65,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
   onExploreCircuit
 }) => {
   const { language } = useLanguage();
+  // Map store is available if needed for future enhancements
   const [isMobile, setIsMobile] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
@@ -260,7 +261,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
 
                     {/* Content with inner padding */}
                     <div className="flex-1 overflow-y-auto overflow-x-hidden rounded-2xl bg-black/10">
-                      <div className="p-6">
+                      <div className="px-6 py-8">
                         {module ? renderContent() : null}
                       </div>
                     </div>
