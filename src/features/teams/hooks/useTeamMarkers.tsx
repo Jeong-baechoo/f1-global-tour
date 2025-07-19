@@ -85,7 +85,6 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     // Get team marker config
     const config = getTeamMarkerConfig(team.id);
     if (!config) {
-      console.warn(`No marker config found for team: ${team.id}`);
       return null;
     }
     
@@ -128,8 +127,6 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     if (onMarkerClick) {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        console.log('Team marker clicked:', team.id);
-        
         // 팀 상세 정보 가져오기
         const teamDetails = getTeamDetails(team.id);
         
@@ -148,7 +145,6 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
           championships2025: team.championships2025
         };
         
-        console.log('Panel data created:', panelData);
         onMarkerClick(panelData);
       });
     }

@@ -1,5 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { trackStateManager } from '../state/TrackStateManager';
+import { useMapStore } from '@/src/features/map/store/useMapStore';
 
 export class DRSAnimationController {
   private static animationDuration = 2000; // 2 seconds
@@ -8,6 +9,11 @@ export class DRSAnimationController {
    * Start DRS sequential signal animation
    */
   static startAnimation(map: mapboxgl.Map, trackId: string): void {
+    // DRS가 비활성화되어 있으면 애니메이션 시작하지 않음
+    const { drsInfoEnabled } = useMapStore.getState();
+    if (!drsInfoEnabled) {
+      return;
+    }
     const startAnimation = () => {
       const startTime = performance.now();
 

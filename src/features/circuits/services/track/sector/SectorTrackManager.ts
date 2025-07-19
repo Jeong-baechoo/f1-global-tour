@@ -3,6 +3,7 @@ import { getSectorData } from '@/src/shared/utils/data/trackDataLoader';
 import { loadCircuitGeoJSON } from '@/src/shared/utils/data/dynamicSectorLoader';
 import { trackStateManager } from '../state/TrackStateManager';
 import { trackManager } from '@/src/shared/utils/map/trackManager';
+import { useMapStore } from '@/src/features/map/store/useMapStore';
 
 
 export class SectorTrackManager {
@@ -14,6 +15,11 @@ export class SectorTrackManager {
     trackId: string,
     circuitId: string
   ): Promise<boolean> {
+    // 섹터 정보가 비활성화되어 있으면 적용하지 않음
+    const { sectorInfoEnabled } = useMapStore.getState();
+    if (!sectorInfoEnabled) {
+      return false;
+    }
     try {
       // Get sector data
       let sectorData = await getSectorData(circuitId);
@@ -215,6 +221,10 @@ export class SectorTrackManager {
       if (map.getLayer(outlineLayerId)) {
         map.setLayoutProperty(outlineLayerId, 'visibility', enabled ? 'none' : 'visible');
       }
+    } else if (enabled) {
+      // 섹터 레이어가 없지만 켜려고 할 때, 다시 생성
+      const circuitId = trackId.replace('-track', '');
+      this.applySectorColors(map, trackId, circuitId).catch(console.error);
     } else {
       // Try to find and restore original track
       const originalData = trackStateManager.findOriginalTrackData(trackId);

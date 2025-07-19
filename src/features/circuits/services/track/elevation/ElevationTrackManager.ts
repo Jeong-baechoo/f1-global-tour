@@ -1,5 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
+import { trackStateManager } from '../state/TrackStateManager';
+import { useMapStore } from '@/src/features/map/store/useMapStore';
 
 export class ElevationTrackManager {
   // Mapbox Terrain API를 사용하여 실제 고도 가져오기
@@ -20,7 +22,6 @@ export class ElevationTrackManager {
     // setTerrain이 설정되어 있는지 확인
     const terrainEnabled = map.getTerrain();
     if (!terrainEnabled || terrainEnabled.exaggeration === 0) {
-      console.log('Setting minimal terrain exaggeration for elevation data...');
       map.setTerrain({
         source: 'mapbox-dem',
         exaggeration: 0.001 // 매우 작은 값으로 설정 - 시각적으로는 평평하지만 고도 데이터 접근 가능
@@ -33,7 +34,6 @@ export class ElevationTrackManager {
         // 첫 번째 좌표로 테스트
         const testElevation = map.queryTerrainElevation(coordinates[0] as [number, number]);
         if (testElevation !== null && testElevation !== undefined && testElevation > 0) {
-          console.log('Terrain tiles loaded, test elevation:', testElevation);
           resolve(true);
         } else {
           // 재시도
@@ -70,10 +70,10 @@ export class ElevationTrackManager {
       }
     }
     
-    // 고도가 모두 0인 경우 경고
+    // 고도가 모두 0인 경우 정보 로그
     const hasValidElevation = elevations.some(e => e > 0);
     if (!hasValidElevation) {
-      console.error('All elevations are 0, terrain data may not be available for this region');
+      console.info('Terrain elevation data not available for this circuit region, using flat elevation');
     }
     
     // 데이터를 가져온 후에도 매우 작은 exaggeration 유지
@@ -90,9 +90,13 @@ export class ElevationTrackManager {
   static async draw3DElevationTrack(
     map: mapboxgl.Map,
     trackId: string,
-    trackCoordinates: number[][],
-    circuitId: string
+    trackCoordinates: number[][]
   ): Promise<void> {
+    // 고저차가 비활성화되어 있으면 렌더링하지 않음
+    const { elevationEnabled } = useMapStore.getState();
+    if (!elevationEnabled) {
+      return;
+    }
     // 세분화 레벨 조절 (0: 추가 세분화 없음, 1: 각 세그먼트당 1개 중간점 추가)
     const SUBDIVISION_LEVEL = 1; // 각 세그먼트당 1개 중간점 추가
     
@@ -148,17 +152,15 @@ export class ElevationTrackManager {
     trackCoordinates = finalCoords;
     
     // 항상 실제 고도 데이터 사용
-    console.log(`Circuit ${circuitId}: Using actual terrain data from Mapbox`);
     const actualElevations = await this.getElevationFromMapbox(map, trackCoordinates);
     const minElevation = Math.min(...actualElevations);
-    const maxElevation = Math.max(...actualElevations);
-    const elevationRange = maxElevation - minElevation;
+    // const maxElevation = Math.max(...actualElevations);
+    // const elevationRange = maxElevation - minElevation;
     
     // exaggeration 0.001로 인한 축소를 보정하여 실제 고도 표시
-    const actualMinElev = minElevation * 1000;
-    const actualMaxElev = maxElevation * 1000;
-    const actualRange = elevationRange * 1000;
-    console.log(`Actual elevation range: ${actualMinElev.toFixed(1)}m - ${actualMaxElev.toFixed(1)}m (${actualRange.toFixed(1)}m range)`);
+    // const actualMinElev = minElevation * 1000;
+    // const actualMaxElev = maxElevation * 1000;
+    // const actualRange = elevationRange * 1000;
     
     // 트랙을 세그먼트로 나누어 각각 3D 폴리곤으로 표현
     const segmentWidth = 15; // 트랙 폭 (미터) - 곡선에서의 갈라짐 방지를 위해 줄임
@@ -480,12 +482,29 @@ export class ElevationTrackManager {
     const extrusionLayerId = `${source3DId}-extrusion`;
     const topLayerId = `${source3DId}-top`;
 
-    if (map.getLayer(extrusionLayerId)) {
+    const hasExtrusionLayer = map.getLayer(extrusionLayerId);
+    const hasTopLayer = map.getLayer(topLayerId);
+
+    if (hasExtrusionLayer) {
       map.setLayoutProperty(extrusionLayerId, 'visibility', enabled ? 'visible' : 'none');
     }
     
-    if (map.getLayer(topLayerId)) {
+    if (hasTopLayer) {
       map.setLayoutProperty(topLayerId, 'visibility', enabled ? 'visible' : 'none');
+    }
+
+    // 레이어가 없지만 켜려고 할 때, 다시 그려줌
+    if (enabled && (!hasExtrusionLayer || !hasTopLayer)) {
+      const originalTrackData = trackStateManager.findOriginalTrackData(trackId);
+      
+      if (originalTrackData && 
+          originalTrackData.originalData && 
+          originalTrackData.originalData.geometry && 
+          originalTrackData.originalData.geometry.coordinates &&
+          Array.isArray(originalTrackData.originalData.geometry.coordinates) &&
+          originalTrackData.originalData.geometry.coordinates.length > 0) {
+        this.draw3DElevationTrack(map, trackId, originalTrackData.originalData.geometry.coordinates).catch(console.error);
+      }
     }
   }
 

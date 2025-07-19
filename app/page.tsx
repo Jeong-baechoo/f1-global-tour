@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
+import { UI_TIMING } from '@/src/shared/constants';
 
 // Dynamic imports for better code splitting
 const Map = dynamic(
@@ -63,6 +64,7 @@ export default function Home() {
   const animationRef = useRef<number | null>(null);
   const lastMoveTime = useRef<number>(0);
   const lastMoveX = useRef<number>(0);
+  
 
   // 스크롤바에서 특정 서킷을 중앙으로 이동
   const scrollToCircuit = useCallback((circuitId: string) => {
@@ -91,8 +93,6 @@ export default function Home() {
   }, []);
 
   const handleMarkerClick = useCallback((item: PanelData) => {
-    console.log('🎯 handleMarkerClick called with:', item);
-    console.log('Current panel state:', { panelOpen, panelModule, panelData });
     if (!item.type) return;
     
     // 초기 포커싱 중단
@@ -105,8 +105,6 @@ export default function Home() {
     const currentModule = item.type === 'team' ? 'team-hq' : 'circuit-detail';
     const isSameMarker = panelData?.id === item.id && panelModule === currentModule;
     const shouldToggle = panelOpen && isSameMarker && !languageChangedFlag;
-    
-    console.log('Panel state:', { panelOpen, currentModule, shouldToggle });
     
     // 언어 변경 플래그 리셋
     if (languageChangedFlag) {
@@ -136,11 +134,10 @@ export default function Home() {
         // 최소화 상태에서 같은 마커 클릭 시 확대
         setPanelMinimized(false);
       } else {
-        // 일반 상태에서 같은 마커 클릭 시 닫기
-        setPanelOpen(false);
+        // 일반 상태에서 같은 마커 클릭 시에도 패널 유지 (닫지 않음)
+        // setPanelOpen(false); <- 제거하여 패널이 닫히지 않도록 함
       }
     } else {
-      console.log('Opening panel with module:', currentModule);
       setPanelOpen(true);
       // 다른 마커 클릭 시에도 최소화 상태 유지
       // setPanelMinimized(false); <- 이 줄을 제거하여 최소화 상태 유지
@@ -160,15 +157,6 @@ export default function Home() {
     setLanguageChangedFlag(true);
   }, [language]);
 
-  // 패널 상태 디버깅
-  useEffect(() => {
-    console.log('🔴 Panel state changed:', { 
-      panelOpen, 
-      panelModule, 
-      panelData: panelData ? { type: panelData.type, id: panelData.id } : null,
-      timestamp: new Date().toISOString()
-    });
-  }, [panelOpen, panelModule, panelData]);
 
   const handleExploreCircuit = () => {
     if (!nextRaceCircuitId) return;
@@ -373,6 +361,18 @@ export default function Home() {
     };
   }, [hasUserInteracted]);
 
+  // 언어 변경 시 선택된 그랑프리를 중앙으로 유지
+  useEffect(() => {
+    if (currentCircuit) {
+      // 짧은 지연 후 선택된 서킷을 중앙으로 스크롤 (DOM 업데이트 완료 후)
+      const timeoutId = setTimeout(() => {
+        scrollToCircuit(currentCircuit.id);
+      }, UI_TIMING.LANGUAGE_CHANGE_DELAY);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [language, currentCircuit, scrollToCircuit]);
+
   return (
     <>
       <main className="relative w-full h-screen overflow-hidden">
@@ -545,7 +545,11 @@ export default function Home() {
                   })() : 'TBD'}
                 </span>
                 {/* Grand Prix 이름 */}
-                <span className="text-white/90 text-lg font-bold uppercase tracking-tight group-hover:text-white transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <span className={`text-lg font-bold uppercase tracking-tight transition-colors ${
+                  currentCircuit?.id === circuit.id 
+                    ? 'text-[#FF1801]' 
+                    : 'text-white/90 group-hover:text-white'
+                }`} style={{ fontFamily: 'Inter, sans-serif' }}>
                   {getText(circuit.grandPrix, language)}
                 </span>
               </div>

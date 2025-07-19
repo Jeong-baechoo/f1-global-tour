@@ -34,15 +34,6 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { language } = useLanguage();
 
-  // Debug log
-  React.useEffect(() => {
-    console.log('📍 CircuitInfoPanel Debug:', {
-      isVisible,
-      isCollapsed,
-      isExpanded,
-      currentCircuit: currentCircuit?.name
-    });
-  }, [isVisible, isCollapsed, isExpanded, currentCircuit]);
 
   if (!isVisible) return null;
 
@@ -103,7 +94,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
           <div className="mb-4">
             <div className="flex items-center justify-between">
               <h3 className="text-white font-semibold text-lg tracking-wide">
-                CIRCUIT INFO
+                {language === 'ko' ? '서킷 정보' : 'CIRCUIT INFO'}
               </h3>
               <button
                 onClick={() => setIsCollapsed(true)}
@@ -122,7 +113,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-white/90 font-medium text-sm uppercase tracking-wider">
-                Sector Information
+                {language === 'ko' ? '섹터 정보' : 'Sector Information'}
               </h4>
               <button
                 onClick={() => onToggleSectorInfoAction(!sectorInfoEnabled)}
@@ -141,15 +132,15 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
             <div className="space-y-2 text-xs text-white/70">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <span>Sector 1 Markers & Track Colors</span>
+                <span>{language === 'ko' ? '섹터 1 마커 및 트랙 색상' : 'Sector 1 Markers & Track Colors'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span>Sector 2 Markers & Track Colors</span>
+                <span>{language === 'ko' ? '섹터 2 마커 및 트랙 색상' : 'Sector 2 Markers & Track Colors'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                <span>Sector 3 Markers & Track Colors</span>
+                <span>{language === 'ko' ? '섹터 3 마커 및 트랙 색상' : 'Sector 3 Markers & Track Colors'}</span>
               </div>
             </div>
           </div>
@@ -158,7 +149,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-white/90 font-medium text-sm uppercase tracking-wider">
-                DRS Information
+                {language === 'ko' ? 'DRS 정보' : 'DRS Information'}
               </h4>
               <button
                 onClick={() => onToggleDRSInfoAction(!drsInfoEnabled)}
@@ -182,21 +173,21 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
                     i === 1 ? 'bg-orange-500' : 
                     'bg-purple-500'
                   }`}></div>
-                  <span>DRS Detection Zone {i + 1}</span>
+                  <span>{language === 'ko' ? `DRS 감지 구역 ${i + 1}` : `DRS Detection Zone ${i + 1}`}</span>
                 </div>
               ))}
               {drsDetectionCount === 0 && (
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                  <span>No DRS Detection Zones</span>
+                  <span>{language === 'ko' ? 'DRS 감지 구역 없음' : 'No DRS Detection Zones'}</span>
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-white"></div>
-                <span>Speed Trap</span>
+                <span>{language === 'ko' ? '속도 측정 구간' : 'Speed Trap'}</span>
               </div>
               <div className="text-white/50 text-xs mt-1">
-                + DRS Zone Animations
+                + {language === 'ko' ? 'DRS 구역 애니메이션' : 'DRS Zone Animations'}
               </div>
             </div>
           </div>
@@ -205,7 +196,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-white/90 font-medium text-sm uppercase tracking-wider">
-                3D Elevation Track
+                {language === 'ko' ? '3D 고저차 트랙' : '3D Elevation Track'}
               </h4>
               <button
                 onClick={() => onToggleElevationAction(!elevationEnabled)}
@@ -224,18 +215,18 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
             <div className="space-y-2 text-xs text-white/70">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span>Low Elevation (0-30m)</span>
+                <span>{language === 'ko' ? '낮은 고도 (0-30m)' : 'Low Elevation (0-30m)'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span>Medium Elevation (30-60m)</span>
+                <span>{language === 'ko' ? '중간 고도 (30-60m)' : 'Medium Elevation (30-60m)'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                <span>High Elevation (60m+)</span>
+                <span>{language === 'ko' ? '높은 고도 (60m+)' : 'High Elevation (60m+)'}</span>
               </div>
               <div className="text-white/50 text-xs mt-1">
-                + Real terrain data visualization
+                + {language === 'ko' ? '실제 지형 데이터 시각화' : 'Real terrain data visualization'}
               </div>
             </div>
           </div>
@@ -248,14 +239,14 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
                     {getText(currentCircuit.name, language)} - {getText(currentCircuit.location.country, language)}
                   </div>
                   <div className="mt-1">
-                    {drsZoneCount} DRS Zone{drsZoneCount !== 1 ? 's' : ''}
+                    {drsZoneCount} {language === 'ko' ? 'DRS 구역' : `DRS Zone${drsZoneCount !== 1 ? 's' : ''}`}
                   </div>
                   <div className="mt-1">
-                    {drsDetectionCount} DRS Detection Zone{drsDetectionCount !== 1 ? 's' : ''}
+                    {drsDetectionCount} {language === 'ko' ? 'DRS 감지 구역' : `DRS Detection Zone${drsDetectionCount !== 1 ? 's' : ''}`}
                   </div>
                 </>
               ) : (
-                <div>Select a circuit to view details</div>
+                <div>{language === 'ko' ? '서킷을 선택하여 세부 정보 보기' : 'Select a circuit to view details'}</div>
               )}
             </div>
           </div>

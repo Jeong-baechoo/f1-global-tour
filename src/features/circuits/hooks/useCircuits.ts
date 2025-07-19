@@ -23,7 +23,6 @@ export const useCircuits = () => {
       setLoading(true);
       setError(null);
       const circuitsData = await circuitService.getCircuits();
-      console.log('Loaded circuits:', circuitsData.length, 'circuits');
       setCircuits(circuitsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load circuits');
@@ -42,16 +41,20 @@ export const useCircuits = () => {
     try {
       const circuit = await circuitService.getCircuitById(circuitId);
       selectCircuit(circuit);
-    } catch (err) {
-      console.error('Error selecting circuit:', err);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error selecting circuit:', error);
+      }
     }
   };
   
   const getNextRaceCircuit = async () => {
     try {
       return await circuitService.getNextRaceCircuit();
-    } catch (err) {
-      console.error('Error getting next race:', err);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error getting next race:', error);
+      }
       return null;
     }
   };

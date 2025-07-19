@@ -3,7 +3,9 @@ import { getDRSZones } from '@/src/shared/utils/data/trackDataLoader';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
 import { trackStateManager } from '../state/TrackStateManager';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { DRS_COLORS, OPACITY } from '@/src/shared/constants';
+import { DRS_COLORS, OPACITY, UI_TIMING } from '@/src/shared/constants';
+// noinspection ES6PreferShortImport
+import { DRSAnimationController } from '../animation/DRSAnimationController';
 
 // DRS zone index definitions
 const DRS_ZONES: { [key: string]: Array<{ start: number; end: number; wrapAround?: boolean }> | 'dynamic' } = {
@@ -42,7 +44,6 @@ export class DRSZoneManager {
             try {
               map.addImage(state.name, img);
             } catch {
-              console.warn(`Image ${state.name} already exists, skipping...`);
             }
           }
           URL.revokeObjectURL(url);
@@ -221,6 +222,26 @@ export class DRSZoneManager {
           map.setLayoutProperty(layerId, 'visibility', enabled ? 'visible' : 'none');
         }
       });
+    } else if (enabled) {
+      // DRS 레이어가 없지만 켜려고 할 때, 다시 그려줌
+      const circuitId = trackId.replace('-track', '');
+      const originalTrackData = trackStateManager.findOriginalTrackData(trackId);
+      
+      if (originalTrackData && 
+          originalTrackData.originalData && 
+          originalTrackData.originalData.geometry && 
+          originalTrackData.originalData.geometry.coordinates &&
+          Array.isArray(originalTrackData.originalData.geometry.coordinates) &&
+          originalTrackData.originalData.geometry.coordinates.length > 0) {
+        this.drawDRSZones(map, trackId, originalTrackData.originalData.geometry.coordinates, circuitId)
+          .then(() => {
+            // DRS 존이 다시 그려진 후 애니메이션 시작
+            setTimeout(() => {
+              DRSAnimationController.startAnimation(map, trackId);
+            }, UI_TIMING.LANGUAGE_CHANGE_DELAY);
+          })
+          .catch(console.error);
+      }
     }
   }
 }

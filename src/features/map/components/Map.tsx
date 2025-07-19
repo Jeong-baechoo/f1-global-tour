@@ -49,7 +49,7 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
 
   // Memoized callbacks to prevent useEffect re-runs
   const handleMapLoad = useCallback(() => {
-    console.log('Map loaded with MapCanvas');
+    // Map loaded
   }, []);
 
   const handleGlobeSpinnerReady = useCallback((spinner: unknown) => {
@@ -87,9 +87,7 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
 
   // Map 로드 시 팀 마커 생성
   useEffect(() => {
-    console.log('Team markers effect:', { map: !!map, isMapLoaded, teamsLength: teams.length });
     if (!map || !isMapLoaded) {
-      console.log('Skipping team markers creation - conditions not met');
       return;
     }
 
@@ -101,9 +99,7 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
 
     // 팀 마커 생성
     if (teams.length > 0) {
-      console.log('Creating team markers for', teams.length, 'teams');
       createTeamMarkers(teams, {}, (panelData) => {
-        console.log('Map received panel data:', panelData);
         onMarkerClick?.(panelData);
       });
     }
@@ -111,15 +107,12 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
 
   // Map 로드 시 서킷 마커 생성
   useEffect(() => {
-    console.log('Circuit markers effect:', { map: !!map, isMapLoaded, circuitsLength: circuits.length });
     if (!map || !isMapLoaded) {
-      console.log('Skipping circuit markers creation - conditions not met');
       return;
     }
 
     // 서킷 마커 생성
     if (circuits.length > 0) {
-      console.log('Creating circuit markers for', circuits.length, 'circuits');
       createCircuitMarkers(circuits, {}, (circuit) => {
         onMarkerClick?.({
           type: 'circuit',

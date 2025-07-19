@@ -11,11 +11,45 @@ interface CircuitDetailPanelProps {
   sheetState?: 'closed' | 'peek' | 'half' | 'full';
 }
 
+// 서킷별 성능 데이터 (2024/2025 F1 공식 데이터 기반)
+const getCircuitPerformanceData = (circuitId: string) => {
+  const performanceData: Record<string, { drsZones: number; topSpeed: number; pitLoss: number }> = {
+    'australia': { drsZones: 4, topSpeed: 320, pitLoss: 23 },        // Albert Park
+    'china': { drsZones: 2, topSpeed: 318, pitLoss: 21 },           // Shanghai
+    'japan': { drsZones: 1, topSpeed: 324, pitLoss: 19 },           // Suzuka
+    'bahrain': { drsZones: 3, topSpeed: 330, pitLoss: 20 },         // Sakhir
+    'saudi-arabia': { drsZones: 3, topSpeed: 335, pitLoss: 18 },    // Jeddah
+    'miami': { drsZones: 3, topSpeed: 320, pitLoss: 19 },           // Miami
+    'italy-emilia': { drsZones: 1, topSpeed: 315, pitLoss: 20 },    // Imola
+    'monaco': { drsZones: 1, topSpeed: 260, pitLoss: 23 },          // Monaco
+    'spain': { drsZones: 2, topSpeed: 315, pitLoss: 21 },           // Barcelona-Catalunya
+    'canada': { drsZones: 3, topSpeed: 330, pitLoss: 17 },          // Gilles Villeneuve
+    'austria': { drsZones: 3, topSpeed: 320, pitLoss: 18 },         // Red Bull Ring
+    'great-britain': { drsZones: 2, topSpeed: 330, pitLoss: 22 },   // Silverstone
+    'belgium': { drsZones: 2, topSpeed: 340, pitLoss: 16 },         // Spa-Francorchamps
+    'hungary': { drsZones: 1, topSpeed: 315, pitLoss: 24 },         // Hungaroring
+    'netherlands': { drsZones: 2, topSpeed: 315, pitLoss: 20 },     // Zandvoort
+    'italy': { drsZones: 2, topSpeed: 345, pitLoss: 19 },           // Monza
+    'azerbaijan': { drsZones: 2, topSpeed: 350, pitLoss: 21 },      // Baku
+    'singapore': { drsZones: 4, topSpeed: 315, pitLoss: 25 },       // Marina Bay
+    'united-states': { drsZones: 2, topSpeed: 325, pitLoss: 20 },   // COTA
+    'mexico': { drsZones: 2, topSpeed: 330, pitLoss: 18 },          // Mexico City
+    'brazil': { drsZones: 2, topSpeed: 320, pitLoss: 22 },          // Interlagos
+    'las-vegas': { drsZones: 3, topSpeed: 342, pitLoss: 16 },       // Las Vegas
+    'qatar': { drsZones: 3, topSpeed: 335, pitLoss: 18 },           // Lusail
+    'abu-dhabi': { drsZones: 2, topSpeed: 325, pitLoss: 21 },       // Yas Marina
+    'nurburgring': { drsZones: 1, topSpeed: 310, pitLoss: 24 }      // Nürburgring
+  };
+  
+  return performanceData[circuitId] || { drsZones: 2, topSpeed: 320, pitLoss: 20 };
+};
+
 export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
   data,
   isMobile
 }) => {
   const { language } = useLanguage();
+  const performanceData = getCircuitPerformanceData(data.id);
 
   return (
     <div className={isMobile ? "space-y-8" : "space-y-12"}>
@@ -56,7 +90,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
         <div className="relative">
           {/* 캐러셀 컨테이너 */}
           <div 
-            className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth mx-8"
+            className="flex gap-3 overflow-x-auto pb-2 pt-3 scrollbar-hide scroll-smooth mx-8"
             id="stats-carousel"
           >
             {/* 랩 수 */}
@@ -86,7 +120,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
             {/* DRS 존 */}
             <div className="bg-gradient-to-br from-[#1A1A1A]/60 to-[#0A0A0A]/80 backdrop-blur-xl rounded-xl p-4 border border-white/10 hover:border-[#FF1801]/30 transition-all duration-300 hover:transform hover:-translate-y-0.5 flex-shrink-0 min-w-[120px]">
               <div className="text-center">
-                <div className="text-2xl font-black text-white mb-1">2</div>
+                <div className="text-2xl font-black text-white mb-1">{performanceData.drsZones}</div>
                 <div className="text-[10px] uppercase text-white/50 font-medium tracking-wider">
                   DRS ZONES
                 </div>
@@ -97,7 +131,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
             <div className="bg-gradient-to-br from-[#1A1A1A]/60 to-[#0A0A0A]/80 backdrop-blur-xl rounded-xl p-4 border border-white/10 hover:border-[#FF1801]/30 transition-all duration-300 hover:transform hover:-translate-y-0.5 flex-shrink-0 min-w-[120px]">
               <div className="text-center">
                 <div className="text-2xl font-black text-white mb-1">
-                  320<span className="text-xs font-medium text-white/70">km/h</span>
+                  {performanceData.topSpeed}<span className="text-xs font-medium text-white/70">km/h</span>
                 </div>
                 <div className="text-[10px] uppercase text-white/50 font-medium tracking-wider">
                   TOP SPEED
@@ -130,23 +164,14 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
             </div>
 
             {/* 피트 손실 */}
-            <div className="bg-gradient-to-br from-[#1A1A1A]/60 to-[#0A0A0A]/80 backdrop-blur-xl rounded-xl p-4 border border-white/10 hover:border-[#FF1801]/30 transition-all duration-300 hover:transform hover:-translate-y-0.5 flex-shrink-0 min-w-[120px] group relative">
+            <div className="bg-gradient-to-br from-[#1A1A1A]/60 to-[#0A0A0A]/80 backdrop-blur-xl rounded-xl p-4 border border-white/10 hover:border-[#FF1801]/30 transition-all duration-300 hover:transform hover:-translate-y-0.5 flex-shrink-0 min-w-[120px]">
               <div className="text-center">
                 <div className="text-2xl font-black text-white mb-1">
-                  23<span className="text-xs font-medium text-white/70">s</span>
+                  {performanceData.pitLoss}<span className="text-xs font-medium text-white/70">s</span>
                 </div>
-                <div className="flex items-center justify-center gap-1">
-                  <div className="text-[10px] uppercase text-white/50 font-medium tracking-wider">
-                    {language === 'ko' ? '피트 손실' : 'PIT LOSS'}
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-white/20 flex items-center justify-center text-[7px] text-white/60">
-                    ?
-                  </div>
+                <div className="text-[10px] uppercase text-white/50 font-medium tracking-wider">
+                  {language === 'ko' ? '피트 손실' : 'PIT LOSS'}
                 </div>
-              </div>
-              {/* 툴팁 */}
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1.5 bg-black/80 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                {language === 'ko' ? '피트스탑 시 평균 시간 손실' : 'Average time lost during pit stop'}
               </div>
             </div>
           </div>
@@ -159,7 +184,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
                 carousel.scrollBy({ left: -150, behavior: 'smooth' });
               }
             }}
-            className="absolute left-0 top-6 text-white/60 hover:text-[#FF1801] transition-all duration-300 hover:-translate-x-1 z-10"
+            className="absolute left-0 top-10 text-white/60 hover:text-[#FF1801] transition-all duration-300 hover:-translate-x-1 z-10"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -173,7 +198,7 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
                 carousel.scrollBy({ left: 150, behavior: 'smooth' });
               }
             }}
-            className="absolute right-0 top-6 text-white/60 hover:text-[#FF1801] transition-all duration-300 hover:translate-x-1 z-10"
+            className="absolute right-0 top-10 text-white/60 hover:text-[#FF1801] transition-all duration-300 hover:translate-x-1 z-10"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

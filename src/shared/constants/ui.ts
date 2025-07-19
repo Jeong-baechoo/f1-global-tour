@@ -20,3 +20,18 @@ export const BLUR = {
   HEAVY: 3
 } as const;
 
+// UI timing constants
+export const UI_TIMING = {
+  LANGUAGE_CHANGE_DELAY: 100,
+  SECTOR_MARKER_ANIMATION_DELAY: 300,
+  DRS_ANIMATION_DELAY: 500,
+  ZOOM_THRESHOLD_TRACK_VISIBLE: 10,
+  SECTOR_MARKER_DISPLAY_ZOOM: 10
+} as const;
+
+// Panel animation constants
+export const PANEL_ANIMATION = {
+  ENTER_DURATION: 300,
+  EXIT_DURATION: 200
+} as const;
+
