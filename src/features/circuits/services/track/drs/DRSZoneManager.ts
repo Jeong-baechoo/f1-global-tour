@@ -3,7 +3,7 @@ import { getDRSZones } from '@/src/shared/utils/data/trackDataLoader';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
 import { trackStateManager } from '../state/TrackStateManager';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { DRS_COLORS, OPACITY } from '@/src/shared/constants';
+import { DRS_COLORS, OPACITY, UI_TIMING } from '@/src/shared/constants';
 // noinspection ES6PreferShortImport
 import { DRSAnimationController } from '../animation/DRSAnimationController';
 
@@ -238,7 +238,7 @@ export class DRSZoneManager {
             // DRS 존이 다시 그려진 후 애니메이션 시작
             setTimeout(() => {
               DRSAnimationController.startAnimation(map, trackId);
-            }, 100);
+            }, UI_TIMING.LANGUAGE_CHANGE_DELAY);
           })
           .catch(console.error);
       }

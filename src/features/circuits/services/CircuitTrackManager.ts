@@ -229,8 +229,10 @@ export class CircuitTrackManager {
     try {
       // Remove terrain (set to null)
       this.map.setTerrain(null);
-    } catch {
-      // Error handled silently
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to remove terrain:', error);
+      }
     }
   }
 

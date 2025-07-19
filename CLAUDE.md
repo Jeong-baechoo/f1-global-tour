@@ -107,29 +107,32 @@ Follow conventional commits:
 - `test:` Test additions/modifications
 - `chore:` Build/config changes
 
-## Common Development Tasks
+## Architecture Patterns & Development Patterns
 
-### Adding Team Content
-1. **Team data**: Update `data/teams.json` with new team information
-2. **Markers**: Teams use `TeamMarkerFactory.createMultiple()` pattern
-3. **Assets**: Add team logos to `public/team-logos/`
-4. **Driver profiles**: Add photos to `public/drivers/` directory
+### Component Architecture
+- **Map Component**: Uses `forwardRef` + `useImperativeHandle` for ref-based API
+- **Factory Pattern**: `TeamMarkerFactory.createMultiple()` for efficient marker creation
+- **Service Layer**: MapService, TeamService, CircuitService for business logic
+- **Feature Stores**: Domain-specific Zustand stores (useMapStore, useTeamStore, etc.)
 
-### Adding Circuit Content  
-1. **Circuit data**: Update `data/circuits.json` 
-2. **Track coordinates**: Add GeoJSON files to `public/data/circuits-geojson/`
-3. **Circuit markers**: Created via `useCircuitMarkers` hook
-4. **Visibility**: Managed by `CircuitTrackManager` based on zoom level
+### Performance Patterns
+- **Ref-based state management** to prevent unnecessary re-renders
+- **Dynamic imports** for code splitting (`Map` component SSR disabled)
+- **Zoom-based visibility** control via `CircuitTrackManager`
+- **GPU acceleration** with `translateZ(0)` transforms
+- **Local asset optimization** - prefer local over external URLs
 
-### Internationalization
-- **Text management**: Use `getText()` from `@/utils/i18n`
-- **Localized content**: Components use `LocalizedText` for multi-language support
-- **Language files**: Located in `locales/en/` and `locales/ko/`
+### Data Management
+- **Static JSON data**: Teams (`data/teams.json`) and circuits (`data/circuits.json`)
+- **GeoJSON tracks**: Individual circuit coordinates in `public/data/circuits-geojson/`
+- **Asset organization**: Team logos, driver photos, F1 cars in structured directories
+- **Internationalization**: `getText()` utility with language files in `locales/`
 
-### Map Customization
-- **Globe rotation**: Modify `secondsPerRevolution` in animation constants
-- **FlyTo behavior**: Adjust speed/curve parameters in camera configs
-- **Performance**: All optimizations documented in performance section above
+### Development Workflow Patterns
+- **Feature-based architecture** with clear domain boundaries
+- **Convention over configuration** for file organization
+- **Shared constants** exported from `@/src/shared/constants` (UI_TIMING, ZOOM_THRESHOLDS, etc.)
+- **Type-safe development** with comprehensive TypeScript definitions
 
 ## Critical Guidelines to Prevent Known Issues
 
@@ -178,19 +181,33 @@ const marker = new mapboxgl.Marker(markerElement, {
 - **@mapbox/mapbox-gl-geocoder**: Search functionality (if needed)
 - **GeoJSON**: Circuit track coordinate data format
 
-## Project Maintenance
+## Version History & Branch Strategy
 
-### Code Quality
+### Current Development Status
+- **Production**: `master` branch (protected) 
+- **Development**: `develop` branch (active development)
+- **Current**: `feature/improve-logic` branch with UI improvements and track feature stabilization
+
+### Recent Major Versions
+- **v0.6.0**: Architecture consolidation & cleanup with feature-based structure
+- **v0.5.0**: Team details with driver profiles, major restructuring, performance optimizations
+- **v0.4.0**: Architecture refactoring, Map component improvements, critical marker bug fixes
+- **v0.3.0**: Performance enhancements, TypeScript improvements, mobile UX refinements
+
+### Project Maintenance
+
+#### Code Quality Standards
 - ESLint configuration with Next.js recommended rules
-- TypeScript strict mode enforced
-- Conventional commit message format required
+- TypeScript strict mode enforced with comprehensive type checking
+- Conventional commit message format required (`feat:`, `fix:`, `docs:`, etc.)
+- Development error logging with `process.env.NODE_ENV === 'development'` checks
 
-### Asset Management  
-- **Local assets preferred** over external URLs for performance
-- **Organized public directory** with clear folder structure
-- **Optimized images** for web delivery
+#### Asset Management Strategy
+- **Local assets strongly preferred** over external URLs for 5-10x performance improvement
+- **Structured public directory**: `team-logos/`, `drivers/`, `cars/`, `data/circuits-geojson/`
+- **Image optimization** with Next.js Image component and proper sizing
 
-### Documentation
-- Comprehensive README.md with feature overview
-- CHANGELOG.md tracking version history  
-- Architecture documentation in docs/ directory
+#### Development Workflow
+- **Feature branches** from `develop`: `feature/*`, `fix/*`, `hotfix/*`
+- **Pull request workflow** with code review to `develop`
+- **Protected master branch** for production releases only

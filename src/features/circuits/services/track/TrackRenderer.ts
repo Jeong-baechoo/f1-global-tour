@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
-import { ANIMATION_CONFIG, TRACK_LINE_WIDTHS, OPACITY, BLUR, ZOOM_THRESHOLDS } from '@/src/shared/constants';
+import { ANIMATION_CONFIG, TRACK_LINE_WIDTHS, OPACITY, BLUR, ZOOM_THRESHOLDS, UI_TIMING } from '@/src/shared/constants';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
 import { trackStateManager } from './state/TrackStateManager';
 import { DRSZoneManager } from './drs/DRSZoneManager';
@@ -128,7 +128,7 @@ export class TrackRenderer {
             // Start DRS animation only if DRS is enabled
             setTimeout(() => {
               DRSAnimationController.startAnimation(map, trackId);
-            }, sectorApplied ? 300 : 500);
+            }, sectorApplied ? UI_TIMING.SECTOR_MARKER_ANIMATION_DELAY : UI_TIMING.DRS_ANIMATION_DELAY);
           }
           
           // Draw 3D elevation track only if elevation is enabled

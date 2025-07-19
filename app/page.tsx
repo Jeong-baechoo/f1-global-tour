@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
+import { UI_TIMING } from '@/src/shared/constants';
 
 // Dynamic imports for better code splitting
 const Map = dynamic(
@@ -366,7 +367,7 @@ export default function Home() {
       // 짧은 지연 후 선택된 서킷을 중앙으로 스크롤 (DOM 업데이트 완료 후)
       const timeoutId = setTimeout(() => {
         scrollToCircuit(currentCircuit.id);
-      }, 100);
+      }, UI_TIMING.LANGUAGE_CHANGE_DELAY);
 
       return () => clearTimeout(timeoutId);
     }

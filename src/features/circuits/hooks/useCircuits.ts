@@ -41,15 +41,20 @@ export const useCircuits = () => {
     try {
       const circuit = await circuitService.getCircuitById(circuitId);
       selectCircuit(circuit);
-    } catch {
-      // Error handled silently
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error selecting circuit:', error);
+      }
     }
   };
   
   const getNextRaceCircuit = async () => {
     try {
       return await circuitService.getNextRaceCircuit();
-    } catch {
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error getting next race:', error);
+      }
       return null;
     }
   };
