@@ -5,8 +5,8 @@ export type SheetState = 'closed' | 'peek' | 'half' | 'full';
 export const SHEET_HEIGHTS = {
   closed: 0,
   peek: 80, // 80px - 핸들과 제목만 보임
-  half: 45, // 45vh - 중간 상태
-  full: 85  // 85vh - 전체 상태
+  half: 50, // 50vh - 중간 상태 (5vh 더 높게)
+  full: 90  // 90vh - 전체 상태 (5vh 더 높게)
 } as const;
 
 // 드래그 동작 임계값

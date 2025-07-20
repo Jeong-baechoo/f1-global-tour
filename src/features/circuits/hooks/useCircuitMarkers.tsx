@@ -4,7 +4,7 @@ import { Circuit, CircuitMarkerOptions } from '../types';
 import { useCircuitStore } from '@/src/features/circuits';
 import { getText, type Language } from '@/utils/i18n';
 import { isMobile } from '@/src/shared/utils/viewport';
-import { ZOOM_THRESHOLDS, ZoomLevel } from '@/src/shared/constants';
+import { ZOOM_THRESHOLDS, ZoomLevel, getZoomThresholds } from '@/src/shared/constants';
 
 export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
@@ -171,21 +171,17 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     // Setup zoom visibility handler
     const updateVisibility = () => {
       const zoom = map.getZoom();
+      const { circuitMarkers } = getZoomThresholds(isMobile());
       
       if (zoom <= ZOOM_THRESHOLDS.GLOBE_TO_2D) {
-        // 줌 5.5 이하: 도트만 표시 (3D globe에서)
         el.setAttribute('data-zoom-level', ZoomLevel.LOW);
-      } else if (zoom > ZOOM_THRESHOLDS.GLOBE_TO_2D && zoom < ZOOM_THRESHOLDS.FADE_START) {
-        // 줌 5.5 초과 ~ 12 미만: 정상 표시
+      } else if (zoom > ZOOM_THRESHOLDS.GLOBE_TO_2D && zoom < circuitMarkers.FADE_START) {
         el.setAttribute('data-zoom-level', ZoomLevel.NORMAL);
-      } else if (zoom >= ZOOM_THRESHOLDS.FADE_START && zoom < ZOOM_THRESHOLDS.FADE_MID) {
-        // 줌 12-13: 첫 번째 페이드 단계
+      } else if (zoom >= circuitMarkers.FADE_START && zoom < circuitMarkers.FADE_MID) {
         el.setAttribute('data-zoom-level', ZoomLevel.FADE_1);
-      } else if (zoom >= ZOOM_THRESHOLDS.FADE_MID && zoom < ZOOM_THRESHOLDS.HIDE) {
-        // 줌 13-14: 두 번째 페이드 단계
+      } else if (zoom >= circuitMarkers.FADE_MID && zoom < circuitMarkers.HIDDEN) {
         el.setAttribute('data-zoom-level', ZoomLevel.FADE_2);
       } else {
-        // 줌 14 이상: 완전히 숨김
         el.setAttribute('data-zoom-level', ZoomLevel.HIDDEN);
       }
     };

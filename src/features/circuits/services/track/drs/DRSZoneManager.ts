@@ -3,7 +3,8 @@ import { getDRSZones } from '@/src/shared/utils/data/trackDataLoader';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
 import { trackStateManager } from '../state/TrackStateManager';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { DRS_COLORS, OPACITY, UI_TIMING } from '@/src/shared/constants';
+import { DRS_COLORS, OPACITY, UI_TIMING, getZoomThresholds } from '@/src/shared/constants';
+import { isMobile } from '@/src/shared/utils/viewport';
 // noinspection ES6PreferShortImport
 import { DRSAnimationController } from '../animation/DRSAnimationController';
 
@@ -142,7 +143,7 @@ export class DRSZoneManager {
           id: layerId,
           type: 'symbol',
           source: `${drsId}-symbols`,
-          minzoom: 14,
+          minzoom: getZoomThresholds(isMobile()).drsZones,
           layout: {
             'icon-image': 'chevron-mid',
             'icon-size': 0.8,
