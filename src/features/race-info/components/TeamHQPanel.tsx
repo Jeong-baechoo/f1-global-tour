@@ -8,6 +8,7 @@ import { getText } from '@/utils/i18n';
 import { TeamHQData } from '../types';
 
 // Nationality to country code mapping for flag icons
+// noinspection JSNonASCIINames
 const NATIONALITY_TO_CODE: Record<string, string> = {
     // Current F1 2025 drivers
     'Dutch': 'nl', 'Japanese': 'jp', 'Monégasque': 'mc', 'British': 'gb',

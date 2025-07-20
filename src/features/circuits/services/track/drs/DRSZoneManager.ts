@@ -139,15 +139,11 @@ export class DRSZoneManager {
       // Add symbol layer
       const layerId = `${drsId}-symbols`;
       if (!map.getLayer(layerId)) {
-        // Get appropriate minzoom based on device type
-        const { drsZones } = getZoomThresholds(isMobile());
-        const minZoom = drsZones;
-        
         map.addLayer({
           id: layerId,
           type: 'symbol',
           source: `${drsId}-symbols`,
-          minzoom: minZoom,
+          minzoom: getZoomThresholds(isMobile()).drsZones,
           layout: {
             'icon-image': 'chevron-mid',
             'icon-size': 0.8,
