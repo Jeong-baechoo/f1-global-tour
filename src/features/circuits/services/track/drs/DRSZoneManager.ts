@@ -3,7 +3,7 @@ import { getDRSZones } from '@/src/shared/utils/data/trackDataLoader';
 import { interpolateCoordinates } from '@/src/shared/utils/animations/globeAnimation';
 import { trackStateManager } from '../state/TrackStateManager';
 import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTrackManager';
-import { DRS_COLORS, OPACITY, UI_TIMING, ZOOM_THRESHOLDS } from '@/src/shared/constants';
+import { DRS_COLORS, OPACITY, UI_TIMING, getZoomThresholds } from '@/src/shared/constants';
 import { isMobile } from '@/src/shared/utils/viewport';
 // noinspection ES6PreferShortImport
 import { DRSAnimationController } from '../animation/DRSAnimationController';
@@ -140,7 +140,8 @@ export class DRSZoneManager {
       const layerId = `${drsId}-symbols`;
       if (!map.getLayer(layerId)) {
         // Get appropriate minzoom based on device type
-        const minZoom = isMobile() ? ZOOM_THRESHOLDS.DRS_VISIBLE_MOBILE : ZOOM_THRESHOLDS.DRS_VISIBLE_DESKTOP;
+        const { drsZones } = getZoomThresholds(isMobile());
+        const minZoom = drsZones;
         
         map.addLayer({
           id: layerId,

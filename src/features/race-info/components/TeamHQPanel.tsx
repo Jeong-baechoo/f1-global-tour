@@ -7,39 +7,27 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { TeamHQData } from '../types';
 
-// 국가 코드를 CSS 국기 아이콘으로 변환하는 함수
-const getFlagIcon = (nationality: string): React.ReactElement => {
-    // noinspection JSNonASCIINames
-    const flagCodes: { [key: string]: string } = {
-        // 2025 F1 드라이버들의 실제 nationality 값들
-        'Dutch': 'nl',           // Max Verstappen
-        'Japanese': 'jp',        // Yuki Tsunoda
-        'Monégasque': 'mc',      // Charles Leclerc  
-        'British': 'gb',         // Lewis Hamilton, George Russell, Lando Norris, Oliver Bearman
-        'Italian': 'it',         // Kimi Antonelli
-        'Australian': 'au',      // Oscar Piastri
-        'Spanish': 'es',         // Fernando Alonso, Carlos Sainz Jr.
-        'Canadian': 'ca',        // Lance Stroll
-        'French': 'fr',          // Pierre Gasly, Isack Hadjar, Esteban Ocon
-        'Argentine': 'ar',       // Franco Colapinto
-        'Thai': 'th',            // Alex Albon
-        'New Zealand': 'nz',     // Liam Lawson
-        'German': 'de',          // Nico Hulkenberg
-        'Brazilian': 'br',       // Gabriel Bortoleto
-        
-        // 추가 지원 (기존 매핑 유지)
-        'Mexican': 'mx',
-        'Finnish': 'fi',
-        'Danish': 'dk',
-        'Chinese': 'cn',
-        'American': 'us',
-        
-        // 이전 버전 호환성
-        'Argentinian': 'ar',     // 이전 매핑 유지
-        'New Zealander': 'nz'    // 이전 매핑 유지
-    };
+// Nationality to country code mapping for flag icons
+const NATIONALITY_TO_CODE: Record<string, string> = {
+    // Current F1 2025 drivers
+    'Dutch': 'nl', 'Japanese': 'jp', 'Monégasque': 'mc', 'British': 'gb',
+    'Italian': 'it', 'Australian': 'au', 'Spanish': 'es', 'Canadian': 'ca',
+    'French': 'fr', 'Argentine': 'ar', 'Thai': 'th', 'New Zealand': 'nz',
+    'German': 'de', 'Brazilian': 'br',
     
-    const countryCode = flagCodes[nationality];
+    // Additional support
+    'Mexican': 'mx', 'Finnish': 'fi', 'Danish': 'dk', 'Chinese': 'cn', 'American': 'us',
+    
+    // Legacy compatibility
+    'Argentinian': 'ar', 'New Zealander': 'nz'
+} as const;
+
+// Reusable flag icon component
+const FlagIcon: React.FC<{ nationality: string; className?: string }> = ({ 
+    nationality, 
+    className = "w-6 h-4 rounded-sm overflow-hidden shadow-sm border border-white/20" 
+}) => {
+    const countryCode = NATIONALITY_TO_CODE[nationality];
     
     if (!countryCode) {
         return <span className="text-lg">🏁</span>;
@@ -47,7 +35,7 @@ const getFlagIcon = (nationality: string): React.ReactElement => {
     
     return (
         <div 
-            className="w-6 h-4 rounded-sm overflow-hidden shadow-sm border border-white/20"
+            className={className}
             style={{
                 background: `url('https://flagcdn.com/w40/${countryCode}.png') center/cover no-repeat`,
                 minWidth: '24px'
@@ -160,7 +148,7 @@ const DriverCard = ({ driver, teamColors }: { driver: unknown, teamColors: unkno
                         })()
                     }`}>{(driver as { name: string }).name}</p>
                     <div className="flex items-center gap-4">
-                        {getFlagIcon((driver as { nationality: string }).nationality)}
+                        <FlagIcon nationality={(driver as { nationality: string }).nationality} />
                         <span className="text-white/60 text-sm font-medium">{(driver as { nationality: string }).nationality}</span>
                     </div>
                 </div>

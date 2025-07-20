@@ -21,42 +21,39 @@ export const ZOOM_LEVELS = {
   }
 } as const;
 
-// Zoom thresholds for visibility changes
+// Device-specific zoom thresholds for better UX
 export const ZOOM_THRESHOLDS = {
-  // Globe to 2D transition
+  // Global thresholds (device-independent)
   GLOBE_TO_2D: 5.5,
-  
-  // Team marker display mode change
   TEAM_MARKER_SIMPLE: 5,
-  
-  // Circuit marker visibility - Mobile
-  CIRCUIT_FADE_START_MOBILE: 9,
-  CIRCUIT_FADE_MID_MOBILE: 10,
-  CIRCUIT_HIDDEN_MOBILE: 11,
-  
-  // Circuit marker visibility - Desktop
-  CIRCUIT_FADE_START_DESKTOP: 11.5,
-  CIRCUIT_FADE_MID_DESKTOP: 12,
-  CIRCUIT_HIDDEN_DESKTOP: 13.5,
-  
-  // Track visibility
   TRACK_VISIBLE: 10,
   
-  // DRS zone visibility
-  DRS_VISIBLE_MOBILE: 9,
-  DRS_VISIBLE_DESKTOP: 14,
+  // Circuit marker visibility thresholds
+  CIRCUIT_MARKERS: {
+    MOBILE: {
+      FADE_START: 9,
+      FADE_MID: 10,
+      HIDDEN: 11
+    },
+    DESKTOP: {
+      FADE_START: 11.5,
+      FADE_MID: 12,
+      HIDDEN: 13.5
+    }
+  },
   
-  // General fade thresholds - Mobile
-  FADE_START_MOBILE: 9,
-  FADE_MID_MOBILE: 10,
-  HIDE_MOBILE: 11,
-  
-  // General fade thresholds - Desktop
-  FADE_START_DESKTOP: 11.5,
-  FADE_MID_DESKTOP: 12,
-  HIDE_DESKTOP: 13.5
+  // DRS zone visibility thresholds  
+  DRS_ZONES: {
+    MOBILE: 9,
+    DESKTOP: 14
+  }
 } as const;
 
+// Utility function to get device-specific zoom thresholds
+export const getZoomThresholds = (isMobile: boolean) => ({
+  circuitMarkers: isMobile ? ZOOM_THRESHOLDS.CIRCUIT_MARKERS.MOBILE : ZOOM_THRESHOLDS.CIRCUIT_MARKERS.DESKTOP,
+  drsZones: isMobile ? ZOOM_THRESHOLDS.DRS_ZONES.MOBILE : ZOOM_THRESHOLDS.DRS_ZONES.DESKTOP
+});
 
 // Zoom level states enum
 export enum ZoomLevel {

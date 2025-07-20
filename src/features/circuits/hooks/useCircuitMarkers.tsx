@@ -4,7 +4,7 @@ import { Circuit, CircuitMarkerOptions } from '../types';
 import { useCircuitStore } from '@/src/features/circuits';
 import { getText, type Language } from '@/utils/i18n';
 import { isMobile } from '@/src/shared/utils/viewport';
-import { ZOOM_THRESHOLDS, ZoomLevel } from '@/src/shared/constants';
+import { ZOOM_THRESHOLDS, ZoomLevel, getZoomThresholds } from '@/src/shared/constants';
 
 export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
@@ -171,27 +171,17 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     // Setup zoom visibility handler
     const updateVisibility = () => {
       const zoom = map.getZoom();
-      const isMobileDevice = isMobile();
-      
-      // Get appropriate thresholds based on device type
-      const fadeStart = isMobileDevice ? ZOOM_THRESHOLDS.FADE_START_MOBILE : ZOOM_THRESHOLDS.FADE_START_DESKTOP;
-      const fadeMid = isMobileDevice ? ZOOM_THRESHOLDS.FADE_MID_MOBILE : ZOOM_THRESHOLDS.FADE_MID_DESKTOP;
-      const hide = isMobileDevice ? ZOOM_THRESHOLDS.HIDE_MOBILE : ZOOM_THRESHOLDS.HIDE_DESKTOP;
+      const { circuitMarkers } = getZoomThresholds(isMobile());
       
       if (zoom <= ZOOM_THRESHOLDS.GLOBE_TO_2D) {
-        // 줌 5.5 이하: 도트만 표시 (3D globe에서)
         el.setAttribute('data-zoom-level', ZoomLevel.LOW);
-      } else if (zoom > ZOOM_THRESHOLDS.GLOBE_TO_2D && zoom < fadeStart) {
-        // 5.5 초과 ~ 페이드 시작 미만: 정상 표시 (모바일: 9, 데스크톱: 11.5)
+      } else if (zoom > ZOOM_THRESHOLDS.GLOBE_TO_2D && zoom < circuitMarkers.FADE_START) {
         el.setAttribute('data-zoom-level', ZoomLevel.NORMAL);
-      } else if (zoom >= fadeStart && zoom < fadeMid) {
-        // 첫 번째 페이드 단계 (모바일: 9-10, 데스크톱: 11.5-12)
+      } else if (zoom >= circuitMarkers.FADE_START && zoom < circuitMarkers.FADE_MID) {
         el.setAttribute('data-zoom-level', ZoomLevel.FADE_1);
-      } else if (zoom >= fadeMid && zoom < hide) {
-        // 두 번째 페이드 단계 (모바일: 10-11, 데스크톱: 12-13.5)
+      } else if (zoom >= circuitMarkers.FADE_MID && zoom < circuitMarkers.HIDDEN) {
         el.setAttribute('data-zoom-level', ZoomLevel.FADE_2);
       } else {
-        // 완전히 숨김 (모바일: 11 이상, 데스크톱: 13.5 이상)
         el.setAttribute('data-zoom-level', ZoomLevel.HIDDEN);
       }
     };
