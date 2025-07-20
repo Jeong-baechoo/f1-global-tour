@@ -7,16 +7,54 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { TeamHQData } from '../types';
 
-// 국가 코드를 국기 이모지로 변환하는 함수
-const getFlagEmoji = (nationality: string): string => {
-    const flags: { [key: string]: string } = {
-        'Spanish': '🇪🇸', 'Canadian': '🇨🇦', 'British': '🇬🇧', 'Mexican': '🇲🇽',
-        'Monegasque': '🇲🇨', 'Australian': '🇦🇺', 'Dutch': '🇳🇱', 'Japanese': '🇯🇵',
-        'Finnish': '🇫🇮', 'Danish': '🇩🇰', 'German': '🇩🇪', 'Chinese': '🇨🇳',
-        'Thai': '🇹🇭', 'American': '🇺🇸', 'French': '�🇷', 'Italian': '🇮🇹',
-        'Brazilian': '🇧🇷', 'Argentinian': '🇦🇷', 'New Zealander': '🇳🇿'
+// 국가 코드를 CSS 국기 아이콘으로 변환하는 함수
+const getFlagIcon = (nationality: string): React.ReactElement => {
+    // noinspection JSNonASCIINames
+    const flagCodes: { [key: string]: string } = {
+        // 2025 F1 드라이버들의 실제 nationality 값들
+        'Dutch': 'nl',           // Max Verstappen
+        'Japanese': 'jp',        // Yuki Tsunoda
+        'Monégasque': 'mc',      // Charles Leclerc  
+        'British': 'gb',         // Lewis Hamilton, George Russell, Lando Norris, Oliver Bearman
+        'Italian': 'it',         // Kimi Antonelli
+        'Australian': 'au',      // Oscar Piastri
+        'Spanish': 'es',         // Fernando Alonso, Carlos Sainz Jr.
+        'Canadian': 'ca',        // Lance Stroll
+        'French': 'fr',          // Pierre Gasly, Isack Hadjar, Esteban Ocon
+        'Argentine': 'ar',       // Franco Colapinto
+        'Thai': 'th',            // Alex Albon
+        'New Zealand': 'nz',     // Liam Lawson
+        'German': 'de',          // Nico Hulkenberg
+        'Brazilian': 'br',       // Gabriel Bortoleto
+        
+        // 추가 지원 (기존 매핑 유지)
+        'Mexican': 'mx',
+        'Finnish': 'fi',
+        'Danish': 'dk',
+        'Chinese': 'cn',
+        'American': 'us',
+        
+        // 이전 버전 호환성
+        'Argentinian': 'ar',     // 이전 매핑 유지
+        'New Zealander': 'nz'    // 이전 매핑 유지
     };
-    return flags[nationality] || '🏁';
+    
+    const countryCode = flagCodes[nationality];
+    
+    if (!countryCode) {
+        return <span className="text-lg">🏁</span>;
+    }
+    
+    return (
+        <div 
+            className="w-6 h-4 rounded-sm overflow-hidden shadow-sm border border-white/20"
+            style={{
+                background: `url('https://flagcdn.com/w40/${countryCode}.png') center/cover no-repeat`,
+                minWidth: '24px'
+            }}
+            title={nationality}
+        />
+    );
 };
 
 interface TeamHQPanelProps {
@@ -122,7 +160,7 @@ const DriverCard = ({ driver, teamColors }: { driver: unknown, teamColors: unkno
                         })()
                     }`}>{(driver as { name: string }).name}</p>
                     <div className="flex items-center gap-4">
-                        <span className="text-lg">{getFlagEmoji((driver as { nationality: string }).nationality)}</span>
+                        {getFlagIcon((driver as { nationality: string }).nationality)}
                         <span className="text-white/60 text-sm font-medium">{(driver as { nationality: string }).nationality}</span>
                     </div>
                 </div>

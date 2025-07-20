@@ -29,21 +29,32 @@ export const ZOOM_THRESHOLDS = {
   // Team marker display mode change
   TEAM_MARKER_SIMPLE: 5,
   
-  // Circuit marker visibility
-  CIRCUIT_FADE_START: 11.5,
-  CIRCUIT_FADE_MID: 12,
-  CIRCUIT_HIDDEN: 13.5,
+  // Circuit marker visibility - Mobile
+  CIRCUIT_FADE_START_MOBILE: 9,
+  CIRCUIT_FADE_MID_MOBILE: 10,
+  CIRCUIT_HIDDEN_MOBILE: 11,
+  
+  // Circuit marker visibility - Desktop
+  CIRCUIT_FADE_START_DESKTOP: 11.5,
+  CIRCUIT_FADE_MID_DESKTOP: 12,
+  CIRCUIT_HIDDEN_DESKTOP: 13.5,
   
   // Track visibility
   TRACK_VISIBLE: 10,
   
   // DRS zone visibility
-  DRS_VISIBLE: 14,
+  DRS_VISIBLE_MOBILE: 9,
+  DRS_VISIBLE_DESKTOP: 14,
   
-  // General fade thresholds
-  FADE_START: 12,
-  FADE_MID: 13,
-  HIDE: 14
+  // General fade thresholds - Mobile
+  FADE_START_MOBILE: 9,
+  FADE_MID_MOBILE: 10,
+  HIDE_MOBILE: 11,
+  
+  // General fade thresholds - Desktop
+  FADE_START_DESKTOP: 11.5,
+  FADE_MID_DESKTOP: 12,
+  HIDE_DESKTOP: 13.5
 } as const;
 
 
