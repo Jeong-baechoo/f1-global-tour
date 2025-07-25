@@ -56,7 +56,11 @@ export class MapService {
       // 모바일 제스처 설정
       touchPitch: false, // 터치로 피치(기울기) 변경 비활성화
       dragRotate: true, // 드래그 회전은 활성화 (두 손가락 회전 제스처용)
-      touchZoomRotate: true // 핀치 줌과 회전 모두 활성화
+      touchZoomRotate: true, // 핀치 줌과 회전 모두 활성화
+      // 모멘텀/관성 비활성화로 터치 해제 후 의도치 않은 움직임 방지
+      dragPan: { linearity: 1, easing: (t: number) => t, maxSpeed: 0 },
+      scrollZoom: { around: 'center' },
+      touchZoomRotate: { around: 'center' }
     });
 
     // Optimize map on load
@@ -226,6 +230,8 @@ export class MapService {
     let touchStartBearing = 0;
     let isPinching = false;
     let isRotating = false;
+    let touchEndTimer: NodeJS.Timeout | null = null;
+    let activeTouchCount = 0;
     
     // 두 손가락 터치 거리 계산
     const getTouchDistance = (touches: TouchList) => {
@@ -237,7 +243,17 @@ export class MapService {
     
     // touchstart 이벤트 리스너
     const handleTouchStart = (e: TouchEvent) => {
+      activeTouchCount = e.touches.length;
+      
+      if (touchEndTimer) {
+        clearTimeout(touchEndTimer);
+        touchEndTimer = null;
+      }
+      
       if (e.touches.length === 2) {
+        // 두 손가락 제스처 중에는 Mapbox 드래그 완전 차단
+        this.map!.dragPan.disable();
+        
         touchStartTime = Date.now();
         touchStartDistance = getTouchDistance(e.touches);
         touchStartBearing = this.map!.getBearing();
@@ -271,11 +287,25 @@ export class MapService {
     
     // touchend 이벤트 리스너
     const handleTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length < 2) {
-        touchStartTime = 0;
-        isPinching = false;
-        isRotating = false;
+      activeTouchCount = e.touches.length;
+      
+      // 이전 타이머가 있다면 취소
+      if (touchEndTimer) {
+        clearTimeout(touchEndTimer);
       }
+      
+      // 모든 터치가 해제될 때까지 상태 초기화를 지연
+      touchEndTimer = setTimeout(() => {
+        if (activeTouchCount === 0) {
+          // Mapbox 드래그 다시 활성화
+          this.map!.dragPan.enable();
+          
+          touchStartTime = 0;
+          isPinching = false;
+          isRotating = false;
+        }
+        touchEndTimer = null;
+      }, 100); // 100ms 지연으로 동시 터치 해제 안정성 확보
     };
     
     // 이벤트 리스너 등록
@@ -286,6 +316,9 @@ export class MapService {
     
     // Cleanup 함수에 이벤트 리스너 제거 추가
     this.map.on('remove', () => {
+      if (touchEndTimer) {
+        clearTimeout(touchEndTimer);
+      }
       mapContainer.removeEventListener('touchstart', handleTouchStart);
       mapContainer.removeEventListener('touchmove', handleTouchMove);
       mapContainer.removeEventListener('touchend', handleTouchEnd);

@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { InteractivePanel } from '@/src/features/race-info/components/InteractivePanel';
+import { MobileCircuitTimeline } from '@/src/features/race-info/components/MobileCircuitTimeline';
 import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/src/shared/types';
 import LanguageSelector from '@/src/shared/components/ui/LanguageSelector';
@@ -47,6 +48,7 @@ export default function Home() {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
   const [nextRaceCircuitId, setNextRaceCircuitId] = useState<string | null>(null);
+
   
   // Circuit 관련 상태
   const [isCircuitView, setIsCircuitView] = useState(false);
@@ -158,6 +160,7 @@ export default function Home() {
   }, [language]);
 
 
+
   const handleExploreCircuit = () => {
     if (!nextRaceCircuitId) return;
 
@@ -175,6 +178,7 @@ export default function Home() {
       length: circuit.length,
       corners: circuit.corners,
       laps: circuit.laps,
+      raceDate: circuit.raceDate2025 || undefined,
       lapRecord: circuit.lapRecord ? {
         time: circuit.lapRecord.time,
         driver: circuit.lapRecord.driver,
@@ -188,6 +192,46 @@ export default function Home() {
     // 스크롤바에서 해당 서킷을 중앙으로
     scrollToCircuit(nextRaceCircuitId);
   };
+
+  // 모바일 타임라인에서 서킷 선택 핸들러
+  const handleMobileCircuitSelect = useCallback((circuit: Circuit) => {
+    // 초기 포커싱 중단
+    if (initialFocusTimerRef.current && !hasUserInteracted) {
+      clearTimeout(initialFocusTimerRef.current);
+      initialFocusTimerRef.current = null;
+      setHasUserInteracted(true);
+    }
+    
+    // 서킷 데이터로 InteractivePanel 설정
+    setPanelModule('circuit-detail');
+    setPanelData({
+      type: 'circuit',
+      id: circuit.id,
+      name: circuit.name,
+      location: circuit.location,
+      grandPrix: circuit.grandPrix,
+      length: circuit.length,
+      corners: circuit.corners,
+      laps: circuit.laps,
+      raceDate: circuit.raceDate2025 || undefined,
+      lapRecord: circuit.lapRecord ? {
+        time: circuit.lapRecord.time,
+        driver: circuit.lapRecord.driver,
+        year: circuit.lapRecord.year.toString()
+      } : undefined
+    });
+    
+    setPanelOpen(true);
+    
+    // 맵에서 서킷으로 이동
+    if (mapRef.current) {
+      mapRef.current.flyToCircuit(circuit.id);
+    }
+    
+    // 데스크톱 타임라인에서 해당 서킷을 중앙으로
+    scrollToCircuit(circuit.id);
+  }, [scrollToCircuit, hasUserInteracted]);
+
 
   // 모멘텀 애니메이션
   const momentumScroll = useCallback(() => {
@@ -525,6 +569,7 @@ export default function Home() {
                     length: circuit.length,
                     corners: circuit.corners,
                     laps: circuit.laps,
+                    raceDate: circuit.raceDate2025 || undefined,
                     totalDistance: circuit.totalDistance,
                     lapRecord: circuit.lapRecord ? {
                       time: circuit.lapRecord.time,
@@ -574,6 +619,23 @@ export default function Home() {
         module={panelModule}
         data={panelData}
         onExploreCircuit={handleExploreCircuit}
+      />
+
+      {/* Mobile Circuit Timeline - Fixed above bottom sheet */}
+      <MobileCircuitTimeline
+        circuits={circuitsData.circuits}
+        onSelectCircuit={handleMobileCircuitSelect}
+        selectedCircuitId={
+          panelData?.type === 'circuit' 
+            ? panelData.id 
+            : panelModule === 'next-race' 
+              ? nextRaceCircuitId 
+              : null
+        }
+        panelState={{
+          isOpen: panelOpen,
+          isMinimized: panelMinimized
+        }}
       />
     </>
   );
