@@ -17,7 +17,7 @@ export default function Dashboard() {
       <div className="w-full h-full pt-24 px-8 py-8 relative">
         <div className="w-full h-[calc(100vh-128px)] relative">
           {/* 왼쪽 상단 - Constructors Point */}
-          <div className="absolute left-0 top-0 w-72 h-[calc(30%-16px)]">
+          <div className="absolute left-0 top-4 w-72 h-[calc(30%-16px)]">
             <ConstructorsCard />
           </div>
           
