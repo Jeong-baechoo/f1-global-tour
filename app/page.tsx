@@ -7,6 +7,8 @@ import { InteractivePanel } from '@/src/features/race-info/components/Interactiv
 import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/src/shared/types';
 import LanguageSelector from '@/src/shared/components/ui/LanguageSelector';
+import Navigation from '@/src/shared/components/ui/Navigation';
+import Dashboard from '@/src/features/dashboard/components/Dashboard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/src/features/race-info/types';
@@ -38,6 +40,7 @@ const Map = dynamic(
 
 export default function Home() {
   const { language, setLanguage } = useLanguage();
+  const [activeTab, setActiveTab] = useState<'map' | 'dash'>('map');
   const [panelOpen, setPanelOpen] = useState(true); // 초기값을 true로 변경하여 패널이 처음부터 열리도록 함
   const [panelModule, setPanelModule] = useState<'next-race' | 'circuit-detail' | 'team-hq' | null>(null);
   const [panelMinimized, setPanelMinimized] = useState(false);
@@ -376,31 +379,37 @@ export default function Home() {
   return (
     <>
       <main className="relative w-full h-screen overflow-hidden">
-        {/* 전체 화면 지도 */}
-        <Map
-        ref={mapRef}
-        onMarkerClick={handleMarkerClick}
-        onUserInteraction={handleUserInteraction}
-        // Circuit 관련 props
-        isCircuitView={isCircuitView}
-        currentCircuit={currentCircuit}
-        drsZoneCount={drsZoneCount}
-        drsDetectionCount={drsDetectionCount}
-        onCircuitSelect={(circuit) => {
-          setCurrentCircuit(circuit as Circuit | null);
-          scrollToCircuit((circuit as Circuit).id);
-        }}
-        setIsCircuitView={setIsCircuitView}
-        setCurrentCircuit={(circuit) => setCurrentCircuit(circuit as Circuit | null)}
-        setDrsZoneCount={setDrsZoneCount}
-        setDrsDetectionCount={setDrsDetectionCount}
-        resetPanelStates={() => {
-          setPanelOpen(false);
-          // 사용자가 명시적으로 닫을 때만 최소화 상태 리셋
-          // setPanelMinimized(false);
-        }}
-        setIsTrackAnimating={setIsTrackAnimating}
-      />
+        {/* 조건부 렌더링 - Map 또는 Dashboard */}
+        {activeTab === 'map' ? (
+          /* 전체 화면 지도 */
+          <Map
+          ref={mapRef}
+          onMarkerClick={handleMarkerClick}
+          onUserInteraction={handleUserInteraction}
+          // Circuit 관련 props
+          isCircuitView={isCircuitView}
+          currentCircuit={currentCircuit}
+          drsZoneCount={drsZoneCount}
+          drsDetectionCount={drsDetectionCount}
+          onCircuitSelect={(circuit) => {
+            setCurrentCircuit(circuit as Circuit | null);
+            scrollToCircuit((circuit as Circuit).id);
+          }}
+          setIsCircuitView={setIsCircuitView}
+          setCurrentCircuit={(circuit) => setCurrentCircuit(circuit as Circuit | null)}
+          setDrsZoneCount={setDrsZoneCount}
+          setDrsDetectionCount={setDrsDetectionCount}
+          resetPanelStates={() => {
+            setPanelOpen(false);
+            // 사용자가 명시적으로 닫을 때만 최소화 상태 리셋
+            // setPanelMinimized(false);
+          }}
+          setIsTrackAnimating={setIsTrackAnimating}
+        />
+        ) : (
+          /* 대시보드 */
+          <Dashboard />
+        )}
 
       {/* F1 로고 - 모바일 */}
       <div className="absolute top-2 left-4 z-10 sm:hidden">
@@ -434,6 +443,9 @@ export default function Home() {
         />
       </div>
 
+      {/* Navigation - Map/Dash 버튼 */}
+      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+
 
       {/* 언어 선택 버튼 - 데스크탑 */}
       <div className="hidden sm:block absolute bottom-32 left-6 z-10">
@@ -443,7 +455,8 @@ export default function Home() {
         />
       </div>
 
-      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 */}
+      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 (Map 탭에서만 표시) */}
+      {activeTab === 'map' && (
       <div 
         className="fixed bottom-6 z-50 transition-all duration-300 ease-out hidden sm:block"
         style={{
@@ -558,23 +571,26 @@ export default function Home() {
           </div>
         </div>
       </div>
+      )}
 
       </main>
 
 
-      {/* Interactive Panel - Outside of main to avoid overflow clipping */}
-      <InteractivePanel
-        isOpen={panelOpen}
-        onCloseAction={() => {
-          console.log('Panel close action');
-          setPanelOpen(false);
-        }}
-        onMinimize={() => setPanelMinimized(!panelMinimized)}
-        isMinimized={panelMinimized}
-        module={panelModule}
-        data={panelData}
-        onExploreCircuit={handleExploreCircuit}
-      />
+      {/* Interactive Panel - Outside of main to avoid overflow clipping (Map 탭에서만 표시) */}
+      {activeTab === 'map' && (
+        <InteractivePanel
+          isOpen={panelOpen}
+          onCloseAction={() => {
+            console.log('Panel close action');
+            setPanelOpen(false);
+          }}
+          onMinimize={() => setPanelMinimized(!panelMinimized)}
+          isMinimized={panelMinimized}
+          module={panelModule}
+          data={panelData}
+          onExploreCircuit={handleExploreCircuit}
+        />
+      )}
     </>
   );
 }
