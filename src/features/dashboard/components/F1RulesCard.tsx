@@ -34,10 +34,11 @@ export default function F1RulesCard() {
               {getText(section.category, language)}
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 flex-1 overflow-y-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 flex-1 overflow-y-auto overflow-x-hidden p-2 pb-4">
             {section.items.map((item, itemIndex) => (
-              <div key={`rule-${itemIndex}`} className="border border-yellow-500/20 bg-yellow-500/5 rounded-lg p-2 hover:border-yellow-500/40 hover:bg-yellow-500/10 transition-all duration-300 hover:shadow-md hover:shadow-yellow-500/20">
-                <div className="text-white text-sm cursor-pointer hover:text-yellow-200 transition-colors">
+              <div key={`rule-${itemIndex}`} className="relative border border-yellow-500/20 bg-yellow-500/5 rounded-lg p-3 hover:border-yellow-400/60 hover:shadow-md hover:shadow-yellow-500/15 hover:scale-105 transition-all duration-300 cursor-pointer group overflow-hidden transform-gpu m-0.5">
+                <div className="absolute inset-0 bg-yellow-400/0 group-hover:bg-yellow-400/10 transition-all duration-300 rounded-lg"></div>
+                <div className="relative text-white text-sm group-hover:text-yellow-100 transition-colors duration-300 font-medium">
                   {getText(item, language)}
                 </div>
               </div>

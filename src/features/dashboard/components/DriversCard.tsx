@@ -87,30 +87,35 @@ export default function DriversCard() {
           {getText({ en: 'Drivers Point', ko: '드라이버 포인트' }, language)}
         </h2>
       </div>
-      <div className="space-y-1 overflow-y-auto flex-1 scrollbar-hide">
-        {driversData.map((driver) => (
-          <div key={driver.position} className="flex justify-between items-center py-1 px-2 rounded-lg hover:bg-white/5 transition-colors">
-            <div className="text-white text-base flex items-center">
-              <span className="text-blue-400 font-semibold">{driver.position}. </span>
-              <span className="text-sm hover:text-blue-200 transition-colors mr-2">{driver.name}</span>
-              {driver.team && driver.team.logoPath && (
-                <div className="flex-shrink-0 ml-1">
-                  <Image
-                    src={`/team-logos/${driver.team.logoPath}`}
-                    alt={driver.team.name.en}
-                    width={20}
-                    height={20}
-                    className="rounded-sm object-contain"
-                    onError={() => {
-                      console.log(`Failed to load logo for team: ${driver.team?.id}`);
-                    }}
-                  />
-                </div>
-              )}
+      <div className="overflow-y-auto flex-1 scrollbar-hide">
+        {driversData.map((driver, index) => (
+          <div key={driver.position}>
+            <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
+              <div className="text-white text-base flex items-center">
+                <span className="text-blue-400 font-semibold">{driver.position}. </span>
+                <span className="text-sm hover:text-blue-200 transition-colors mr-2">{driver.name}</span>
+                {driver.team && driver.team.logoPath && (
+                  <div className="flex-shrink-0 ml-1">
+                    <Image
+                      src={`/team-logos/${driver.team.logoPath}`}
+                      alt={driver.team.name.en}
+                      width={20}
+                      height={20}
+                      className="rounded-sm object-contain"
+                      onError={() => {
+                        console.log(`Failed to load logo for team: ${driver.team?.id}`);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="text-blue-400 text-base font-bold">
+                {driver.points}
+              </div>
             </div>
-            <div className="text-blue-400 text-base font-bold bg-blue-500/10 px-2 py-1 rounded">
-              {driver.points}
-            </div>
+            {index < driversData.length - 1 && (
+              <div className="border-b-2 border-blue-500/30 mx-2 my-1" />
+            )}
           </div>
         ))}
       </div>
