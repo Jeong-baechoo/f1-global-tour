@@ -1,0 +1,219 @@
+/* Circuit Marker Styles */
+
+/* 기본 마커 스타일 */
+.circuit-marker {
+  position: absolute;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  /* visibility 속성은 JS로 제어하므로 transition 제거 */
+  visibility: visible;
+}
+
+/* 점 컨테이너 */
+.circuit-marker__dot-container {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-6px); /* 점의 중심을 앵커 포인트로 이동 */
+}
+
+/* 점 스타일 */
+.circuit-marker__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #DC2626;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* 다음 레이스 점 스타일 */
+.circuit-marker[data-next-race="true"] .circuit-marker__dot {
+  background-color: #FF1801;
+}
+
+/* 연결선 */
+.circuit-marker__line {
+  position: absolute;
+  left: 6px; /* 점의 오른쪽 끝에서 시작 (점 중심 이동 고려) */
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 연결선 - 데스크톱 */
+.circuit-marker__line--desktop {
+  width: 20px;
+}
+
+/* 연결선 - 모바일 */
+.circuit-marker__line--mobile {
+  width: 15px;
+}
+
+/* 라벨 컨테이너 */
+.circuit-marker__label {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(17, 24, 39, 0.85);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(55, 65, 81, 0.8);
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .circuit-marker__label {
+    background-color: rgba(17, 24, 39, 0.95);
+  }
+}
+
+/* 라벨 - 데스크톱 */
+.circuit-marker__label--desktop {
+  padding: 6px 12px;
+  margin-left: 20px; /* 연결선 끝에 위치 (6px + 20px - 겹침) */
+}
+
+/* 라벨 - 모바일 */
+.circuit-marker__label--mobile {
+  padding: 4px 8px;
+  margin-left: 15px; /* 연결선 끝에 위치 (6px + 15px - 겹침) */
+}
+
+/* 다음 레이스 라벨 스타일 */
+.circuit-marker__label[data-next-race="true"] {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+/* 도시명 */
+.circuit-marker__city {
+  font-weight: 600;
+  color: rgb(243, 244, 246);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 도시명 - 데스크톱 */
+.circuit-marker__city--desktop {
+  font-size: 12px;
+}
+
+/* 도시명 - 모바일 */
+.circuit-marker__city--mobile {
+  font-size: 11px;
+}
+
+/* 국가명 */
+.circuit-marker__country {
+  color: rgb(156, 163, 175);
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+/* 국가명 - 데스크톱 */
+.circuit-marker__country--desktop {
+  font-size: 10px;
+}
+
+/* 국가명 - 모바일 */
+.circuit-marker__country--mobile {
+  font-size: 9px;
+}
+
+/* 줌 레벨에 따른 가시성 */
+/* 줌 레벨 5 이하: 라벨과 선만 숨기고 점은 표시 */
+.circuit-marker[data-zoom-level="low"] .circuit-marker__label,
+.circuit-marker[data-zoom-level="low"] .circuit-marker__line {
+  display: none !important;
+}
+
+/* Globe occlusion이 적용되지 않을 때만 opacity 제어 */
+.circuit-marker[data-zoom-level="normal"]:not([data-occluded="true"]) {
+  opacity: 1 !important;
+}
+
+.circuit-marker[data-zoom-level="normal"] .circuit-marker__label {
+  display: flex !important;
+}
+
+.circuit-marker[data-zoom-level="normal"] .circuit-marker__line {
+  display: block !important;
+}
+
+.circuit-marker[data-zoom-level="fade-1"] {
+  opacity: 0.7 !important;
+}
+
+.circuit-marker[data-zoom-level="fade-2"] {
+  opacity: 0.3 !important;
+}
+
+.circuit-marker[data-zoom-level="hidden"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 호버 효과 - occluded 상태가 아닐 때만 적용 */
+.circuit-marker[data-hover="true"]:not([data-occluded="true"]) {
+  transform: scale(1.1);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__label {
+  background-color: rgba(17, 24, 39, 0.9);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__label:not([data-next-race="true"]) {
+  border-color: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__label[data-next-race="true"] {
+  border-color: rgba(239, 68, 68, 0.8);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__line {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__line--desktop {
+  width: 30px;
+}
+
+.circuit-marker[data-hover="true"] .circuit-marker__line--mobile {
+  width: 20px;
+}
+
+/* Pulse animation for next race */
+.circuit-marker__pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(239, 68, 68, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+}

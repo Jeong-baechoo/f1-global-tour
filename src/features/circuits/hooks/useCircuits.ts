@@ -1,0 +1,79 @@
+import { useEffect, useCallback } from 'react';
+// noinspection ES6PreferShortImport
+import { useCircuitStore } from '../store/useCircuitStore';
+// noinspection ES6PreferShortImport
+import { CircuitService } from '../services/CircuitService';
+
+const circuitService = new CircuitService();
+
+export const useCircuits = () => {
+  const {
+    circuits,
+    selectedCircuit,
+    isLoading,
+    error,
+    setCircuits,
+    selectCircuit,
+    setLoading,
+    setError,
+  } = useCircuitStore();
+  
+  const loadCircuits = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const circuitsData = await circuitService.getCircuits();
+      setCircuits(circuitsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load circuits');
+      console.error('Error loading circuits:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError, setCircuits]);
+  
+  // Load circuits on mount
+  useEffect(() => {
+    loadCircuits();
+  }, [loadCircuits]);
+  
+  const selectCircuitById = async (circuitId: string) => {
+    try {
+      const circuit = await circuitService.getCircuitById(circuitId);
+      selectCircuit(circuit);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error selecting circuit:', error);
+      }
+    }
+  };
+  
+  const getNextRaceCircuit = async () => {
+    try {
+      return await circuitService.getNextRaceCircuit();
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error getting next race:', error);
+      }
+      return null;
+    }
+  };
+  
+  const getCircuitView = (circuitId: string) => {
+    const circuit = circuits.find(c => c.id === circuitId);
+    if (!circuit) return null;
+    return circuitService.getCircuitView(circuit);
+  };
+  
+  return {
+    circuits,
+    selectedCircuit,
+    isLoading,
+    error,
+    loadCircuits,
+    selectCircuit,
+    selectCircuitById,
+    getNextRaceCircuit,
+    getCircuitView,
+  };
+};

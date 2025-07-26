@@ -35,10 +35,6 @@
 - **Touch gestures** support on mobile devices
 - **Adaptive UI** based on screen size
 
-### 🎬 Cinematic Mode
-- **Automated circuit tours** with smooth camera movements
-- **Dynamic track drawing** animations
-- **Immersive viewing experience**
 
 ## 🚀 Getting Started
 
@@ -86,31 +82,25 @@
 ```
 f1-global-tour/
 ├── app/                    # Next.js app directory
-├── components/            
-│   ├── mapbox/            # Map-related components
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── markers/       # Marker components
-│   │   │   ├── team/      # Team marker factory & config
-│   │   │   ├── circuit/   # Circuit markers & manager
-│   │   │   └── symbolLayer/ # Symbol layer markers
-│   │   └── utils/         # Map utilities
-│   │       ├── animations/ # Animation functions
-│   │       ├── map/       # Map helpers
-│   │       └── data/      # Data loaders
-│   ├── ui/                # Reusable UI components
-│   └── InteractivePanel.tsx
+├── src/                    # Source code
+│   ├── features/           # Domain-specific features
+│   │   ├── map/           # Core map functionality
+│   │   ├── teams/         # Team-related features
+│   │   ├── circuits/      # Circuit-related features
+│   │   └── race-info/     # Race information panels
+│   └── shared/            # Shared utilities and components
+│       ├── components/    # Reusable UI components
+│       ├── constants/     # Application constants
+│       ├── types/         # TypeScript type definitions
+│       └── utils/         # Shared utility functions
 ├── data/                  # F1 teams & circuits data
 │   ├── teams.json
-│   ├── circuits.json
-│   └── tracks/           # Circuit track coordinates
-├── lib/                   # Utility functions
-│   ├── mapbox/           # Map-specific utilities
-│   ├── styles/           # Style utilities
-│   └── utils/            # General utilities
+│   └── circuits.json
 └── public/               # Static assets
     ├── team-logos/       # Team logo images
     ├── drivers/          # Driver profile photos
-    └── cars/            # F1 car images
+    ├── cars/            # F1 car images
+    └── data/circuits-geojson/  # Circuit track coordinates
 ```
 
 ## 🎮 Usage
@@ -127,7 +117,6 @@ f1-global-tour/
 - **Team Information** - Headquarters, drivers, and team colors
 - **Driver Profiles** - Photos, nationality, and racing numbers
 - **F1 Cars Gallery** - 2025 season car images for each team
-- **Cinematic Tours** - Automated circuit exploration
 
 ## 🛠️ Technology Stack
 
@@ -147,21 +136,22 @@ const mapRef = useRef<MapAPI>(null);
 <Map ref={mapRef} />
 
 // Clean separation of concerns
-- useMapInitialization: Map setup and lifecycle
-- useCinematicMode: Tour mode management
+- MapService: Centralized map operations
+- MarkerService: Marker management
 - Efficient ref-based state management
 ```
 
-### Team Marker Factory (v0.5.0+)
-Unified team marker system:
+### Team Marker System (v0.5.0+)
+Streamlined team marker management:
 ```typescript
-// Single factory for all teams
-TeamMarkerFactory.createMultiple(map, teams, onMarkerClick)
+// Unified team marker configuration
+teamMarkerConfig: Team markers with colors and logos
 
-// Centralized configuration
+// Features
 - Team colors and logos
 - Driver profiles with images
 - Car models and photos
+- Efficient marker rendering
 ```
 
 ### Interactive Panel
@@ -172,9 +162,9 @@ Enhanced with rich content:
 - F1 car showcase section
 
 ### Marker System
-Efficient marker creation with factory pattern:
-- Unified TeamMarkerFactory for all teams
-- CircuitMarkerManager for circuit markers
+Efficient marker creation and management:
+- Team marker configuration system
+- Circuit marker management
 - Custom designs with hover effects
 - Performance-optimized rendering
 
@@ -185,7 +175,7 @@ Efficient marker creation with factory pattern:
 - **Optimized map style** (satellite-v9)
 - **Ref-based state management** to prevent re-renders
 - **Memoization** of components and callbacks
-- **Unified marker factory** - 85% code reduction (1,320→200 lines)
+- **Streamlined marker system** - Improved code organization
 - **Local image assets** - 5-10x faster than external URLs
 - **Efficient file structure** - Clear separation of concerns
 
@@ -196,18 +186,23 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
-npm run type-check   # Run TypeScript compiler
 ```
 
 ## 📈 Development History
 
 ### Recent Updates
 ```
+🏎️ v0.6.0 - Architecture Consolidation & Cleanup
+├─ 57d214a refactor: 사용하지 않는 파일 정리 및 아키텍처 통합
+├─ Feature-based architecture fully implemented
+├─ Removed unused animation presets and utilities
+└─ Improved code organization and maintainability
+
 🏎️ v0.5.0 - Team Details & Project Restructuring
 ├─ Team detail features with driver profiles and car images
 ├─ Major project structure reorganization
 ├─ Performance optimizations with local assets
-└─ 🚀 85% code reduction with factory pattern!
+└─ 🚀 Streamlined marker system implementation
 
 🏎️ v0.4.1 - Circuit Marker Visibility
 ├─ f54d566 fix: TypeScript any 타입 에러 수정
@@ -222,16 +217,9 @@ npm run type-check   # Run TypeScript compiler
 
 🏎️ v0.3.0 - Performance & Code Quality
 ├─ ec04f5b fix: 명시적 타입으로 변경 및 불필요한 변수 제거
-├─ b282cf0 fix: 시네마틱 모드 작동 문제 해결
 ├─ 308ae77 fix: 모바일 바텀시트 헤더 배경 투명 처리
 ├─ a2f322f style: 버튼 배경색 블러 효과 통일
 └─ 74ccbd5 fix: any 타입을 명시적 타입으로 변경
-
-🎬 v0.2.5 - Cinematic Mode & UI Enhancements
-├─ 02c3987 feat: 시네마틱 투어 모드 구현
-├─ 344dace feat: next race 마커 이미지 추가 및 ui 개선
-├─ baae682 feat: 모바일 인터랙티브 바텀 시트 구현
-└─ 86b1cf0 feat: 모바일 지원 추가
 
 🗺️ v0.2.0 - Circuit Integration
 ├─ 94b0f47 feat: f1-circuits geojson 데이터 통합
@@ -245,11 +233,11 @@ npm run type-check   # Run TypeScript compiler
 ```
 
 ### Version Milestones
+- **v0.6.0** - Architecture consolidation, cleanup, feature-based structure
 - **v0.5.0** - Team details with drivers/cars, project restructuring, local assets
 - **v0.4.1** - Circuit marker visibility controls, bug fixes
 - **v0.4.0** - Architecture refactoring, performance optimization, marker bug fix
 - **v0.3.0** - Enhanced performance, TypeScript improvements, mobile UX refinements
-- **v0.2.5** - Cinematic mode, responsive bottom sheet, mobile optimization
 - **v0.2.0** - Full circuit data integration, component modularization
 - **v0.1.0** - Basic 3D globe with team headquarters
 

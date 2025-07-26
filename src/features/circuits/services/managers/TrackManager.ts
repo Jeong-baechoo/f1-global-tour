@@ -1,0 +1,1 @@
+// This file is kept as a placeholder for potential future TrackManager implementations
