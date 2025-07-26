@@ -263,6 +263,13 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch'
           }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div className="flex gap-2 px-2" style={{ width: 'max-content' }}>
             {circuits.map((circuit) => {

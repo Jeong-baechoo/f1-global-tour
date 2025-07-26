@@ -56,7 +56,6 @@ export class MapService {
       // 모바일 제스처 설정
       touchPitch: false, // 터치로 피치(기울기) 변경 비활성화
       dragRotate: true, // 드래그 회전은 활성화 (두 손가락 회전 제스처용)
-      touchZoomRotate: true, // 핀치 줌과 회전 모두 활성화
       // 모멘텀/관성 비활성화로 터치 해제 후 의도치 않은 움직임 방지
       dragPan: { linearity: 1, easing: (t: number) => t, maxSpeed: 0 },
       scrollZoom: { around: 'center' },
