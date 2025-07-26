@@ -1,84 +1,42 @@
 'use client';
 
-import { TEAM_DETAILS } from '@/src/features/teams/data/teamDetails';
-import teamsData from '@/data/teams.json';
+import { useDriversChampionship, type DriverStanding } from '../hooks/useDriversChampionship';
+import { getTeamFromApi } from '../utils/teamUtils';
+import { LoadingState, ErrorState, EmptyState } from './LoadingStates';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 
-// 현재 시즌 전체 드라이버 순위 (가상 포인트) - 컴포넌트 외부로 이동
-const driversRawData = [
-  { name: 'Lando Norris', points: 195 },
-  { name: 'Max Verstappen', points: 181 },
-  { name: 'Oscar Piastri', points: 179 },
-  { name: 'George Russell', points: 108 },
-  { name: 'Charles Leclerc', points: 98 },
-  { name: 'Lewis Hamilton', points: 91 },
-  { name: 'Carlos Sainz Jr.', points: 85 },
-  { name: 'Franco Colapinto', points: 43 },
-  { name: 'Gabriel Bortoleto', points: 31 },
-  { name: 'Yuki Tsunoda', points: 22 },
-  { name: 'Lance Stroll', points: 22 },
-  { name: 'Nico Hulkenberg', points: 14 },
-  { name: 'Oliver Bearman', points: 14 },
-  { name: 'Alex Albon', points: 12 },
-  { name: 'Pierre Gasly', points: 8 },
-  { name: 'Liam Lawson', points: 6 },
-  { name: 'Isack Hadjar', points: 4 },
-  { name: 'Esteban Ocon', points: 3 },
-  { name: 'Kimi Antonelli', points: 0 },
-  { name: 'Fernando Alonso', points: 0 },
-];
+interface TransformedDriver {
+  position: number;
+  name: string;
+  points: number;
+  wins: number;
+  team: ReturnType<typeof getTeamFromApi>;
+  nationality: string;
+  driverNumber: number;
+}
 
-// 팀 로고 매핑 설정
-const TEAM_LOGO_CONFIG = {
-  smallLogoTeams: ['red-bull', 'mercedes', 'mclaren', 'aston-martin', 'alpine', 'williams', 'racing-bulls', 'sauber', 'haas'] as const,
-  fileNameMap: {
-    'haas': 'hass.png'
-  } as const,
-  fallbackLogos: {
-    'ferrari': 'ferrari.png'
-  } as const
-};
-
-const getTeamLogoPath = (teamId: string): string | null => {
-  // 타입 가드를 사용하여 안전하게 체크
-  if ((TEAM_LOGO_CONFIG.smallLogoTeams as readonly string[]).includes(teamId)) {
-    const fileName = (TEAM_LOGO_CONFIG.fileNameMap as Record<string, string>)[teamId] || `${teamId}.png`;
-    return `small/${fileName}`;
-  }
-  
-  return (TEAM_LOGO_CONFIG.fallbackLogos as Record<string, string>)[teamId] || null;
-};
-
-// 드라이버의 팀 정보를 찾는 함수
-const getDriverTeam = (driverName: string) => {
-  for (const [teamId, teamDetails] of Object.entries(TEAM_DETAILS)) {
-    const foundDriver = teamDetails.drivers2025.find(driver => driver.name === driverName);
-    if (foundDriver) {
-      const teamInfo = teamsData.teams.find(team => team.id === teamId);
-      const logoPath = getTeamLogoPath(teamId);
-      return teamInfo ? { ...teamInfo, logoPath } : null;
-    }
-  }
-  return null;
-};
-
-// 드라이버 데이터 변환 함수
-const transformDriversData = () => {
-  return driversRawData
-    .sort((a, b) => b.points - a.points)
-    .map((driver, index) => ({
-      position: index + 1,
-      name: driver.name,
-      points: driver.points,
-      team: getDriverTeam(driver.name)
-    }));
+// API 데이터를 변환하는 함수
+const transformApiDriversData = (apiData: DriverStanding[]): TransformedDriver[] => {
+  return apiData.map(standing => ({
+    position: standing.position,
+    name: `${standing.driver.name} ${standing.driver.surname}`,
+    points: standing.points,
+    wins: standing.wins || 0,
+    team: getTeamFromApi(standing.teamId),
+    nationality: standing.driver.nationality,
+    driverNumber: standing.driver.number
+  })).sort((a, b) => a.position - b.position);
 };
 
 export default function DriversCard() {
   const { language } = useLanguage();
-  const driversData = transformDriversData();
+  const { data: apiData, loading, error } = useDriversChampionship();
+  
+  const driversData = apiData.length > 0 
+    ? transformApiDriversData(apiData)
+    : [];
 
   return (
     <div className="bg-black/90 backdrop-blur-sm border-2 border-blue-500/30 hover:border-blue-500/50 rounded-3xl p-6 w-full h-full overflow-hidden flex flex-col shadow-2xl transition-all duration-300 hover:shadow-blue-500/20">
@@ -88,36 +46,46 @@ export default function DriversCard() {
         </h2>
       </div>
       <div className="overflow-y-auto flex-1 scrollbar-hide">
-        {driversData.map((driver, index) => (
-          <div key={driver.position}>
-            <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
-              <div className="text-white text-base flex items-center">
-                <span className="text-blue-400 font-semibold">{driver.position}. </span>
-                <span className="text-sm hover:text-blue-200 transition-colors mr-2">{driver.name}</span>
-                {driver.team && driver.team.logoPath && (
-                  <div className="flex-shrink-0 ml-1">
-                    <Image
-                      src={`/team-logos/${driver.team.logoPath}`}
-                      alt={driver.team.name.en}
-                      width={20}
-                      height={20}
-                      className="rounded-sm object-contain"
-                      onError={() => {
-                        console.log(`Failed to load logo for team: ${driver.team?.id}`);
-                      }}
-                    />
-                  </div>
-                )}
+        {loading ? (
+          <LoadingState />
+        ) : error ? (
+          <ErrorState textColor="text-blue-400" />
+        ) : driversData.length === 0 ? (
+          <EmptyState />
+        ) : (
+          driversData.map((driver, index) => (
+            <div key={driver.position}>
+              <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
+                <div className="text-white text-base flex items-center">
+                  <span className="text-blue-400 font-semibold">{driver.position}. </span>
+                  <span className="text-sm hover:text-blue-200 transition-colors mr-2">{driver.name}</span>
+                  {driver.team && driver.team.logoPath && (
+                    <div className="flex-shrink-0 ml-1">
+                      <Image
+                        src={`/team-logos/${driver.team.logoPath}`}
+                        alt={driver.team.name.en}
+                        width={20}
+                        height={20}
+                        className="rounded-sm object-contain"
+                        onError={() => {
+                          if (process.env.NODE_ENV === 'development') {
+                            console.log(`Failed to load logo for team: ${driver.team?.id}`);
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="text-blue-400 text-base font-bold">
+                  {driver.points}
+                </div>
               </div>
-              <div className="text-blue-400 text-base font-bold">
-                {driver.points}
-              </div>
+              {index < driversData.length - 1 && (
+                <div className="border-b-2 border-blue-500/30 mx-2 my-1" />
+              )}
             </div>
-            {index < driversData.length - 1 && (
-              <div className="border-b-2 border-blue-500/30 mx-2 my-1" />
-            )}
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
