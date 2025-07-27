@@ -56,6 +56,17 @@ export class CircuitService {
     const circuits = await this.getCircuits();
     const today = new Date();
     
+    // Helper function to check if race is completed (same as F1ApiService)
+    const isRaceCompleted = (circuit: Circuit): boolean => {
+      if (!circuit.raceDate2025) return false;
+      
+      const raceDate = new Date(circuit.raceDate2025);
+      const raceEndTime = new Date(raceDate.getTime() + (2 * 60 * 60 * 1000)); // 레이스 시작 + 2시간
+      const switchTime = new Date(raceEndTime.getTime() + (12 * 60 * 60 * 1000)); // 종료 후 12시간
+      
+      return today >= switchTime;
+    };
+    
     // Filter circuits with race dates
     const circuitsWithDates = circuits.filter(circuit => circuit.raceDate2025);
     
@@ -66,11 +77,8 @@ export class CircuitService {
       return dateA.getTime() - dateB.getTime();
     });
     
-    // Find the next race
-    const nextRace = circuitsWithDates.find(circuit => {
-      const raceDate = new Date(circuit.raceDate2025!);
-      return raceDate > today;
-    });
+    // Find the next race (excluding completed ones)
+    const nextRace = circuitsWithDates.find(circuit => !isRaceCompleted(circuit));
     
     // If no future races, return the first race of the season
     return nextRace || circuitsWithDates[0] || null;
