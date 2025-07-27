@@ -1,3 +1,5 @@
+import {WeatherData} from '@/src/shared/types/weather';
+
 export interface F1SessionSchedule {
   date: string;
   time: string | null;
@@ -297,6 +299,231 @@ class F1ApiService {
     const formattedTime = time.endsWith('Z') ? time : `${time}Z`;
     return `${raceSession.date}T${formattedTime}`;
   }
+
+  /**
+   * 레이스 종료 시간 계산 (레이스 시작 + 2시간)
+   */
+  calculateRaceEndTime(raceData: F1RaceData): Date {
+    const raceStartTime = new Date(this.formatRaceDateTime(raceData.schedule));
+     // 2시간 후
+    return new Date(raceStartTime.getTime() + (2 * 60 * 60 * 1000));
+  }
+
+  /**
+   * 레이스가 종료되었는지 확인 (종료 후 12시간 경과)
+   */
+  isRaceCompleted(raceData: F1RaceData): boolean {
+    const now = new Date();
+    const switchTime = new Date(this.calculateRaceEndTime(raceData).getTime() + (12 * 60 * 60 * 1000)); // 종료 후 12시간
+    
+    return now >= switchTime;
+  }
+
+  /**
+   * 다음 레이스 가져오기 (완료된 레이스 제외)
+   */
+  async getNextRaceExcludingCompleted(): Promise<F1RaceData | null> {
+    try {
+      const races = await this.getCurrentRaces();
+      if (races.length === 0) return null;
+
+      // 현재 시간 기준으로 정렬
+      const sortedRaces = races.sort((a, b) => {
+        const dateA = new Date(this.formatRaceDateTime(a.schedule));
+        const dateB = new Date(this.formatRaceDateTime(b.schedule));
+        return dateA.getTime() - dateB.getTime();
+      });
+
+      // 완료되지 않은 다음 레이스 찾기
+      for (const race of sortedRaces) {
+        if (!this.isRaceCompleted(race)) {
+          return race;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Failed to get next race excluding completed:', error);
+      return null;
+    }
+  }
+}
+
+class OpenF1ApiService {
+  private baseUrl = 'https://api.openf1.org/v1';
+  
+  // 서킷명과 OpenF1 meeting_key 매핑 (2025 시즌)
+  private circuitToMeetingKey: Record<string, number> = {
+    'albert_park': 1254,
+    'melbourne': 1254,
+    'australia': 1254,
+    'sakhir': 1257,
+    'bahrain': 1257,
+    'shanghai': 1255,
+    'china': 1255,
+    '중국': 1255,
+    'suzuka': 1256,
+    'japan': 1256,
+    '일본': 1256,
+    '스즈카': 1256,
+    'jeddah': 1258,
+    'saudi arabia': 1258,
+    'miami': 1259,
+    'imola': 1260,
+    '이몰라': 1260,
+    'monte_carlo': 1261,
+    'monaco': 1261,
+    'catalunya': 1262,
+    'spain': 1262,
+    'barcelona': 1262,
+    'montreal': 1263,
+    'canada': 1263,
+    'spielberg': 1264,
+    'austria': 1264,
+    'red bull ring': 1264,
+    'silverstone': 1277,
+    'britain': 1277,
+    'uk': 1277,
+    'spa': 1265,
+    'spa-francorchamps': 1265,
+    'circuit de spa-francorchamps': 1265,
+    'belgium': 1265,
+    '벨기에': 1265,
+    '스파': 1265,
+    '스파-프랑코샹': 1265,
+    '스파-프랑코샹 서킷': 1265,
+    '벨기에 그랑프리': 1265,
+    'belgian grand prix': 1265,
+    'hungaroring': 1266,
+    'hungary': 1266,
+    'budapest': 1266,
+    'zandvoort': 1267,
+    'netherlands': 1267,
+    'monza': 1268,
+    'italy': 1268,
+    'baku': 1269,
+    'azerbaijan': 1269,
+    'marina_bay': 1270,
+    'singapore': 1270,
+    'cota': 1271,
+    'austin': 1271,
+    'texas': 1271,
+    'usa': 1271,
+    'hermanos_rodriguez': 1272,
+    'mexico': 1272,
+    'interlagos': 1273,
+    'brazil': 1273,
+    '브라질': 1273,
+    'sao paulo': 1273,
+    'las_vegas': 1274,
+    'vegas': 1274,
+    '라스베이거스': 1274,
+    'lusail': 1275,
+    'qatar': 1275,
+    '카타르': 1275,
+    'yas_marina': 1276,
+    'abu dhabi': 1276
+  };
+
+  async getWeatherData(meetingKey: number): Promise<WeatherData | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/weather?meeting_key=${meetingKey}`);
+      if (!response.ok) {
+        console.error(`OpenF1 Weather API Error: ${response.status}`);
+        return null;
+      }
+      
+      const data: WeatherData[] = await response.json();
+      if (data.length === 0) return null;
+      
+      // 날짜 기준으로 정렬해서 가장 최신 데이터 선택
+      const sortedData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return sortedData[0];
+    } catch (error) {
+      console.error('Failed to fetch weather data:', error);
+      return null;
+    }
+  }
+
+  async getCurrentMeetingKey(): Promise<number | undefined> {
+    try {
+      const response = await fetch(`${this.baseUrl}/meetings?year=${new Date().getFullYear()}`);
+      if (!response.ok) return undefined;
+      
+      const meetings = await response.json();
+      const now = new Date();
+      
+      const currentMeeting = meetings.find((meeting: { date_start: string; date_end: string; meeting_key: number }) => {
+        const startDate = new Date(meeting.date_start);
+        const endDate = new Date(meeting.date_end);
+        return now >= startDate && now <= endDate;
+      });
+      
+      return currentMeeting?.meeting_key;
+    } catch (error) {
+      console.error('Failed to fetch current meeting key:', error);
+      return undefined;
+    }
+  }
+
+  getMeetingKeyByCircuitName(circuitName: string): number | undefined {
+    if (!circuitName) return undefined;
+    
+    const searchTerm = circuitName.toLowerCase();
+    
+    // 직접 매핑 검색
+    if (this.circuitToMeetingKey[searchTerm]) {
+      return this.circuitToMeetingKey[searchTerm];
+    }
+    
+    // 부분 매칭 검색
+    const mappingKey = Object.keys(this.circuitToMeetingKey).find(key => 
+      key.includes(searchTerm) || searchTerm.includes(key)
+    );
+    
+    return mappingKey ? this.circuitToMeetingKey[mappingKey] : undefined;
+  }
+
+  getMeetingKeyByRaceData(raceData: { 
+    name?: { ko?: string; en?: string } | string; 
+    grandPrix?: { ko?: string; en?: string } | string;
+    location?: { city?: { ko?: string; en?: string } | string; country?: { ko?: string; en?: string } | string };
+    circuit?: { circuitId?: string; circuitName?: string; city?: string }; 
+    raceId?: string 
+  }): number | undefined {
+    if (!raceData) {
+      return undefined;
+    }
+    
+    // NextRaceData와 F1ApiData 모두 지원하도록 다양한 방법으로 서킷 이름 추출
+    const extractString = (value: { ko?: string; en?: string } | string | undefined): string | undefined => {
+      if (typeof value === 'string') return value;
+      if (value && typeof value === 'object') return value.ko || value.en;
+      return undefined;
+    };
+
+    const possibleNames = [
+      // NextRaceData 형식에서 추출
+      extractString(raceData.name)?.toLowerCase(),
+      extractString(raceData.grandPrix)?.toLowerCase(),
+      extractString(raceData.location?.city)?.toLowerCase(),
+      extractString(raceData.location?.country)?.toLowerCase(),
+      // F1ApiData 형식에서 추출 (기존 호환성)
+      raceData.circuit?.circuitId,
+      raceData.circuit?.circuitName?.toLowerCase(),
+      raceData.raceId,
+      raceData.circuit?.city?.toLowerCase()
+    ].filter((name): name is string => Boolean(name));
+    
+    for (const name of possibleNames) {
+      const meetingKey = this.getMeetingKeyByCircuitName(name);
+      if (meetingKey) {
+        return meetingKey;
+      }
+    }
+    return undefined;
+  }
 }
 
 export const f1ApiService = new F1ApiService();
+export const openF1ApiService = new OpenF1ApiService();

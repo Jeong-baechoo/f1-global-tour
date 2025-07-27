@@ -377,7 +377,7 @@ export default function Home() {
 
     const setupNextRacePanel = async () => {
       try {
-        const nextRaceData = await f1ApiService.getNextRace();
+        const nextRaceData = await f1ApiService.getNextRaceExcludingCompleted();
         if (!nextRaceData) return;
 
         const matchingCircuit = findMatchingCircuit(nextRaceData.circuit);
@@ -412,7 +412,7 @@ export default function Home() {
     };
 
     setupNextRacePanel();
-  }, [hasUserInteracted]);
+  }, [hasUserInteracted, findMatchingCircuit, createNextRacePanelData]);
 
   // 언어 변경 시 선택된 그랑프리를 중앙으로 유지
   useEffect(() => {
@@ -429,7 +429,7 @@ export default function Home() {
   // 넥스트 레이스 패널을 여는 함수
   const handleOpenNextRace = useCallback(async () => {
     try {
-      const nextRaceData = await f1ApiService.getNextRace();
+      const nextRaceData = await f1ApiService.getNextRaceExcludingCompleted();
       if (!nextRaceData) return;
 
       const matchingCircuit = findMatchingCircuit(nextRaceData.circuit);

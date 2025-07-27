@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { useCountdown } from '../hooks/useCountdown';
 import { NextRaceData } from '../types';
+import { WeatherWidget } from './WeatherWidget';
 
 interface NextRacePanelProps {
   data: NextRaceData;
@@ -179,6 +180,9 @@ export const NextRacePanel: React.FC<NextRacePanelProps> = ({
           </div>
         </div>
       )}
+
+      {/* 날씨 정보 */}
+      <WeatherWidget raceData={data} className="w-full" />
 
       <button
         onClick={onExploreCircuit}
