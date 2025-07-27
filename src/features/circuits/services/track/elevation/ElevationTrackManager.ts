@@ -478,12 +478,17 @@ export class ElevationTrackManager {
     trackId: string,
     enabled: boolean
   ): void {
-    const source3DId = `${trackId}-3d`;
-    const extrusionLayerId = `${source3DId}-extrusion`;
-    const topLayerId = `${source3DId}-top`;
+    try {
+      if (!map || !map.getLayer) {
+        return;
+      }
 
-    const hasExtrusionLayer = map.getLayer(extrusionLayerId);
-    const hasTopLayer = map.getLayer(topLayerId);
+      const source3DId = `${trackId}-3d`;
+      const extrusionLayerId = `${source3DId}-extrusion`;
+      const topLayerId = `${source3DId}-top`;
+
+      const hasExtrusionLayer = map.getLayer(extrusionLayerId);
+      const hasTopLayer = map.getLayer(topLayerId);
 
     if (hasExtrusionLayer) {
       map.setLayoutProperty(extrusionLayerId, 'visibility', enabled ? 'visible' : 'none');
@@ -504,6 +509,12 @@ export class ElevationTrackManager {
           Array.isArray(originalTrackData.originalData.geometry.coordinates) &&
           originalTrackData.originalData.geometry.coordinates.length > 0) {
         this.draw3DElevationTrack(map, trackId, originalTrackData.originalData.geometry.coordinates).catch(console.error);
+      }
+    }
+    } catch (error) {
+      // Silently handle map errors during page transitions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Elevation track error:', error);
       }
     }
   }

@@ -36,6 +36,8 @@ export interface PanelData {
     practice3?: string;
     qualifying?: string;
     race?: string;
+    sprintRace?: string;
+    sprintQualy?: string;
   };
 }
 
@@ -44,6 +46,15 @@ export interface NextRaceData extends PanelData {
   grandPrix: LocalizedText;
   name: LocalizedText;
   location: Location;
+  schedule?: {
+    practice1?: string;
+    practice2?: string;
+    practice3?: string;
+    qualifying?: string;
+    race?: string;
+    sprintRace?: string;
+    sprintQualy?: string;
+  };
 }
 
 export interface CircuitDetailData extends PanelData {

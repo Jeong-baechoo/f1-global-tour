@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { CircuitDetailData } from '../types';
+import { f1ApiService, F1RaceData } from '@/src/shared/services/F1ApiService';
 
 interface CircuitDetailPanelProps {
   data: CircuitDetailData;
@@ -50,6 +51,27 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
 }) => {
   const { language } = useLanguage();
   const performanceData = getCircuitPerformanceData(data.id);
+  const [raceData, setRaceData] = useState<F1RaceData | null>(null);
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+
+  // F1 API에서 레이스 스케줄 데이터 가져오기
+  useEffect(() => {
+    const fetchRaceSchedule = async () => {
+      setIsLoadingSchedule(true);
+      try {
+        const searchTerm = getText(data.name, 'en') || getText(data.name, 'ko');
+        console.log('서킷 검색어:', searchTerm, 'from data.name:', data.name);
+        const raceInfo = await f1ApiService.getRaceByCircuitName(searchTerm);
+        setRaceData(raceInfo);
+      } catch (error) {
+        console.error('Failed to fetch race schedule:', error);
+      } finally {
+        setIsLoadingSchedule(false);
+      }
+    };
+
+    fetchRaceSchedule();
+  }, [data.name]);
 
   return (
     <div className={isMobile ? "space-y-8" : "space-y-12"}>
@@ -284,67 +306,136 @@ export const CircuitDetailPanel: React.FC<CircuitDetailPanelProps> = ({
             {language === 'ko' ? '레이스 주말' : 'RACE WEEKEND'}
           </div>
           
-          {/* 통합 스케줄 - 날씨 정보와 함께 */}
+          {/* 통합 스케줄 */}
           <div className="space-y-3">
-            {/* Practice 1 - 금요일 */}
-            <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
-              <div className="flex items-center gap-3">
-                <div className="text-lg">☀️</div>
-                <div>
-                  <div className="text-sm text-white/60 font-medium">{language === 'ko' ? '연습주행 1' : 'Practice 1'}</div>
-                  <div className="text-xs text-white/40">28°C • {language === 'ko' ? '맑음' : 'Clear'}</div>
-                </div>
+            {isLoadingSchedule ? (
+              // 로딩 상태
+              <div className="flex justify-center py-8">
+                <div className="text-sm text-white/40">{language === 'ko' ? '스케줄 로딩 중...' : 'Loading schedule...'}</div>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-white">금 20:30</div>
-                <div className="text-xs text-white/40">KST</div>
-              </div>
-            </div>
+            ) : raceData?.schedule ? (
+              // API 데이터로 렌더링
+              <>
+                {/* Practice 1 */}
+                {raceData.schedule.fp1 && raceData.schedule.fp1.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('fp1', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.fp1, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-            {/* Qualifying - 토요일 새벽 */}
-            <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
-              <div className="flex items-center gap-3">
-                <div className="text-lg">⛅</div>
-                <div>
-                  <div className="text-sm text-white/60 font-medium">{language === 'ko' ? '예선' : 'Qualifying'}</div>
-                  <div className="text-xs text-white/40">26°C • {language === 'ko' ? '구름' : 'Cloudy'}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-white">토 00:00</div>
-                <div className="text-xs text-white/40">KST</div>
-              </div>
-            </div>
+                {/* Practice 2 */}
+                {raceData.schedule.fp2 && raceData.schedule.fp2.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('fp2', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.fp2, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-            {/* Practice 2 - 토요일 저녁 */}
-            <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
-              <div className="flex items-center gap-3">
-                <div className="text-lg">⛅</div>
-                <div>
-                  <div className="text-sm text-white/60 font-medium">{language === 'ko' ? '연습주행 2' : 'Practice 2'}</div>
-                  <div className="text-xs text-white/40">26°C • {language === 'ko' ? '구름' : 'Cloudy'}</div>
+                {/* Practice 3 */}
+                {raceData.schedule.fp3 && raceData.schedule.fp3.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('fp3', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.fp3, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sprint Qualifying */}
+                {raceData.schedule.sprintQualy && raceData.schedule.sprintQualy.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('sprintQualy', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.sprintQualy, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Qualifying */}
+                {raceData.schedule.qualy && raceData.schedule.qualy.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('qualy', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.qualy, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sprint */}
+                {raceData.schedule.sprintRace && raceData.schedule.sprintRace.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('sprintRace', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.sprintRace, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Grand Prix */}
+                {raceData.schedule.race && raceData.schedule.race.date && (
+                  <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
+                    <div>
+                      <div className="text-sm text-white/60 font-medium">
+                        {f1ApiService.getSessionName('race', language)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-white">
+                        {f1ApiService.formatSessionDate(raceData.schedule.race, language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              // 데이터가 없을 경우
+              <div className="flex justify-center py-8">
+                <div className="text-sm text-white/40">
+                  {language === 'ko' ? '스케줄 정보를 찾을 수 없습니다' : 'Schedule information not available'}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-white">토 19:30</div>
-                <div className="text-xs text-white/40">KST</div>
-              </div>
-            </div>
-            
-            {/* Grand Prix - 위 스케줄과 동일한 레이아웃 */}
-            <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white/5">
-              <div className="flex items-center gap-3">
-                <div className="text-lg">🌧️</div>
-                <div>
-                  <div className="text-sm text-white/60 font-medium">{language === 'ko' ? '그랑프리' : 'Grand Prix'}</div>
-                  <div className="text-xs text-white/40">24°C • {language === 'ko' ? '구름' : 'Rain'}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-white">일 22:00</div>
-                <div className="text-xs text-white/40">KST</div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
