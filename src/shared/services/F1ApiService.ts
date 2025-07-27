@@ -55,6 +55,36 @@ export interface F1NextRaceResponse {
   race: F1RaceData[];
 }
 
+export interface F1Team {
+  teamId: string;
+  teamName: string;
+  country: string;
+  firstAppearance: number;
+  constructorsChampionships: number;
+  driversChampionships: number;
+  url: string;
+}
+
+export interface F1ConstructorStanding {
+  classificationId: string;
+  teamId: string;
+  points: number;
+  position: number;
+  wins: number;
+  team: F1Team;
+}
+
+export interface F1ConstructorChampionshipResponse {
+  api: string;
+  url: string;
+  limit: number;
+  offset: number;
+  total: number;
+  season: number;
+  championshipId: string;
+  constructors_championship: F1ConstructorStanding[];
+}
+
 export interface NextRaceSchedule {
   practice1?: string;
   practice2?: string;  
@@ -298,6 +328,74 @@ class F1ApiService {
     const time = raceSession.time || '13:00:00Z';
     const formattedTime = time.endsWith('Z') ? time : `${time}Z`;
     return `${raceSession.date}T${formattedTime}`;
+  }
+
+  /**
+   * 컨스트럭터 챔피언십 데이터 가져오기
+   * 
+   * API 제공 데이터:
+   * - position: 컨스트럭터 순위
+   * - points: 총 포인트 
+   * - wins: 승리 수
+   * - team: 팀 정보 (teamName, country, championships 등)
+   * 
+   * API에서 제공하지 않는 데이터:
+   * - 포디움 수 (podiums)
+   * - 폴 포지션 수 (pole positions)
+   * - 최고 기록 수 (fastest laps)
+   * 
+   * 추가 통계 데이터가 필요한 경우 다른 API 소스 연동 필요:
+   * - Ergast API: http://ergast.com/mrd/
+   * - OpenF1 API: https://openf1.org/
+   */
+  async getConstructorChampionship(): Promise<F1ConstructorStanding[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/current/constructors-championship`);
+      if (!response.ok) {
+        console.error(`F1 Constructor Championship API Error: ${response.status}`);
+        return [];
+      }
+      
+      const data: F1ConstructorChampionshipResponse = await response.json();
+      return data.constructors_championship || [];
+    } catch (error) {
+      console.error('Failed to fetch constructor championship data:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 팀 ID로 컨스트럭터 챔피언십 데이터 찾기
+   */
+  async getTeamChampionshipData(teamId: string): Promise<F1ConstructorStanding | null> {
+    try {
+      const standings = await this.getConstructorChampionship();
+      
+      // 팀 ID 매핑 테이블 (프로젝트 ID -> F1 API ID)
+      const teamIdMapping: Record<string, string> = {
+        'mclaren': 'mclaren',
+        'red-bull': 'red_bull',
+        'ferrari': 'ferrari', 
+        'mercedes': 'mercedes',
+        'aston-martin': 'aston_martin',
+        'alpine': 'alpine',
+        'haas': 'haas',
+        'racing-bulls': 'rb',  // 수정: racing-bulls -> rb
+        'williams': 'williams',
+        'sauber': 'sauber'
+      };
+
+      const apiTeamId = teamIdMapping[teamId];
+      if (!apiTeamId) return null;
+
+      return standings.find(standing => 
+        standing.teamId === apiTeamId || 
+        standing.team?.teamId === apiTeamId
+      ) || null;
+    } catch (error) {
+      console.error('Failed to get team championship data:', error);
+      return null;
+    }
   }
 
   /**
