@@ -43,10 +43,10 @@ export default function ConstructorsCard() {
     : [];
 
   return (
-    <div className="bg-black/90 backdrop-blur-sm border-2 border-red-500/30 hover:border-red-500/50 rounded-3xl p-6 w-full h-full overflow-hidden flex flex-col shadow-2xl transition-all duration-300 hover:shadow-red-500/20">
-      <div className="mb-4 pb-3 border-b border-red-500/20">
-        <h2 className="text-white text-xl font-bold tracking-wide bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
-          {getText({ en: 'Constructors Point', ko: '컨스트럭터 포인트' }, language)}
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-full h-full overflow-hidden flex flex-col shadow-lg">
+      <div className="mb-4 pb-3 border-b border-[#ff1801]/30">
+        <h2 className="text-white text-lg font-semibold tracking-wide bg-gradient-to-r from-[#ff1801] to-[#ff1801]/80 bg-clip-text text-transparent">
+          {getText({ en: 'Constructors Championship', ko: '컨스트럭터 챔피언십' }, language)}
         </h2>
       </div>
       <div className="overflow-y-auto flex-1 scrollbar-hide">
@@ -57,33 +57,36 @@ export default function ConstructorsCard() {
         ) : constructorsData.length === 0 ? (
           <EmptyState />
         ) : (
-          constructorsData.map((constructor, index) => (
-            <div key={constructor.position}>
-              <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
-                <div className="text-white text-base flex items-center gap-2">
-                  <span className="text-red-400 font-semibold">{constructor.position}. </span>
-                  <span className="font-semibold text-white">
-                    {constructor.name}
-                  </span>
-                  {constructor.logoPath && (
-                    <Image 
-                      src={`/team-logos/${constructor.logoPath}`}
-                      alt={constructor.name}
-                      width={20}
-                      height={20}
-                      className="ml-1"
-                    />
-                  )}
-                </div>
-                <div className="text-red-400 text-base font-bold">
-                  {constructor.points}
+          <div className="space-y-2">
+            {constructorsData.map((constructor) => (
+              <div key={constructor.position} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3 hover:bg-[#ff1801]/10 hover:border-[#ff1801]/40 transition-all duration-200">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#ff1801] text-base font-bold min-w-[1.5rem]">
+                      {constructor.position}.
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {constructor.logoPath && (
+                        <Image 
+                          src={`/team-logos/${constructor.logoPath}`}
+                          alt={constructor.name}
+                          width={16}
+                          height={16}
+                          className="rounded-sm"
+                        />
+                      )}
+                      <span className="text-white text-sm font-medium">
+                        {constructor.name}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-white text-sm font-bold bg-gradient-to-r from-[#ff1801]/20 to-[#ff1801]/30 border border-[#ff1801]/40 px-3 py-1 rounded-lg">
+                    {constructor.points}
+                  </div>
                 </div>
               </div>
-              {index < constructorsData.length - 1 && (
-                <div className="border-b-2 border-red-500/30 mx-2 my-1" />
-              )}
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -5,36 +5,52 @@ import DriversCard from './DriversCard';
 import NewsSection from './NewsSection';
 import F1RulesCard from './F1RulesCard';
 
+// 레이아웃 상수
+const LAYOUT_CONSTANTS = {
+  topPadding: 'pt-24',
+  containerPadding: 'px-4 py-4',
+  containerHeight: 'h-[calc(100vh-128px)]',
+  gap: 'gap-4',
+  leftColumn: {
+    width: 'w-80 min-w-80 max-w-80',
+    topHeight: 'h-[30%] min-h-[200px]',
+    bottomHeight: 'flex-1 min-h-[300px]'
+  },
+  rightColumn: {
+    topHeight: 'flex-1 h-2/3 min-h-[400px]',
+    bottomHeight: 'h-1/3 min-h-[200px]'
+  }
+} as const;
+
+const LeftColumn = () => (
+  <div className={`flex flex-col ${LAYOUT_CONSTANTS.gap} ${LAYOUT_CONSTANTS.leftColumn.width}`}>
+    <div className={LAYOUT_CONSTANTS.leftColumn.topHeight}>
+      <ConstructorsCard />
+    </div>
+    <div className={LAYOUT_CONSTANTS.leftColumn.bottomHeight}>
+      <DriversCard />
+    </div>
+  </div>
+);
+
+const RightColumn = () => (
+  <div className={`flex flex-col ${LAYOUT_CONSTANTS.gap} flex-1 min-w-0`}>
+    <div className={LAYOUT_CONSTANTS.rightColumn.topHeight}>
+      <NewsSection />
+    </div>
+    <div className={LAYOUT_CONSTANTS.rightColumn.bottomHeight}>
+      <F1RulesCard />
+    </div>
+  </div>
+);
+
 export default function Dashboard() {
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-hidden relative">
-      {/* 전체 화면 배경 효과 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-blue-500/5 to-green-500/5 pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-red-500/10 via-transparent to-transparent pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent pointer-events-none"></div>
-      
-      {/* 컨텐츠 영역 - 상단바 공간 확보 */}
-      <div className="w-full h-full pt-24 px-8 py-8 relative">
-        <div className="w-full h-[calc(100vh-128px)] relative">
-          {/* 왼쪽 상단 - Constructors Point */}
-          <div className="absolute left-0 top-4 w-72 h-[calc(30%-16px)]">
-            <ConstructorsCard />
-          </div>
-          
-          {/* 왼쪽 하단 - Drivers Point */}
-          <div className="absolute left-0 w-72 h-[calc(70%-16px)]" style={{top: 'calc(30% + 16px)'}}>
-            <DriversCard />
-          </div>
-          
-          {/* 오른쪽 상단 - News 섹션 */}
-          <div className="absolute left-96 right-0 top-0 h-[calc(66.67%-16px)]">
-            <NewsSection />
-          </div>
-          
-          {/* 오른쪽 하단 - F1 Rules 카드 */}
-          <div className="absolute left-96 right-0 h-[calc(33.33%-16px)]" style={{top: 'calc(66.67% + 16px)'}}>
-            <F1RulesCard />
-          </div>
+    <div className="w-full h-screen bg-black overflow-hidden relative">
+      <div className={`w-full h-full ${LAYOUT_CONSTANTS.topPadding} ${LAYOUT_CONSTANTS.containerPadding} overflow-hidden`}>
+        <div className={`w-full ${LAYOUT_CONSTANTS.containerHeight} flex ${LAYOUT_CONSTANTS.gap} overflow-hidden`}>
+          <LeftColumn />
+          <RightColumn />
         </div>
       </div>
     </div>

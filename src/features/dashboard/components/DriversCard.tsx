@@ -39,52 +39,55 @@ export default function DriversCard() {
     : [];
 
   return (
-    <div className="bg-black/90 backdrop-blur-sm border-2 border-blue-500/30 hover:border-blue-500/50 rounded-3xl p-6 w-full h-full overflow-hidden flex flex-col shadow-2xl transition-all duration-300 hover:shadow-blue-500/20">
-      <div className="mb-4 pb-3 border-b border-blue-500/20">
-        <h2 className="text-white text-xl font-bold tracking-wide bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-          {getText({ en: 'Drivers Point', ko: '드라이버 포인트' }, language)}
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-full h-full overflow-hidden flex flex-col shadow-lg">
+      <div className="mb-4 pb-3 border-b border-[#ff1801]/30">
+        <h2 className="text-white text-lg font-semibold tracking-wide bg-gradient-to-r from-[#ff1801] to-[#ff1801]/80 bg-clip-text text-transparent">
+          {getText({ en: 'Drivers Championship', ko: '드라이버 챔피언십' }, language)}
         </h2>
       </div>
       <div className="overflow-y-auto flex-1 scrollbar-hide">
         {loading ? (
           <LoadingState />
         ) : error ? (
-          <ErrorState textColor="text-blue-400" />
+          <ErrorState />
         ) : driversData.length === 0 ? (
           <EmptyState />
         ) : (
-          driversData.map((driver, index) => (
-            <div key={driver.position}>
-              <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
-                <div className="text-white text-base flex items-center">
-                  <span className="text-blue-400 font-semibold">{driver.position}. </span>
-                  <span className="text-sm hover:text-blue-200 transition-colors mr-2">{driver.name}</span>
-                  {driver.team && driver.team.logoPath && (
-                    <div className="flex-shrink-0 ml-1">
-                      <Image
-                        src={`/team-logos/${driver.team.logoPath}`}
-                        alt={driver.team.name.en}
-                        width={20}
-                        height={20}
-                        className="rounded-sm object-contain"
-                        onError={() => {
-                          if (process.env.NODE_ENV === 'development') {
-                            console.log(`Failed to load logo for team: ${driver.team?.id}`);
-                          }
-                        }}
-                      />
+          <div className="space-y-2">
+            {driversData.map((driver) => (
+              <div key={driver.position} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3 hover:bg-[#ff1801]/10 hover:border-[#ff1801]/40 transition-all duration-200">
+                <div className="flex justify-between items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className="text-[#ff1801] text-base font-bold flex-shrink-0">
+                      {driver.position}.
+                    </span>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-white text-sm font-medium truncate">
+                        {driver.name}
+                      </span>
+                      {driver.team && driver.team.logoPath && (
+                        <Image
+                          src={`/team-logos/${driver.team.logoPath}`}
+                          alt={driver.team.name.en}
+                          width={16}
+                          height={16}
+                          className="rounded-sm object-contain flex-shrink-0"
+                          onError={() => {
+                            if (process.env.NODE_ENV === 'development') {
+                              console.log(`Failed to load logo for team: ${driver.team?.id}`);
+                            }
+                          }}
+                        />
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="text-blue-400 text-base font-bold">
-                  {driver.points}
+                  </div>
+                  <div className="text-white text-sm font-bold bg-gradient-to-r from-[#ff1801]/20 to-[#ff1801]/30 border border-[#ff1801]/40 px-3 py-1 rounded-lg flex-shrink-0">
+                    {driver.points}
+                  </div>
                 </div>
               </div>
-              {index < driversData.length - 1 && (
-                <div className="border-b-2 border-blue-500/30 mx-2 my-1" />
-              )}
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
