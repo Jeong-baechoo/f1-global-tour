@@ -2,7 +2,6 @@
 
 import React from 'react';
 import mapboxgl from 'mapbox-gl';
-import ZoomScrollbar from '@/src/shared/components/ui/map/ZoomScrollbar';
 import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
 import type { Circuit } from '@/src/features/circuits/types';
 
@@ -27,7 +26,7 @@ interface MapControlsProps {
  * CircuitInfoPanel, ZoomScrollbar를 포함
  */
 export const MapControls: React.FC<MapControlsProps> = ({
-  map,
+  // map,
   // isCircuitView,
   sectorInfoEnabled,
   drsInfoEnabled,
@@ -55,9 +54,6 @@ export const MapControls: React.FC<MapControlsProps> = ({
         drsDetectionCount={drsDetectionCount}
       />
 
-      
-      {/* 모바일 줌 스크롤바 */}
-      <ZoomScrollbar map={map} className="sm:hidden" />
     </>
   );
 };
