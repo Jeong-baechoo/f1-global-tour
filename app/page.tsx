@@ -481,8 +481,11 @@ export default function Home() {
         setIsTrackAnimating={setIsTrackAnimating}
       />
 
+      {/* 모바일 상단 그라데이션 배경 */}
+      <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/60 via-black/30 to-transparent z-5 sm:hidden"></div>
+
       {/* F1 로고 - 모바일 */}
-      <div className="absolute top-2 left-4 z-10 sm:hidden">
+      <div className="absolute top-0 left-7 z-10 sm:hidden">
         <Image
           src="/f1_logo.png"
           alt="F1 Logo"
@@ -494,7 +497,7 @@ export default function Home() {
       </div>
 
       {/* 언어 선택 버튼 - 모바일 */}
-      <div className="absolute top-7 right-14 z-10 sm:hidden">
+      <div className="absolute top-5 right-14 z-10 sm:hidden">
         <LanguageSelector
           currentLanguage={language}
           onLanguageChangeAction={setLanguage}
@@ -672,7 +675,7 @@ export default function Home() {
         onExploreCircuit={handleExploreCircuit}
       />
 
-      {/* Mobile Circuit Timeline - Fixed above bottom sheet */}
+      {/* Mobile Circuit Timeline - Race calendar */}
       <MobileCircuitTimeline
         circuits={circuitsData.circuits}
         onSelectCircuitAction={handleMobileCircuitSelect}
