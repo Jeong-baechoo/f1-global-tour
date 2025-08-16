@@ -7,7 +7,7 @@ import type { Circuit } from '@/src/shared/types';
 
 interface MobileCircuitTimelineProps {
   circuits: Circuit[];
-  onSelectCircuit: (circuit: Circuit) => void;
+  onSelectCircuitAction: (circuit: Circuit) => void;
   selectedCircuitId?: string | null;
   panelState: {
     isOpen: boolean;
@@ -17,7 +17,7 @@ interface MobileCircuitTimelineProps {
 
 export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
   circuits,
-  onSelectCircuit,
+  onSelectCircuitAction,
   selectedCircuitId,
   panelState
 }) => {
@@ -164,9 +164,9 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
     e.stopPropagation();
     
     if (!isDragging) {
-      onSelectCircuit(circuit);
+      onSelectCircuitAction(circuit);
     }
-  }, [isDragging, onSelectCircuit]);
+  }, [isDragging, onSelectCircuitAction]);
 
   // 선택된 서킷을 중앙으로 스크롤
   const scrollToSelectedCircuit = useCallback((circuitId: string) => {
