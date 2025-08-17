@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import { Play } from 'lucide-react';
 import ZoomScrollbar from '@/src/shared/components/ui/map/ZoomScrollbar';
 import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
+import { ReplayPanel } from '@/src/features/replay';
 import type { Circuit } from '@/src/features/circuits/types';
 
 interface MapControlsProps {
@@ -39,6 +41,12 @@ export const MapControls: React.FC<MapControlsProps> = ({
   onToggleDRSInfoAction,
   onToggleElevationAction,
 }) => {
+  const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);
+
+  const handleReplayToggle = () => {
+    setIsReplayPanelOpen(!isReplayPanelOpen);
+  };
+
   return (
     <>
       {/* Circuit Info Panel - 항상 표시 (원본과 동일) */}
@@ -55,9 +63,28 @@ export const MapControls: React.FC<MapControlsProps> = ({
         drsDetectionCount={drsDetectionCount}
       />
 
+      {/* 리플레이 버튼 */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={handleReplayToggle}
+          className="w-12 h-12 bg-black/80 backdrop-blur-sm rounded-full
+                     border border-white/10 text-white
+                     hover:bg-red-600/80 transition-colors
+                     flex items-center justify-center shadow-lg"
+          title="Open Race Replay"
+        >
+          <Play className="w-5 h-5" />
+        </button>
+      </div>
       
       {/* 모바일 줌 스크롤바 */}
       <ZoomScrollbar map={map} className="sm:hidden" />
+
+      {/* 리플레이 패널 */}
+      <ReplayPanel 
+        isOpen={isReplayPanelOpen}
+        onClose={() => setIsReplayPanelOpen(false)}
+      />
     </>
   );
 };
