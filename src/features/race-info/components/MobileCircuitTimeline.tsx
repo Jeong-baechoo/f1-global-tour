@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { CalendarDays } from 'lucide-react';
 // import { useLanguage } from '@/contexts/LanguageContext';
 import RaceTimelinePanel from './RaceTimelinePanel';
 import type { Circuit } from '@/src/shared/types';
@@ -13,13 +14,15 @@ interface MobileCircuitTimelineProps {
     isOpen: boolean;
     isMinimized: boolean;
   };
+  hasUserInteracted?: boolean;
 }
 
 export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
   circuits,
   onSelectCircuitAction,
   selectedCircuitId,
-  panelState
+  panelState,
+  hasUserInteracted = false
 }) => {
   // const { language } = useLanguage();
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
@@ -64,8 +67,8 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    // 초기 로딩 시 다음 레이스 자동 선택 (모바일에서만)
-    if (window.innerWidth < 640 && !selectedCircuitId) {
+    // 초기 로딩 시 다음 레이스 자동 선택 (모바일에서만, 사용자 상호작용이 없을 때만)
+    if (window.innerWidth < 640 && !selectedCircuitId && !hasUserInteracted) {
       const nextRaceCircuit = findNextRaceCircuit();
       if (nextRaceCircuit) {
         setSelectedRaceId(nextRaceCircuit.id);
@@ -74,7 +77,7 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
     }
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, [circuits, selectedCircuitId, onSelectCircuitAction, findNextRaceCircuit]);
+  }, [circuits, selectedCircuitId, onSelectCircuitAction, findNextRaceCircuit, hasUserInteracted]);
 
 
   // 패널 상태에 따른 RaceTimelinePanel 높이 계산
@@ -118,10 +121,8 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
         onClick={() => setIsTimelineOpen(true)}
         className="fixed top-20 left-4 z-50 w-12 h-12 flex items-center justify-center bg-[#1A1A1A]/80 backdrop-blur-sm rounded-lg border border-[#FF1801]/20 hover:border-[#FF1801]/40 shadow-2xl transition-all duration-300 sm:hidden"
       >
-        {/* 햄버거 메뉴 아이콘 */}
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        {/* 캘린더 아이콘 */}
+        <CalendarDays className="w-6 h-6 text-white" />
       </button>
 
       {/* 레이스 타임라인 패널 */}

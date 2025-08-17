@@ -211,3 +211,30 @@ const marker = new mapboxgl.Marker(markerElement, {
 - **Feature branches** from `develop`: `feature/*`, `fix/*`, `hotfix/*`
 - **Pull request workflow** with code review to `develop`
 - **Protected master branch** for production releases only
+
+#### Debugging Complex Side Effects
+When encountering complex bugs with unexpected behavior (especially in React useEffect chains or component interactions):
+
+1. **Add Strategic Debug Logs First** - Instead of guessing and making multiple code changes
+   - Add `console.log` with clear prefixes (🟢, 🔴, 🚀, 🎯) to track execution flow
+   - Include timestamps, function parameters, and call stack traces where needed
+   - Log both the expected and actual values/coordinates
+
+2. **Use Stack Traces for Root Cause Analysis**
+   ```javascript
+   console.log('📍 [DEBUG] Function call stack:', new Error().stack);
+   ```
+
+3. **Key Areas to Debug in F1 Global Tour**
+   - **Map flyTo functions**: Log coordinates, team/circuit IDs, and gentle mode
+   - **useEffect chains**: Log dependency changes and execution order
+   - **User interaction handlers**: Log event triggers and state changes
+   - **Timer-based logic**: Log timer creation, execution, and cleanup
+
+4. **Debugging Pattern Example** (from team marker → wrong circuit bug):
+   - First attempt: Assumed timer issue, modified timer logic (failed)
+   - Second approach: Added debug logs to track actual flyTo calls
+   - Result: Discovered `MobileCircuitTimeline` auto-selection was the real culprit
+   - **Lesson**: Debug logs revealed the issue in 1 attempt vs 3 failed code changes
+
+**Remember**: When stuck on complex side effects, always add debug logs before modifying code. The console output often reveals the real issue immediately.

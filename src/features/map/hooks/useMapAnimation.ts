@@ -133,6 +133,7 @@ export const useMapAnimation = ({
     const team = teamsData.teams.find(t => t.id === teamId);
     if (!team) return;
 
+
     setUserInteracting(true);
     const mobile = typeof window !== 'undefined' && window.innerWidth < 640;
     
@@ -149,9 +150,11 @@ export const useMapAnimation = ({
       : teamConfig?.desktop 
       ? { ...DEFAULT_TEAM_FLYTO, ...teamConfig.desktop }
       : DEFAULT_TEAM_FLYTO;
+    
+    const finalCenter = 'center' in config && config.center ? config.center : teamHQ;
       
     map.current.flyTo({
-      center: 'center' in config && config.center ? config.center : teamHQ,
+      center: finalCenter,
       zoom: config.zoom,
       pitch: config.pitch,
       bearing: config.bearing,

@@ -10,8 +10,8 @@ export const TIME_CONSTANTS = {
   OLD_DATA_THRESHOLD_DAYS: 7,
 } as const;
 
-// 기본 업데이트 간격 (분)
-export const DEFAULT_UPDATE_INTERVAL = 5;
+// 기본 업데이트 간격 (분) - API 안정성을 위해 증가
+export const DEFAULT_UPDATE_INTERVAL = 10;
 
 // 폴백 meeting key
 export const FALLBACK_MEETING_KEY = 1265; // 스파 서킷

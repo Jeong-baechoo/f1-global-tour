@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Layers } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import MobileViewerOptionsPanel from './MobileViewerOptionsPanel';
@@ -62,10 +63,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
           </svg>
           
           {/* 모바일 레이어 아이콘 */}
-          <svg className="w-6 h-6 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M19 11H5m14-4H9m10 8H7m12-4H9" />
-          </svg>
+          <Layers className="w-6 h-6 block sm:hidden" />
         </button>
       </div>
     );
@@ -107,15 +105,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
         </svg>
         
         {/* 모바일 전용 레이어 아이콘 */}
-        <svg 
-          className="w-6 h-6 block sm:hidden"
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M19 11H5m14-4H9m10 8H7m12-4H9" />
-        </svg>
+        <Layers className="w-4 h-4 block sm:hidden" />
       </button>
 
       {/* 확장된 패널 배경 */}

@@ -545,8 +545,19 @@ class OpenF1ApiService {
 
   async getCurrentMeetingKey(): Promise<number | undefined> {
     try {
-      const response = await fetch(`${this.baseUrl}/meetings?year=${new Date().getFullYear()}`);
-      if (!response.ok) return undefined;
+      const response = await fetch(`${this.baseUrl}/meetings?year=${new Date().getFullYear()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        // 타임아웃 설정 (5초) - 빠른 실패로 UX 개선
+        signal: AbortSignal.timeout(5000)
+      });
+      
+      if (!response.ok) {
+        console.warn(`API response not ok: ${response.status} ${response.statusText}`);
+        return undefined;
+      }
       
       const meetings = await response.json();
       const now = new Date();
@@ -559,7 +570,13 @@ class OpenF1ApiService {
       
       return currentMeeting?.meeting_key;
     } catch (error) {
-      console.error('Failed to fetch current meeting key:', error);
+      if (error instanceof DOMException && error.name === 'TimeoutError') {
+        console.error('API request timeout - OpenF1 API may be slow or unavailable');
+      } else if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        console.error('Network error - Check internet connection or OpenF1 API availability');
+      } else {
+        console.error('Failed to fetch current meeting key:', error);
+      }
       return undefined;
     }
   }

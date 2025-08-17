@@ -50,7 +50,19 @@ class WeatherService {
       let currentMeetingKey = meetingKey;
       
       if (!currentMeetingKey) {
-        currentMeetingKey = await openF1ApiService.getCurrentMeetingKey();
+        // API 타임아웃 시 조용히 처리하고 중단
+        try {
+          currentMeetingKey = await openF1ApiService.getCurrentMeetingKey();
+        } catch {
+          console.warn('Weather service: OpenF1 API unavailable, skipping weather update');
+          this.updateState({
+            currentWeather: null,
+            isLoading: false,
+            error: ERROR_MESSAGES.DATA_NOT_READY,
+            lastUpdated: new Date()
+          });
+          return;
+        }
       }
 
       // meeting_key가 없으면 에러 처리

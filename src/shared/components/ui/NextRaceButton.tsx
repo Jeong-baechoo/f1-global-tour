@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CalendarDays } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NextRaceButtonProps {
@@ -30,7 +30,7 @@ export default function NextRaceButton({ onClickAction, isActive = false }: Next
         flex items-center justify-center w-full h-full transition-all duration-300
         ${isActive ? 'text-[#FF1801]' : 'text-white/70 group-hover:text-white'}
       `}>
-        <CalendarDays 
+        <Clock 
           size={18} 
           className="transition-transform duration-300 group-hover:scale-110"
         />

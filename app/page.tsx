@@ -690,6 +690,7 @@ export default function Home() {
           isOpen: panelOpen,
           isMinimized: panelMinimized
         }}
+        hasUserInteracted={hasUserInteracted}
       />
     </>
   );
