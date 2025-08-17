@@ -487,14 +487,21 @@ export class ReplayAnimationEngine {
       }
     }
 
-    // 실제 위도/경도 좌표 사용
-    const coordinates: [number, number] = [closestPoint.longitude, closestPoint.latitude];
+    // 실제 위도/경도 좌표 사용 (안전성 체크)
+    const longitude = closestPoint.longitude ?? 0;
+    const latitude = closestPoint.latitude ?? 0;
+    const coordinates: [number, number] = [longitude, latitude];
     
     // 트랙 진행률 계산 (distance 기반)
-    const totalDistance = Math.max(...this.telemetryData.map(p => p.distance));
-    const lapProgress = Math.min(1, closestPoint.distance / totalDistance);
+    const totalDistance = Math.max(...this.telemetryData.map(p => p.distance || 0));
+    const lapProgress = Math.min(1, (closestPoint.distance || 0) / totalDistance);
 
-    console.log(`🎯 Driver ${driverNumber}: FastF1 position [${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}] at ${currentTime.toFixed(1)}s, progress ${(lapProgress * 100).toFixed(1)}%`);
+    // 좌표가 유효한 경우에만 로그 출력
+    if (longitude !== 0 && latitude !== 0) {
+      console.log(`🎯 Driver ${driverNumber}: FastF1 position [${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}] at ${currentTime.toFixed(1)}s, progress ${(lapProgress * 100).toFixed(1)}%`);
+    } else {
+      console.warn(`⚠️ Driver ${driverNumber}: Invalid coordinates at ${currentTime.toFixed(1)}s`);
+    }
 
     return {
       driverNumber,

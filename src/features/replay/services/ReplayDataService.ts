@@ -369,9 +369,9 @@ export class ReplayDataService {
   // FastF1 API 지원 메서드들
   async getFastF1TelemetryData(year: number, round: number, driverNumber: number): Promise<ApiResponse<any>> {
     try {
-      console.log(`Fetching FastF1 telemetry for ${year}/${round}/${driverNumber}...`);
+      console.log(`Fetching FastF1 telemetry for ${year}/${round}/${driverNumber}... (This may take 1-2 minutes for first load)`);
       const response = await axios.get(`${this.fastF1BaseUrl}/mapbox/${year}/${round}/${driverNumber}`, {
-        timeout: 15000,
+        timeout: 120000, // 2분 타임아웃 (FastF1 첫 로드 시 시간이 오래 걸림)
         headers: {
           'Accept': 'application/json',
         }

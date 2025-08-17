@@ -63,8 +63,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
         drsDetectionCount={drsDetectionCount}
       />
 
-      {/* 리플레이 버튼 */}
-      <div className="fixed bottom-6 right-6 z-40">
+      {/* 리플레이 버튼 - 왼쪽 사이드로 이동 */}
+      <div className="fixed left-6 top-1/2 -translate-y-1/2 z-40">
         <button
           onClick={handleReplayToggle}
           className="w-12 h-12 bg-black/80 backdrop-blur-sm rounded-full
