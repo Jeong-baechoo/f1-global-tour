@@ -5,8 +5,8 @@ import { X, Settings, Users, Calendar } from 'lucide-react';
 import { ReplayControls } from './ReplayControls';
 import { DriverSelector } from './DriverSelector';
 import { SessionSelector } from './SessionSelector';
-import { useReplayStore } from '../store/useReplayStore';
-import { useReplayEngine } from '../hooks/useReplayEngine';
+import { useReplayStore } from '@/src/features/replay';
+import { useReplayEngine } from '@/src/features/replay';
 import { ReplaySessionData } from '../types';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +20,7 @@ type PanelTab = 'session' | 'drivers' | 'controls' | 'settings';
 
 export const ReplayPanel: React.FC<ReplayPanelProps> = ({ 
   isOpen, 
-  onClose, 
+  onClose,
   className 
 }) => {
   const [activeTab, setActiveTab] = useState<PanelTab>('session');
@@ -39,6 +39,16 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   const handleSessionSelect = useCallback((_session: ReplaySessionData) => {
     // useEffect에서 자동으로 탭 전환되므로 여기서는 추가 로직 없음
   }, []);
+
+  const handleStartReplay = useCallback(() => {
+    if (activeTab === 'controls') {
+      // Controls 패널에 있으면 패널을 닫음
+      onClose();
+    } else {
+      // 다른 탭에 있으면 Controls 패널로 이동
+      setActiveTab('controls');
+    }
+  }, [activeTab, onClose]);
 
   const tabs = useMemo(() => [
     {
@@ -200,10 +210,10 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
               
               {currentSession && (
                 <button
-                  onClick={() => setActiveTab('controls')}
+                  onClick={handleStartReplay}
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                 >
-                  Start Replay
+                  {activeTab === 'controls' ? 'Start Replay' : 'Go to Controls'}
                 </button>
               )}
             </div>
