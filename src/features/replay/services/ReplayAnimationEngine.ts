@@ -1,12 +1,10 @@
 import mapboxgl from 'mapbox-gl';
-import { trackPositionService } from './TrackPositionService';
-import { replayDataService } from './ReplayDataService';
-import { 
-  ReplayLapData, 
-  ReplayDriverData, 
-  DriverPosition, 
-  ReplaySessionData 
-} from '../types';
+import {trackPositionService} from '@/src/features/replay';
+import {replayDataService} from './ReplayDataService';
+import {DriverPosition, ReplayDriverData, ReplayLapData, ReplaySessionData} from '../types';
+import { clearAllTrackState } from '@/src/shared/utils/map/trackDrawing';
+import { getTrackCoordinates } from '@/src/shared/utils/data/trackDataLoader';
+import { getCircuitColor } from '@/src/shared/utils/map/circuitColors';
 
 export class ReplayAnimationEngine {
   private map: mapboxgl.Map | null = null;
@@ -20,8 +18,14 @@ export class ReplayAnimationEngine {
   
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
-  private telemetryData: any[] = [];
+  private telemetryData: Array<{
+    time: number;
+    longitude?: number;
+    latitude?: number;
+    distance?: number;
+  }> = [];
   private circuitId: string = '';
+  private trackLayerId: string = '';
   
   // 콜백 함수들
   private onTimeUpdate?: (time: number) => void;
@@ -57,6 +61,14 @@ export class ReplayAnimationEngine {
           // 드라이버 마커 생성
           this.createDriverMarkers();
           
+          // 트랙 레이아웃을 즉시 생성 (약간의 딜레이 후)
+          setTimeout(() => {
+            this.drawCircuitTrackImmediately();
+          }, 100);
+          
+          // 줌 레벨 변경 시 마커 크기 조절 리스너 추가
+          this.setupZoomListener();
+          
           return true;
         }
       } catch (fastF1Error) {
@@ -83,6 +95,14 @@ export class ReplayAnimationEngine {
       
       // 드라이버 마커 생성
       this.createDriverMarkers();
+      
+      // 트랙 레이아웃을 즉시 생성 (약간의 딜레이 후)
+      setTimeout(() => {
+        this.drawCircuitTrackImmediately();
+      }, 100);
+      
+      // 줌 레벨 변경 시 마커 크기 조절 리스너 추가
+      this.setupZoomListener();
       
       return true;
     } catch (error) {
@@ -124,26 +144,143 @@ export class ReplayAnimationEngine {
     return mapping[circuitShortName] || circuitShortName.toLowerCase().replace(/\s+/g, '-');
   }
 
+  private drawCircuitTrackImmediately(): void {
+    if (!this.map || !this.circuitId) {
+      console.warn('Map or circuit ID not available for track drawing');
+      return;
+    }
+
+    console.log(`🛣️ Drawing track immediately for circuit: ${this.circuitId}`);
+
+    try {
+      // 기존 트랙 제거 (있다면)
+      this.clearCircuitTrack();
+
+      // 트랙 ID 설정
+      this.trackLayerId = `replay-${this.circuitId}-track`;
+
+      // 트랙 데이터를 비동기로 로드하고 즉시 그리기
+      getTrackCoordinates(this.circuitId).then(trackData => {
+        if (!trackData || !this.map) {
+          console.warn(`No track data found for circuit: ${this.circuitId}`);
+          return;
+        }
+
+        console.log(`📍 Track data loaded for ${this.circuitId}: ${trackData.length} coordinates`);
+
+        // 줌 레벨에 관계없이 트랙을 항상 그리기 (리플레이 모드에서는 항상 표시)
+        this.addTrackToMap(trackData);
+        console.log(`✅ Track immediately drawn for ${this.circuitId}`);
+
+      }).catch(error => {
+        console.error(`❌ Error loading track data for ${this.circuitId}:`, error);
+      });
+
+    } catch (error) {
+      console.error(`❌ Error drawing track for ${this.circuitId}:`, error);
+    }
+  }
+
+  private addTrackToMap(trackCoordinates: number[][]): void {
+    if (!this.map || !this.trackLayerId) return;
+
+    try {
+      // GeoJSON 형태로 트랙 데이터 생성
+      const trackGeoJSON = {
+        type: 'Feature' as const,
+        properties: {},
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: trackCoordinates
+        }
+      };
+
+      // 소스 추가
+      this.map.addSource(this.trackLayerId, {
+        type: 'geojson',
+        data: trackGeoJSON
+      });
+
+      // 레이어 추가 (즉시 표시)
+      this.map.addLayer({
+        id: this.trackLayerId,
+        type: 'line',
+        source: this.trackLayerId,
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+          'visibility': 'visible'
+        },
+        paint: {
+          'line-color': getCircuitColor(this.circuitId),
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2,
+            14, 4,
+            18, 6
+          ],
+          'line-opacity': 0.9
+        }
+      });
+
+      console.log(`🎨 Track layer added: ${this.trackLayerId} with color ${getCircuitColor(this.circuitId)}`);
+
+    } catch (error) {
+      console.error(`❌ Error adding track to map:`, error);
+    }
+  }
+
+  private clearCircuitTrack(): void {
+    if (!this.map) return;
+
+    // 기존 트랙 레이어 제거
+    if (this.trackLayerId && this.map.getLayer(this.trackLayerId)) {
+      try {
+        this.map.removeLayer(this.trackLayerId);
+        console.log(`🧹 Removed existing track layer: ${this.trackLayerId}`);
+      } catch (error) {
+        console.warn(`Failed to remove track layer ${this.trackLayerId}:`, error);
+      }
+    }
+
+    // 소스도 제거
+    if (this.trackLayerId && this.map.getSource(this.trackLayerId)) {
+      try {
+        this.map.removeSource(this.trackLayerId);
+        console.log(`🧹 Removed existing track source: ${this.trackLayerId}`);
+      } catch (error) {
+        console.warn(`Failed to remove track source ${this.trackLayerId}:`, error);
+      }
+    }
+
+    // 전체 트랙 상태 정리
+    clearAllTrackState();
+  }
+
   private createDriverMarkers(): void {
     console.log(`🏎️ Creating markers for ${this.driversData.length} drivers...`);
     
     // 기존 마커 제거
     this.clearMarkers();
 
-    this.driversData.forEach((driver, index) => {
+    this.driversData.forEach((driver) => {
       // 드라이버 마커 엘리먼트 생성
       const markerElement = this.createDriverMarkerElement(driver);
       
-      // Mapbox 마커 생성
+      // Mapbox 마커 생성 - 항상 화면에 수직으로 표시
       const marker = new mapboxgl.Marker(markerElement, {
-        anchor: 'center'
+        anchor: 'center',
+        pitchAlignment: 'viewport',      // 화면에 수직으로 고정
+        rotationAlignment: 'viewport'    // 화면 방향 고정
       });
 
       // 모든 드라이버를 출발선(0%)에서 시작
       const startPosition = trackPositionService.getPositionAtProgress(this.circuitId, 0);
       
-      if (startPosition) {
-        marker.setLngLat(startPosition);
+      if (startPosition && Array.isArray(startPosition) && startPosition.length === 2) {
+        marker.setLngLat([startPosition[0], startPosition[1]]);
         if (this.map) {
           marker.addTo(this.map);
           console.log(`✅ Marker created for driver ${driver.driverNumber} (${driver.nameAcronym}) at START LINE [${startPosition[0].toFixed(6)}, ${startPosition[1].toFixed(6)}]`);
@@ -159,7 +296,7 @@ export class ReplayAnimationEngine {
           }, 100);
         }
       } else {
-        console.error(`❌ Failed to get position for circuit ${this.circuitId} at progress ${driverProgress}`);
+        console.error(`❌ Failed to get position for circuit ${this.circuitId} at start line`);
       }
 
       this.driverMarkers.set(driver.driverNumber, marker);
@@ -169,7 +306,7 @@ export class ReplayAnimationEngine {
     
     // Monaco 트랙으로 카메라 이동
     if (this.map && this.circuitId === 'monaco') {
-      const monacoCenter = [7.4255, 43.7384]; // Monaco 중심 좌표
+      const monacoCenter: [number, number] = [7.4255, 43.7384]; // Monaco 중심 좌표
       console.log('🎯 Moving camera to Monaco circuit...');
       this.map.flyTo({
         center: monacoCenter,
@@ -199,11 +336,18 @@ export class ReplayAnimationEngine {
     element.className = 'driver-marker';
     element.id = `driver-marker-${driver.driverNumber}`;
     
+    // 팀 컬러의 밝기에 따른 텍스트 색상 자동 결정
+    const teamColor = driver.teamColor || 'FF0000';
+    const textColor = this.getOptimalTextColor(teamColor);
+    const textShadow = textColor === '#FFFFFF' 
+      ? '0 0 4px rgba(0,0,0,1)' 
+      : '0 0 4px rgba(255,255,255,0.8)';
+    
     // 마커 스타일링 (더 눈에 띄게 크고 밝게)
     element.style.cssText = `
       width: 50px;
       height: 50px;
-      background-color: #${driver.teamColor || 'FF0000'};
+      background-color: #${teamColor};
       border: 4px solid #FFFFFF;
       border-radius: 50%;
       display: flex;
@@ -211,14 +355,15 @@ export class ReplayAnimationEngine {
       justify-content: center;
       font-size: 16px;
       font-weight: bold;
-      color: #FFFFFF;
-      text-shadow: 0 0 4px rgba(0,0,0,1);
+      color: ${textColor};
+      text-shadow: ${textShadow};
       cursor: pointer;
-      position: relative;
-      z-index: 10000 !important;
+      position: absolute;
+      z-index: 1000;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       user-select: none;
       pointer-events: auto;
+      transition: box-shadow 0.2s ease, border-width 0.2s ease;
     `;
     
     element.textContent = driver.driverNumber.toString();
@@ -226,14 +371,16 @@ export class ReplayAnimationEngine {
     // 디버깅을 위한 콘솔 로그
     console.log(`🎨 Created marker element for driver ${driver.driverNumber} with color #${driver.teamColor}`);
     
-    // 호버 효과
+    // 호버 효과 - transform 대신 box-shadow와 border 변경으로 시각적 효과
     element.addEventListener('mouseenter', () => {
-      element.style.transform = 'scale(1.2)';
+      element.style.boxShadow = '0 6px 20px rgba(0,0,0,0.7)';
+      element.style.borderWidth = '6px';
       console.log(`🎯 Hover on driver ${driver.driverNumber} marker`);
     });
     
     element.addEventListener('mouseleave', () => {
-      element.style.transform = 'scale(1)';
+      element.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+      element.style.borderWidth = '4px';
     });
 
     // 클릭 이벤트 추가
@@ -258,6 +405,9 @@ export class ReplayAnimationEngine {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    
+    // 일시정지 시 현재 위치에서 드라이버 마커들을 안정화
+    this.stabilizeDriverMarkers();
   }
 
   stop(): void {
@@ -312,8 +462,8 @@ export class ReplayAnimationEngine {
         
         // 마커 위치 업데이트
         const marker = this.driverMarkers.get(driver.driverNumber);
-        if (marker) {
-          marker.setLngLat(position.coordinates);
+        if (marker && Array.isArray(position.coordinates) && position.coordinates.length === 2) {
+          marker.setLngLat([position.coordinates[0], position.coordinates[1]]);
         }
       }
     });
@@ -405,9 +555,8 @@ export class ReplayAnimationEngine {
 
     // 진행률로 정렬하여 순위 계산
     driverProgresses.sort((a, b) => b.progress - a.progress);
-    
-    const position = driverProgresses.findIndex(d => d.driverNumber === driverNumber) + 1;
-    return position;
+
+  return driverProgresses.findIndex(d => d.driverNumber === driverNumber) + 1;
   }
 
   // 콜백 설정
@@ -443,7 +592,110 @@ export class ReplayAnimationEngine {
   destroy(): void {
     this.pause();
     this.clearMarkers();
+    this.clearCircuitTrack();
     this.map = null;
+  }
+
+  // 일시정지 시 마커 안정화
+  private stabilizeDriverMarkers(): void {
+    console.log(`🔧 Stabilizing ${this.driverMarkers.size} driver markers at time ${this.currentTime.toFixed(2)}s`);
+    
+    this.driverMarkers.forEach((marker, driverNumber) => {
+      // 현재 위치를 다시 설정하여 마커를 안정화
+      const currentPosition = this.calculateDriverPosition(driverNumber, this.currentTime);
+      if (currentPosition && currentPosition.coordinates && Array.isArray(currentPosition.coordinates) && currentPosition.coordinates.length === 2) {
+        const [lng, lat] = currentPosition.coordinates;
+        // 유효한 좌표인 경우에만 위치 재설정
+        if (!isNaN(lng) && !isNaN(lat)) {
+          marker.setLngLat([lng, lat]);
+          console.log(`🔧 Stabilized driver ${driverNumber} at [${lng.toFixed(6)}, ${lat.toFixed(6)}]`);
+        } else {
+          console.warn(`⚠️ Invalid coordinates for driver ${driverNumber}: [${lng}, ${lat}]`);
+        }
+      } else {
+        console.warn(`⚠️ Could not calculate position for driver ${driverNumber}`);
+      }
+    });
+  }
+
+  // 줌 레벨에 따른 마커 크기 조절 및 트랙 표시/숨기기 리스너 설정
+  private setupZoomListener(): void {
+    if (!this.map) return;
+    
+    this.map.on('zoom', () => {
+      this.updateMarkerSizes();
+      this.handleTrackVisibility();
+    });
+    
+    // 초기 크기 설정
+    this.updateMarkerSizes();
+    this.handleTrackVisibility();
+  }
+
+  // 줌 레벨에 따른 트랙 표시/숨기기 처리 (리플레이 모드에서는 항상 표시)
+  private handleTrackVisibility(): void {
+    if (!this.map || !this.trackLayerId) return;
+
+    const trackLayer = this.map.getLayer(this.trackLayerId);
+
+    // 리플레이 모드에서는 트랙을 항상 표시
+    if (trackLayer) {
+      this.map.setLayoutProperty(this.trackLayerId, 'visibility', 'visible');
+    } else if (this.circuitId) {
+      // 트랙이 없으면 새로 생성
+      this.drawCircuitTrackImmediately();
+    }
+  }
+
+  // 현재 줌 레벨에 따라 모든 마커 크기 업데이트
+  private updateMarkerSizes(): void {
+    if (!this.map) return;
+    
+    const currentZoom = this.map.getZoom();
+    
+    // 줌 레벨에 따른 마커 크기 계산
+    // 줌 10: 20px, 줌 14: 30px, 줌 18: 40px (선형 보간)
+    const minZoom = 10;
+    const maxZoom = 18;
+    const minSize = 20;
+    const maxSize = 40;
+    
+    const normalizedZoom = Math.max(0, Math.min(1, (currentZoom - minZoom) / (maxZoom - minZoom)));
+    const markerSize = Math.round(minSize + (maxSize - minSize) * normalizedZoom);
+    
+    // 모든 드라이버 마커 크기 업데이트
+    this.driverMarkers.forEach((marker, driverNumber) => {
+      const markerElement = document.getElementById(`driver-marker-${driverNumber}`);
+      if (markerElement) {
+        markerElement.style.width = `${markerSize}px`;
+        markerElement.style.height = `${markerSize}px`;
+        
+        // 폰트 크기도 비례적으로 조정
+        const fontSize = Math.round(markerSize * 0.32); // 마커 크기의 32%
+        markerElement.style.fontSize = `${fontSize}px`;
+        
+        // 테두리 두께도 조정
+        const borderWidth = Math.max(2, Math.round(markerSize * 0.08)); // 마커 크기의 8%
+        markerElement.style.borderWidth = `${borderWidth}px`;
+      }
+    });
+    
+    console.log(`🔍 Zoom: ${currentZoom.toFixed(1)}, Marker Size: ${markerSize}px`);
+  }
+
+  // 팀 컬러의 밝기에 따른 최적 텍스트 색상 결정
+  private getOptimalTextColor(hexColor: string): string {
+    // hex 색상을 RGB로 변환
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // 밝기 계산 (Luminance 공식 사용)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // 밝기가 0.5 이상이면 어두운 텍스트, 미만이면 밝은 텍스트
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
   }
 
   // 현재 상태 조회

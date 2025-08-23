@@ -20,6 +20,17 @@ export const DriverSelector: React.FC<DriverSelectorProps> = ({ className }) => 
     deselectAllDrivers 
   } = useReplayActions();
 
+  // 팀 컬러의 밝기에 따른 최적 텍스트 색상 결정
+  const getOptimalTextColor = useCallback((hexColor: string): string => {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  }, []);
+
   const handleDriverToggle = useCallback((driverNumber: number) => {
     if (selectedDrivers.includes(driverNumber)) {
       deselectDriver(driverNumber);
@@ -116,7 +127,13 @@ export const DriverSelector: React.FC<DriverSelectorProps> = ({ className }) => 
               {/* 드라이버 번호 */}
               <div 
                 className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold"
-                style={{ backgroundColor: `#${driver.teamColor}` }}
+                style={{ 
+                  backgroundColor: `#${driver.teamColor}`,
+                  color: getOptimalTextColor(driver.teamColor),
+                  textShadow: getOptimalTextColor(driver.teamColor) === '#FFFFFF' 
+                    ? '0 0 2px rgba(0,0,0,0.8)' 
+                    : '0 0 2px rgba(255,255,255,0.8)'
+                }}
               >
                 {driver.driverNumber}
               </div>
