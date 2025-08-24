@@ -405,6 +405,34 @@ export class ReplayDataService {
     }
   }
 
+  async getFastF1FullRaceData(year: number, round: number, driverNumber: number): Promise<ApiResponse<FastF1Data | null>> {
+    try {
+      console.log(`Fetching FastF1 full race data for ${year}/${round}/${driverNumber}... (This may take 3-5 minutes for first load)`);
+      const response = await axios.get(`${this.fastF1BaseUrl}/mapbox/${year}/${round}/${driverNumber}/full-race`, {
+        timeout: 300000, // 5분 타임아웃 (전체 레이스 데이터는 더 오래 걸림)
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+
+      console.log(`FastF1 full race data received: ${response.data.telemetry_points} points, ${response.data.lap_number} laps`);
+      return {
+        data: response.data,
+        success: true
+      };
+    } catch (error) {
+      console.error('FastF1 full race API error:', error);
+      return {
+        data: null,
+        success: false,
+        error: { 
+          code: 'FASTF1_FULL_RACE_FETCH_ERROR',
+          message: 'Failed to fetch FastF1 full race data' 
+        }
+      };
+    }
+  }
+
   // FastF1 텔레메트리에서 리플레이용 데이터 변환
   convertFastF1ToReplayData(fastF1Data: FastF1Data): {
     drivers: ReplayDriverData[],
@@ -496,6 +524,121 @@ export class ReplayDataService {
       'PIA': 'AUS'
     };
     return driverCountries[driver] || 'UNK';
+  }
+
+  // 2024년 F1 드라이버 번호 목록
+  private static readonly F1_2024_DRIVER_NUMBERS = [
+    1,   // Max Verstappen
+    3,   // Daniel Ricciardo  
+    4,   // Lando Norris
+    11,  // Sergio Perez
+    14,  // Fernando Alonso
+    16,  // Charles Leclerc
+    18,  // Lance Stroll
+    22,  // Yuki Tsunoda
+    24,  // Zhou Guanyu
+    27,  // Nico Hulkenberg
+    31,  // Esteban Ocon
+    44,  // Lewis Hamilton
+    55,  // Carlos Sainz
+    63,  // George Russell
+    77,  // Valtteri Bottas
+    81,  // Oscar Piastri
+    // Note: 일부 드라이버는 시즌 중 변경될 수 있음
+  ];
+
+  // 다중 드라이버 FastF1 텔레메트리 데이터 로딩
+  async getFastF1MultiDriverData(year: number, round: number, driverNumbers?: number[]): Promise<ApiResponse<FastF1Data[]>> {
+    try {
+      const driversToLoad = driverNumbers || ReplayDataService.F1_2024_DRIVER_NUMBERS;
+      console.log(`🏎️ Loading FastF1 data for ${driversToLoad.length} drivers: [${driversToLoad.join(', ')}]`);
+      
+      // 병렬로 모든 드라이버의 전체 레이스 데이터 로딩
+      const driverPromises = driversToLoad.map(async (driverNumber) => {
+        try {
+          const response = await this.getFastF1FullRaceData(year, round, driverNumber);
+          return {
+            driverNumber,
+            success: response.success,
+            data: response.data
+          };
+        } catch (error) {
+          console.warn(`⚠️ Failed to load driver ${driverNumber}:`, error);
+          return {
+            driverNumber,
+            success: false,
+            data: null
+          };
+        }
+      });
+
+      const results = await Promise.all(driverPromises);
+      
+      // 성공한 드라이버 데이터만 필터링
+      const successfulDrivers = results
+        .filter(result => result.success && result.data)
+        .map(result => result.data!);
+
+      const failedDrivers = results
+        .filter(result => !result.success)
+        .map(result => result.driverNumber);
+
+      console.log(`✅ Successfully loaded ${successfulDrivers.length} drivers`);
+      if (failedDrivers.length > 0) {
+        console.warn(`⚠️ Failed to load drivers: [${failedDrivers.join(', ')}]`);
+      }
+
+      return {
+        data: successfulDrivers,
+        success: successfulDrivers.length > 0,
+        error: successfulDrivers.length === 0 ? {
+          code: 'NO_DRIVER_DATA',
+          message: 'Failed to load any driver data'
+        } : undefined
+      };
+
+    } catch (error) {
+      console.error('❌ Error loading multi-driver FastF1 data:', error);
+      return {
+        data: [],
+        success: false,
+        error: {
+          code: 'MULTI_DRIVER_LOAD_ERROR',
+          message: 'Failed to load multi-driver FastF1 data',
+          details: error
+        }
+      };
+    }
+  }
+
+  // 다중 드라이버 데이터를 리플레이용 데이터로 변환
+  convertMultipleFastF1ToReplayData(fastF1DataArray: FastF1Data[]): {
+    drivers: ReplayDriverData[],
+    laps: ReplayLapData[],
+    telemetryPoints: { [driverNumber: number]: FastF1TelemetryPoint[] }
+  } {
+    const allDrivers: ReplayDriverData[] = [];
+    const allLaps: ReplayLapData[] = [];
+    const allTelemetryPoints: { [driverNumber: number]: FastF1TelemetryPoint[] } = {};
+
+    fastF1DataArray.forEach(fastF1Data => {
+      const converted = this.convertFastF1ToReplayData(fastF1Data);
+      
+      allDrivers.push(...converted.drivers);
+      allLaps.push(...converted.laps);
+      
+      // 각 드라이버별 텔레메트리 포인트 저장
+      if (converted.drivers.length > 0) {
+        const driverNumber = converted.drivers[0].driverNumber;
+        allTelemetryPoints[driverNumber] = converted.telemetryPoints;
+      }
+    });
+
+    return {
+      drivers: allDrivers,
+      laps: allLaps,
+      telemetryPoints: allTelemetryPoints
+    };
   }
 }
 
