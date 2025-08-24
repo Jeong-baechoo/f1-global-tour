@@ -20,6 +20,9 @@ export class CircuitTrackManager {
       return;
     }
 
+    // 맵이 완전히 로드될 때까지 대기
+    await this.waitForMapReady();
+
     try {
       // 기존 트랙 제거 (있다면)
       this.clearCircuitTrack();
@@ -57,9 +60,9 @@ export class CircuitTrackManager {
         totalPoints: trackData.length
       });
 
-      // 줌 레벨에 관계없이 트랙을 항상 그리기 (리플레이 모드에서는 항상 표시)
+      // 맵 준비 후 트랙 추가
       console.log(`🎨 Adding track to map...`);
-      this.addTrackToMap(trackData);
+      await this.addTrackToMapWithRetry(trackData, 3);
       
       // 트랙 추가 후 서킷으로 카메라 이동
       setTimeout(() => {
@@ -192,10 +195,13 @@ export class CircuitTrackManager {
   clearCircuitTrack(): void {
     if (!this.map) return;
 
+    console.log(`🧹 Clearing replay track: ${this.trackLayerId}`);
+
     // 기존 트랙 레이어 제거
     if (this.trackLayerId && this.map.getLayer(this.trackLayerId)) {
       try {
         this.map.removeLayer(this.trackLayerId);
+        console.log(`✅ Removed track layer: ${this.trackLayerId}`);
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`Failed to remove track layer ${this.trackLayerId}:`, error);
@@ -207,6 +213,7 @@ export class CircuitTrackManager {
     if (this.trackLayerId && this.map.getSource(this.trackLayerId)) {
       try {
         this.map.removeSource(this.trackLayerId);
+        console.log(`✅ Removed track source: ${this.trackLayerId}`);
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`Failed to remove track source ${this.trackLayerId}:`, error);
@@ -214,8 +221,8 @@ export class CircuitTrackManager {
       }
     }
 
-    // 전체 트랙 상태 정리
-    clearAllTrackState();
+    // replay 전용 트랙만 정리 (기존 circuits 트랙은 건드리지 않음)
+    this.trackLayerId = '';
   }
 
   ensureTrackVisibility(): void {
@@ -240,6 +247,61 @@ export class CircuitTrackManager {
       console.log(`✅ Track visibility ensured for ${this.trackLayerId}`);
     } else {
       console.warn(`⚠️ Track layer ${this.trackLayerId} not found on map`);
+    }
+  }
+
+  // 맵이 완전히 로드될 때까지 대기하는 함수
+  private async waitForMapReady(): Promise<void> {
+    if (!this.map) return;
+
+    return new Promise((resolve) => {
+      if (this.map!.loaded()) {
+        resolve();
+        return;
+      }
+
+      const checkLoad = () => {
+        if (this.map!.loaded()) {
+          resolve();
+        } else {
+          setTimeout(checkLoad, 100);
+        }
+      };
+
+      this.map!.on('load', resolve);
+      checkLoad(); // 즉시 체크도 해봄
+    });
+  }
+
+  // 재시도 로직이 포함된 트랙 추가 함수
+  private async addTrackToMapWithRetry(trackCoordinates: number[][], maxRetries: number): Promise<void> {
+    let attempts = 0;
+    
+    while (attempts < maxRetries) {
+      try {
+        this.addTrackToMap(trackCoordinates);
+        
+        // 레이어가 실제로 추가되었는지 확인
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        if (this.map && this.map.getLayer(this.trackLayerId)) {
+          console.log(`✅ Track layer added successfully on attempt ${attempts + 1}`);
+          return;
+        } else {
+          throw new Error('Layer not found after adding');
+        }
+      } catch (error) {
+        attempts++;
+        console.warn(`⚠️ Track add attempt ${attempts} failed:`, error);
+        
+        if (attempts < maxRetries) {
+          console.log(`🔄 Retrying in ${attempts * 200}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, attempts * 200));
+        } else {
+          console.error(`❌ All ${maxRetries} attempts failed to add track`);
+          throw error;
+        }
+      }
     }
   }
 

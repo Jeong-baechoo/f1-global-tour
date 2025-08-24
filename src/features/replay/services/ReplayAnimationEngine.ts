@@ -117,13 +117,11 @@ export class ReplayAnimationEngine {
     // 드라이버 마커 생성
     this.createDriverMarkers();
     
-    // 트랙 레이아웃을 즉시 생성
-    setTimeout(() => {
-      console.log(`🛤️ Drawing track for circuit: ${this.circuitId}`);
-      this.trackManager.drawCircuitTrack(this.circuitId).catch(error => {
-        console.error('❌ Failed to draw circuit track:', error);
-      });
-    }, 100);
+    // 트랙 레이아웃 생성 - 타이밍 개선
+    console.log(`🛤️ Drawing track for circuit: ${this.circuitId}`);
+    this.trackManager.drawCircuitTrack(this.circuitId).catch(error => {
+      console.error('❌ Failed to draw circuit track:', error);
+    });
     
     // 줌 레벨 변경 시 마커 크기 조절 리스너 추가
     this.setupZoomListener();
