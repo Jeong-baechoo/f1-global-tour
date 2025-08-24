@@ -8,13 +8,13 @@ import type { MapAPI } from '@/src/shared/types';
 
 interface ExitReplayButtonProps {
   className?: string;
-  onExit?: () => void;
+  onExitAction?: () => void;
   mapRef?: React.RefObject<MapAPI | null>;
 }
 
 export const ExitReplayButton: React.FC<ExitReplayButtonProps> = ({ 
   className,
-  onExit,
+  onExitAction,
   mapRef 
 }) => {
   const isPlaying = useReplayStore(state => state.isPlaying);
@@ -47,8 +47,8 @@ export const ExitReplayButton: React.FC<ExitReplayButtonProps> = ({
     cleanup();
     
     // 커스텀 콜백 실행
-    onExit?.();
-  }, [isPlaying, stop, cleanup, mapRef, onExit]);
+    onExitAction?.();
+  }, [isPlaying, stop, cleanup, mapRef, onExitAction]);
 
   // 리플레이 세션이 있을 때만 표시 (진행 중이 아니어도)
   if (!currentSession) {

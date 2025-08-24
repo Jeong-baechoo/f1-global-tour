@@ -9,7 +9,7 @@ import {
   useReplayPlaybackSpeed,
   useReplayCurrentLap,
   useReplayActions 
-} from '../store/useReplayStore';
+} from '@/src/features/replay';
 import { cn } from '@/lib/utils';
 
 interface ReplayControlsProps {

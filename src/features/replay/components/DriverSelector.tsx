@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Eye, EyeOff, Users, UserCheck } from 'lucide-react';
-import { useReplayDrivers, useReplayStore, useReplayActions } from '../store/useReplayStore';
+import { useReplayDrivers, useReplayStore, useReplayActions } from '@/src/features/replay';
 import { cn } from '@/lib/utils';
 
 interface DriverSelectorProps {

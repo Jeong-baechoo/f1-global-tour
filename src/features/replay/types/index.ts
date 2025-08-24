@@ -122,7 +122,7 @@ export interface ReplayFrame {
   drivers: DriverPosition[];
 }
 
-// 재생 제어
+// 재생 제어 인터페이스
 export interface PlaybackControls {
   play: () => void;
   pause: () => void;
@@ -130,6 +130,9 @@ export interface PlaybackControls {
   setSpeed: (speed: number) => void;
   seekTo: (time: number) => void;
   jumpToLap: (lap: number) => void;
+  getCurrentTime: () => number;
+  isPlaying: () => boolean;
+  getSpeed: () => number;
 }
 
 // 트랙 진행률 계산 관련
@@ -196,8 +199,43 @@ export interface ApiResponse<T> {
 export interface ReplaySettings {
   autoPlay: boolean;
   defaultSpeed: number;
-  showTrajectory: boolean; // 드라이버 궤적 표시
-  trajectoryLength: number; // 궤적 길이 (초)
-  cameraFollow: boolean; // 카메라 자동 추적
+  showTrajectory: boolean;
+  trajectoryLength: number;
+  cameraFollow: boolean;
   selectedCamera: 'overview' | 'driver' | 'sector';
+  showLapTimes: boolean;
+  showPositions: boolean;
+  enableSmoothAnimation: boolean;
+}
+
+// 리플레이 엔진 상태
+export interface ReplayEngineState {
+  isInitialized: boolean;
+  isLoading: boolean;
+  hasData: boolean;
+  error: string | null;
+}
+
+// 드라이버 마커 설정
+export interface DriverMarkerConfig {
+  size: number;
+  borderWidth: number;
+  fontSize: number;
+  showNumber: boolean;
+  showName: boolean;
+}
+
+// 서킷 트랙 설정
+export interface CircuitTrackConfig {
+  color: string;
+  width: number;
+  opacity: number;
+  visible: boolean;
+}
+
+// 위치 계산 옵션
+export interface PositionCalculationOptions {
+  useInterpolation: boolean;
+  smoothingFactor: number;
+  accuracyThreshold: number;
 }

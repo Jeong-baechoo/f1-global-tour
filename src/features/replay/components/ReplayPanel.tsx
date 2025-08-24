@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 interface ReplayPanelProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   className?: string;
 }
 
@@ -19,7 +19,7 @@ type PanelTab = 'session' | 'drivers' | 'controls' | 'settings';
 
 export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   isOpen, 
-  onClose,
+  onCloseAction,
   className 
 }) => {
   const [activeTab, setActiveTab] = useState<PanelTab>('session');
@@ -46,12 +46,12 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   const handleStartReplay = useCallback(() => {
     if (activeTab === 'controls') {
       // Controls 패널에 있으면 패널을 닫음
-      onClose();
+      onCloseAction();
     } else {
       // 다른 탭에 있으면 Controls 패널로 이동
       setActiveTab('controls');
     }
-  }, [activeTab, onClose]);
+  }, [activeTab, onCloseAction]);
 
   const tabs = useMemo(() => [
     {
@@ -87,7 +87,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2 className="text-xl font-bold text-white">F1 Race Replay</h2>
           <button
-            onClick={onClose}
+            onClick={onCloseAction}
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
           >
             <X className="w-5 h-5" />
@@ -144,7 +144,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
           <div className="flex-1 overflow-auto">
             <div className="p-4">
               {activeTab === 'session' && (
-                <SessionSelector onSessionSelect={handleSessionSelect} />
+                <SessionSelector onSessionSelectAction={handleSessionSelect} />
               )}
               
               {activeTab === 'drivers' && currentSession && (
@@ -205,7 +205,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
             
             <div className="flex space-x-2">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
               >
                 Close

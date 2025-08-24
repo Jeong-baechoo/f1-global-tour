@@ -34,12 +34,20 @@ src/features/replay/
 │   ├── ReplayPanel.tsx     # 메인 패널 UI
 │   ├── ReplayControls.tsx  # 재생 컨트롤
 │   ├── DriverSelector.tsx  # 드라이버 선택
-│   └── SessionSelector.tsx # 세션 선택
+│   ├── SessionSelector.tsx # 세션 선택
+│   └── ExitReplayButton.tsx # 리플레이 종료 버튼
 ├── services/           # 비즈니스 로직
-│   ├── ReplayDataService.ts      # 데이터 관리
-│   └── ReplayAnimationEngine.ts  # 애니메이션 엔진
+│   ├── ReplayDataService.ts        # 데이터 관리 (API 통합)
+│   ├── ReplayAnimationEngine.ts    # 애니메이션 엔진
+│   ├── CircuitTrackManager.ts      # 서킷 트랙 렌더링
+│   ├── DriverMarkerManager.ts      # 드라이버 마커 관리
+│   ├── TrackPositionService.ts     # 트랙 위치 계산
+│   ├── PositionCalculator.ts       # 위치 보간 계산
+│   ├── MockDataProvider.ts         # 개발용 데이터 제공
+│   └── DataCacheManager.ts         # 데이터 캐싱
 ├── store/             # 상태 관리
-│   └── useReplayStore.ts  # Zustand 스토어
+│   ├── useReplayStore.ts    # 메인 Zustand 스토어
+│   └── replaySelectors.ts   # 스토어 셀렉터
 ├── hooks/             # 커스텀 훅
 │   └── useReplayEngine.ts # 리플레이 엔진 훅
 ├── types/             # TypeScript 타입
@@ -58,23 +66,72 @@ src/features/replay/
 - **Drivers**: 추적할 드라이버 선택  
 - **Controls**: 재생 컨트롤 및 옵션
 
-### ReplayDataService
-데이터 소스와의 통신을 담당하는 서비스 클래스입니다.
+### 서비스 레이어
+
+#### ReplayDataService
+데이터 소스와의 통신을 담당하는 메인 서비스 클래스입니다.
+
+**주요 기능:**
+- OpenF1 API 및 FastF1 API 통합
+- 자동 fallback 시스템 (API → Mock 데이터)
+- 응답 캐싱 및 최적화
+- 에러 핸들링 및 재시도 로직
 
 **주요 메서드:**
-- `getCachedSessions(year, country)`: 세션 목록 조회
+- `getSessions(year, countryName)`: 세션 목록 조회 (다중 API 지원)
 - `getDrivers(sessionKey)`: 드라이버 정보 조회
+- `getLaps(sessionKey, driverNumber, lapNumber)`: 랩 데이터 조회
 - `getFullRaceData(sessionKey)`: 전체 레이스 데이터 조회
-- `getFastF1TelemetryData()`: FastF1 텔레메트리 데이터 조회
+- `getFastF1TelemetryData(year, round, driver)`: FastF1 텔레메트리 조회
+
+#### CircuitTrackManager
+서킷 트랙 렌더링 및 관리를 담당하는 서비스입니다.
+
+**주요 기능:**
+- 서킷별 트랙 좌표 로딩 및 렌더링
+- 트랙 시각화 스타일 관리
+- 카메라 자동 이동 (flyToCircuit)
+- 트랙 가시성 제어
+
+#### DriverMarkerManager  
+드라이버 마커의 생성, 업데이트, 제거를 관리합니다.
+
+**주요 기능:**
+- 드라이버별 마커 생성 및 스타일링
+- 실시간 위치 업데이트
+- 팀 컬러 기반 마커 디자인
+- 마커 애니메이션 및 최적화
+
+#### TrackPositionService
+트랙 좌표와 드라이버 위치 간의 매핑을 처리합니다.
+
+**주요 기능:**
+- 랩 진행률 기반 위치 계산
+- 트랙 좌표 보간 (interpolation)
+- 서킷별 좌표 시스템 지원
+
+#### PositionCalculator
+드라이버 위치의 부드러운 애니메이션을 위한 계산을 담당합니다.
+
+**주요 기능:**
+- 위치 보간 알고리즘 (선형, 베지어 곡선)
+- 애니메이션 프레임 최적화
+- 속도 기반 위치 예측
 
 ### ReplayAnimationEngine
-드라이버 위치 계산 및 애니메이션을 처리하는 엔진입니다.
+전체 애니메이션 시스템을 조율하는 메인 엔진입니다.
 
-**기능:**
-- 랩 데이터를 기반으로 드라이버 위치 계산
-- 서킷 트랙 좌표 매핑
-- 부드러운 애니메이션 처리
-- 재생 속도 제어
+**핵심 기능:**
+- 애니메이션 루프 관리 (RequestAnimationFrame)
+- 재생 상태 제어 (재생/일시정지/속도 조절)
+- 드라이버 마커 및 트랙 동기화
+- 메모리 관리 및 성능 최적화
+
+**주요 메서드:**
+- `startReplay()`: 리플레이 시작
+- `pauseReplay()`: 일시정지
+- `setPlaybackSpeed(speed)`: 재생 속도 조절
+- `seekTo(time)`: 특정 시점으로 이동
 
 ### useReplayStore
 Zustand를 사용한 전역 상태 관리입니다.
@@ -265,18 +322,99 @@ interface ReplayLapData {
 }
 ```
 
-## 🐛 알려진 이슈 및 제한사항
+## 📈 현재 개발 현황 (2025년 8월 기준)
 
-### 현재 제한사항
-1. **서킷 매핑**: 모든 서킷의 정확한 좌표 매핑이 완료되지 않음
-2. **실시간 데이터**: 현재 시즌의 실시간 데이터는 지연될 수 있음
-3. **성능**: 대량의 텔레메트리 데이터 처리 시 성능 이슈 가능
+### ✅ 완료된 기능
+1. **핵심 아키텍처**
+   - 모듈식 서비스 레이어 구조 완성
+   - TypeScript 타입 시스템 구축
+   - Zustand 기반 상태 관리 구현
 
-### 향후 개선 계획
-1. **더 많은 시즌 데이터** 지원
-2. **실시간 라이브 타이밍** 기능 추가
-3. **고급 분석 기능** (타이어 전략, 연료 소모 등)
-4. **VR/AR 지원** 고려
+2. **데이터 처리**
+   - OpenF1 API 통합 완료
+   - FastF1 API 기본 지원
+   - Mock 데이터 시스템 구축
+   - 자동 fallback 메커니즘 구현
+
+3. **UI 컴포넌트**
+   - ReplayPanel 탭 기반 인터페이스
+   - SessionSelector, DriverSelector 구현
+   - ReplayControls 기본 컨트롤러
+   - ExitReplayButton 종료 기능
+
+4. **렌더링 시스템**
+   - CircuitTrackManager 트랙 렌더링
+   - DriverMarkerManager 드라이버 마커
+   - 서킷별 카메라 자동 이동
+   - 트랙 가시성 제어
+
+### 🚧 진행 중인 작업
+1. **애니메이션 엔진**
+   - ReplayAnimationEngine 기본 구조 완성
+   - 위치 계산 알고리즘 개발 중
+   - 부드러운 애니메이션 최적화
+
+2. **성능 최적화**
+   - 메모리 관리 개선
+   - 애니메이션 프레임 최적화
+   - 데이터 캐싱 시스템 강화
+
+3. **사용자 경험**
+   - 리플레이 컨트롤 UX 개선
+   - 로딩 상태 관리
+   - 에러 핸들링 개선
+
+### 📋 다음 단계 계획
+1. **애니메이션 완성** (우선순위: 높음)
+   - 드라이버 위치 실시간 업데이트
+   - 재생 속도 제어 구현
+   - 시점 이동 (seek) 기능
+
+2. **데이터 확장** (우선순위: 중간)
+   - 더 많은 시즌 데이터 지원
+   - 텔레메트리 데이터 시각화
+   - 섹터 타임 표시
+
+3. **고급 기능** (우선순위: 낮음)
+   - 드라이버 궤적 표시
+   - 피트 스톱 애니메이션
+   - 랩 타임 비교 차트
+
+### 🔧 최근 기술적 개선사항
+- **2025.08.24**: 
+  - TypeScript 타입 에러 수정 (replayDataService 중복 선언)
+  - 로컬 예외 처리 최적화 (MockDataProvider, ReplayDataService)
+  - CircuitTrackManager의 불필요한 파라미터 제거
+  - 서비스 레이어 의존성 정리
+
+### 🐛 알려진 이슈 및 제한사항
+
+#### 현재 제한사항
+1. **애니메이션**: 드라이버 위치 애니메이션이 아직 완전히 구현되지 않음
+2. **서킷 매핑**: 일부 서킷의 정확한 좌표 매핑 필요
+3. **성능**: 대량 데이터 처리 시 최적화 여지 존재
+4. **실시간 데이터**: API 응답 지연 시 사용자 경험 개선 필요
+
+#### 기술 부채
+1. **코드 정리**: 일부 서비스 클래스의 책임 분리 필요
+2. **테스트**: 단위 테스트 및 통합 테스트 추가 필요
+3. **문서화**: 내부 API 문서화 보완 필요
+
+### 🎯 향후 개발 로드맵
+#### Phase 1: 기본 리플레이 완성 (2025.09)
+- 드라이버 애니메이션 완전 구현
+- 재생 컨트롤 모든 기능 완성
+- 성능 최적화 1차 완료
+
+#### Phase 2: 데이터 확장 (2025.10)
+- 더 많은 시즌 및 세션 지원
+- 텔레메트리 데이터 시각화
+- 고급 분석 기능 추가
+
+#### Phase 3: 사용자 경험 향상 (2025.11)
+- 실시간 라이브 타이밍
+- VR/AR 지원 검토
+- 모바일 최적화
 
 ## 📄 라이선스 및 크레딧
 
@@ -287,6 +425,6 @@ interface ReplayLapData {
 ---
 
 **개발자**: F1 Global Tour Team  
-**마지막 업데이트**: 2024년 8월  
-**버전**: v1.0.0
+**마지막 업데이트**: 2025년 8월 24일  
+**버전**: v1.2.0 (Replay System)
 

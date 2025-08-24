@@ -205,7 +205,15 @@ export class ReplayDataService {
       ]);
 
       if (!driversResponse.success || !lapsResponse.success) {
-        throw new Error('Failed to fetch complete race data');
+        return {
+          data: { drivers: [], laps: [] },
+          success: false,
+          error: {
+            code: 'FETCH_RACE_DATA_ERROR',
+            message: 'Failed to fetch complete race data',
+            details: 'One or more data sources failed'
+          }
+        };
       }
 
       // 랩 데이터 정렬 및 정리
@@ -491,5 +499,3 @@ export class ReplayDataService {
   }
 }
 
-// 싱글톤 인스턴스
-export const replayDataService = new ReplayDataService();

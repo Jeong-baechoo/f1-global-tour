@@ -1,20 +1,20 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Calendar, MapPin, Clock, ChevronDown } from 'lucide-react';
-import { useReplayActions } from '../store/useReplayStore';
-import { replayDataService } from '../services';
-import { ReplaySessionData } from '../types';
-import { cn } from '@/lib/utils';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Calendar, ChevronDown, Clock, MapPin} from 'lucide-react';
+import {useReplayActions} from '@/src/features/replay';
+import {replayDataService} from '../services';
+import {ReplaySessionData} from '../types';
+import {cn} from '@/lib/utils';
 
 interface SessionSelectorProps {
   className?: string;
-  onSessionSelect?: (session: ReplaySessionData) => void;
+  onSessionSelectAction?: (session: ReplaySessionData) => void;
 }
 
 export const SessionSelector: React.FC<SessionSelectorProps> = ({ 
   className, 
-  onSessionSelect 
+  onSessionSelectAction 
 }) => {
   const [sessions, setSessions] = useState<ReplaySessionData[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(2024);
@@ -82,13 +82,12 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
       console.error('❌ Error loading drivers:', error);
     }
     
-    onSessionSelect?.(session);
-  }, [setCurrentSession, setDrivers, onSessionSelect]);
+    onSessionSelectAction?.(session);
+  }, [setCurrentSession, setDrivers, onSessionSelectAction]);
 
   // 국가 목록 추출
   const availableCountries = useMemo(() => {
-    const countries = [...new Set(sessions.map(s => s.countryName))].sort();
-    return countries;
+      return [...new Set(sessions.map(s => s.countryName))].sort();
   }, [sessions]);
 
   const filteredSessions = useMemo(() => {

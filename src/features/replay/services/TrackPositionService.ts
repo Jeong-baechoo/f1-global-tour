@@ -1,3 +1,5 @@
+// noinspection NonAsciiCharacters
+
 import { CircuitCoordinates, TrackProgress } from '../types';
 
 export class TrackPositionService {

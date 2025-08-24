@@ -83,7 +83,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
       {/* 리플레이 패널 */}
       <ReplayPanel 
         isOpen={isReplayPanelOpen}
-        onClose={() => setIsReplayPanelOpen(false)}
+        onCloseAction={() => setIsReplayPanelOpen(false)}
       />
     </>
   );

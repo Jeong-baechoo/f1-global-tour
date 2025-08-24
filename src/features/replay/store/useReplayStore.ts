@@ -57,7 +57,7 @@ interface ReplayActions {
   updateSettings: (settings: Partial<ReplaySettings>) => void;
 }
 
-interface ReplayStoreState extends ReplayState {
+export interface ReplayStoreState extends ReplayState {
   // 추가 상태
   driverPositions: DriverPosition[];
   settings: ReplaySettings;
@@ -76,7 +76,10 @@ const initialSettings: ReplaySettings = {
   showTrajectory: false,
   trajectoryLength: 30,
   cameraFollow: false,
-  selectedCamera: 'overview'
+  selectedCamera: 'overview',
+  showLapTimes: true,
+  showPositions: true,
+  enableSmoothAnimation: true
 };
 
 const initialState: Omit<ReplayStoreState, 'actions'> = {
@@ -286,12 +289,14 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
   }
 }));
 
-// 편의를 위한 선택자들
+// 편의를 위한 선택자들 - 기본 데이터
 export const useReplaySession = () => useReplayStore(state => state.currentSession);
 export const useReplayDrivers = () => useReplayStore(state => state.drivers);
 export const useReplayLaps = () => useReplayStore(state => state.lapsData);
+export const useReplaySettings = () => useReplayStore(state => state.settings);
+export const useReplayActions = () => useReplayStore(state => state.actions);
 
-// 개별 playback 선택자들 (새로운 객체 생성을 피하기 위해)
+// 성능 최적화된 선택자들 - 역시 새로운 객체 생성 방지
 export const useReplayIsPlaying = () => useReplayStore(state => state.isPlaying);
 export const useReplayIsPaused = () => useReplayStore(state => state.isPaused);
 export const useReplayCurrentTime = () => useReplayStore(state => state.currentTime);
@@ -299,5 +304,33 @@ export const useReplayTotalDuration = () => useReplayStore(state => state.totalD
 export const useReplayPlaybackSpeed = () => useReplayStore(state => state.playbackSpeed);
 export const useReplayCurrentLap = () => useReplayStore(state => state.currentLap);
 export const useReplayDriverPositions = () => useReplayStore(state => state.driverPositions);
-export const useReplaySettings = () => useReplayStore(state => state.settings);
-export const useReplayActions = () => useReplayStore(state => state.actions);
+
+// 계산된 상태 선택자들
+export const useReplayPlaybackStatus = () => useReplayStore(state => ({
+  isPlaying: state.isPlaying,
+  isPaused: state.isPaused,
+  currentTime: state.currentTime,
+  totalDuration: state.totalDuration,
+  progress: state.totalDuration > 0 ? state.currentTime / state.totalDuration : 0
+}));
+
+export const useReplaySelectedDriversInfo = () => useReplayStore(state => {
+  const selectedDrivers = state.drivers.filter(driver => 
+    state.selectedDrivers.includes(driver.driverNumber)
+  );
+  return {
+    count: selectedDrivers.length,
+    drivers: selectedDrivers,
+    isAllSelected: selectedDrivers.length === state.drivers.length,
+    isNoneSelected: selectedDrivers.length === 0
+  };
+});
+
+export const useReplaySessionStatus = () => useReplayStore(state => ({
+  hasSession: !!state.currentSession,
+  hasDrivers: state.drivers.length > 0,
+  hasLapsData: state.lapsData.length > 0,
+  isReady: !!(state.currentSession && state.drivers.length > 0 && state.lapsData.length > 0),
+  isLoading: state.isLoading,
+  error: state.error
+}));
