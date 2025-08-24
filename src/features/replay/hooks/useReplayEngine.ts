@@ -27,8 +27,10 @@ export const useReplayEngine = () => {
   useEffect(() => {
     if (map && !engineRef.current) {
       engineRef.current = new ReplayAnimationEngine(map);
-      
-      // 콜백 설정
+    }
+    
+    // 엔진이 있으면 항상 콜백 재설정 (cleanup 후에도 동작하도록)
+    if (engineRef.current) {
       engineRef.current.setOnTimeUpdate((time) => {
         setCurrentTime(time);
       });
@@ -38,7 +40,24 @@ export const useReplayEngine = () => {
       });
     }
 
+    // 전역 cleanup 이벤트 리스너 추가
+    const handleCleanup = () => {
+      if (engineRef.current) {
+        // 엔진 데이터만 정리하고 인스턴스는 유지 (재사용 가능)
+        engineRef.current.cleanup();
+        // destroy()와 null 설정은 하지 않음 - 엔진을 재사용할 수 있도록 유지
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('replayEngineCleanup', handleCleanup);
+    }
+
     return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('replayEngineCleanup', handleCleanup);
+      }
+      
       if (engineRef.current) {
         engineRef.current.destroy();
         engineRef.current = null;
@@ -48,8 +67,11 @@ export const useReplayEngine = () => {
 
   // 세션 로드
   const loadSession = useCallback(async (session: ReplaySessionData): Promise<boolean> => {
+    // 엔진이 초기화될 때까지 잠시 기다림
     if (!engineRef.current) {
-      console.error('Animation engine not initialized');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Animation engine not ready yet, skipping session load');
+      }
       return false;
     }
 
@@ -92,15 +114,12 @@ export const useReplayEngine = () => {
   // 재생 상태 동기화
   useEffect(() => {
     if (!engineRef.current) {
-      console.log('🎬 Engine not ready for playback control');
       return;
     }
 
     if (isPlaying && !engineRef.current.isCurrentlyPlaying()) {
-      console.log('🎬 Engine: Starting playback...');
       engineRef.current.play();
     } else if (!isPlaying && engineRef.current.isCurrentlyPlaying()) {
-      console.log('🎬 Engine: Pausing playback...');
       engineRef.current.pause();
     }
   }, [isPlaying]);
@@ -129,13 +148,21 @@ export const useReplayEngine = () => {
     // TODO: 개별 마커 표시/숨기기 구현 필요
   }, [selectedDrivers]);
 
-  // 현재 세션이 변경되면 로드
+  // 현재 세션이 변경되면 로드 (엔진이 준비된 후에만)
   useEffect(() => {
-    if (currentSession) {
+    if (currentSession && engineRef.current) {
       console.log('🎬 Loading session:', currentSession.sessionName);
       loadSession(currentSession);
     }
-  }, [currentSession, loadSession]);
+  }, [currentSession, loadSession, map]); // map을 dependency에 추가하여 맵 로드 후 재시도
+
+  // 데이터 정리를 위한 cleanup 함수 (엔진 인스턴스는 유지)
+  const cleanup = useCallback(() => {
+    if (engineRef.current) {
+      engineRef.current.cleanup();
+      // 엔진 인스턴스는 유지하여 재사용 가능하도록 함
+    }
+  }, []);
 
   return {
     loadSession,
@@ -144,6 +171,7 @@ export const useReplayEngine = () => {
     stop,
     setSpeed,
     seekTo,
+    cleanup,
     isEngineReady: !!engineRef.current,
     engine: engineRef.current
   };

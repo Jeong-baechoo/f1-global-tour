@@ -13,6 +13,7 @@ import { getText } from '@/utils/i18n';
 import type { PanelData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
 import { UI_TIMING } from '@/src/shared/constants';
+import { ExitReplayButton } from '@/src/features/replay/components/ExitReplayButton';
 
 // Dynamic imports for better code splitting
 const Map = dynamic(
@@ -445,6 +446,9 @@ export default function Home() {
         }}
         setIsTrackAnimating={setIsTrackAnimating}
       />
+
+      {/* 리플레이 나가기 버튼 */}
+      <ExitReplayButton mapRef={mapRef} />
 
       {/* F1 로고 - 모바일 */}
       <div className="absolute top-2 left-4 z-10 sm:hidden">

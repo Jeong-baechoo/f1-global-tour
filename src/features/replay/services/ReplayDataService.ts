@@ -6,9 +6,11 @@ import {
   ReplaySessionData,
   ReplayDriverData,
   ReplayLapData,
-  ApiResponse
+  ApiResponse,
+  FastF1Data,
+  FastF1TelemetryPoint
 } from '../types';
-import { mockSessions, mockDrivers, mockLaps, shouldForceMockData } from '../data/mockData';
+import { mockSessions, mockDrivers, mockLaps, checkShouldForceMockData } from '../data/mockData';
 
 export class ReplayDataService {
   private fastF1BaseUrl = 'http://localhost:8000';
@@ -16,7 +18,7 @@ export class ReplayDataService {
 
   async getSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
     // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
-    if (shouldForceMockData()) {
+    if (checkShouldForceMockData()) {
       return this.getMockSessions(year, countryName);
     }
 
@@ -84,13 +86,13 @@ export class ReplayDataService {
 
   async getDrivers(sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
     // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
-    if (shouldForceMockData()) {
+    if (checkShouldForceMockData()) {
       return this.getMockDrivers(sessionKey);
     }
 
     try {
       console.log('Attempting to fetch drivers from OpenF1 API for session:', sessionKey);
-      const response = await axios.get(`${this.baseUrl}/drivers?session_key=${sessionKey}`, {
+      const response = await axios.get(`${this.openF1BaseUrl}/drivers?session_key=${sessionKey}`, {
         timeout: 10000,
         headers: {
           'Accept': 'application/json',
@@ -128,7 +130,7 @@ export class ReplayDataService {
     lapNumber?: number
   ): Promise<ApiResponse<ReplayLapData[]>> {
     // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
-    if (shouldForceMockData()) {
+    if (checkShouldForceMockData()) {
       return this.getMockLaps(sessionKey, driverNumber, lapNumber);
     }
 
@@ -145,7 +147,7 @@ export class ReplayDataService {
       }
 
       console.log('Attempting to fetch laps from OpenF1 API for session:', sessionKey);
-      const response = await axios.get(`${this.baseUrl}/laps?${params.toString()}`, {
+      const response = await axios.get(`${this.openF1BaseUrl}/laps?${params.toString()}`, {
         timeout: 10000,
         headers: {
           'Accept': 'application/json',
@@ -367,7 +369,7 @@ export class ReplayDataService {
   }
 
   // FastF1 API 지원 메서드들
-  async getFastF1TelemetryData(year: number, round: number, driverNumber: number): Promise<ApiResponse<any>> {
+  async getFastF1TelemetryData(year: number, round: number, driverNumber: number): Promise<ApiResponse<FastF1Data | null>> {
     try {
       console.log(`Fetching FastF1 telemetry for ${year}/${round}/${driverNumber}... (This may take 1-2 minutes for first load)`);
       const response = await axios.get(`${this.fastF1BaseUrl}/mapbox/${year}/${round}/${driverNumber}`, {
@@ -387,16 +389,19 @@ export class ReplayDataService {
       return {
         data: null,
         success: false,
-        error: { message: 'Failed to fetch FastF1 telemetry data' }
+        error: { 
+          code: 'FASTF1_FETCH_ERROR',
+          message: 'Failed to fetch FastF1 telemetry data' 
+        }
       };
     }
   }
 
   // FastF1 텔레메트리에서 리플레이용 데이터 변환
-  convertFastF1ToReplayData(fastF1Data: any): {
+  convertFastF1ToReplayData(fastF1Data: FastF1Data): {
     drivers: ReplayDriverData[],
     laps: ReplayLapData[],
-    telemetryPoints: any[]
+    telemetryPoints: FastF1TelemetryPoint[]
   } {
     if (!fastF1Data) {
       return { drivers: [], laps: [], telemetryPoints: [] };
@@ -424,7 +429,7 @@ export class ReplayDataService {
     };
   }
 
-  private generateLapsFromTelemetry(driverNumber: number, telemetryPoints: any[]): ReplayLapData[] {
+  private generateLapsFromTelemetry(driverNumber: number, telemetryPoints: FastF1TelemetryPoint[]): ReplayLapData[] {
     if (!telemetryPoints.length) return [];
 
     const laps: ReplayLapData[] = [];

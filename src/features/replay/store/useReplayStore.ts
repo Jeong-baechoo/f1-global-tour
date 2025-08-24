@@ -50,6 +50,9 @@ interface ReplayActions {
   // 초기화
   reset: () => void;
   
+  // 완전한 정리 (엔진 cleanup 포함)
+  cleanup: () => void;
+  
   // 설정
   updateSettings: (settings: Partial<ReplaySettings>) => void;
 }
@@ -158,17 +161,14 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
     
     // 재생 제어
     play: () => {
-      console.log('🎮 Store: play() called');
       set({ isPlaying: true, isPaused: false });
     },
     
     pause: () => {
-      console.log('🎮 Store: pause() called');
       set({ isPlaying: false, isPaused: true });
     },
     
     stop: () => {
-      console.log('🎮 Store: stop() called');
       set({ 
         isPlaying: false, 
         isPaused: false, 
@@ -260,6 +260,20 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
         ...initialState,
         currentSession: get().currentSession, // 세션은 유지
         settings: get().settings // 설정은 유지
+      });
+    },
+    
+    // 완전한 정리 (엔진 cleanup 포함)
+    cleanup: () => {
+      // 전역 cleanup 이벤트 발송하여 엔진 정리 요청
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('replayEngineCleanup'));
+      }
+      
+      // 스토어 완전 초기화
+      set({
+        ...initialState,
+        currentSession: null // 세션도 초기화
       });
     },
     

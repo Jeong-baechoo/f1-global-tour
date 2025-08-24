@@ -5,6 +5,8 @@ import {DriverPosition, ReplayDriverData, ReplayLapData, ReplaySessionData} from
 import { clearAllTrackState } from '@/src/shared/utils/map/trackDrawing';
 import { getTrackCoordinates } from '@/src/shared/utils/data/trackDataLoader';
 import { getCircuitColor } from '@/src/shared/utils/map/circuitColors';
+import { getCircuitCameraConfig } from '@/src/shared/utils/map/camera';
+import circuitsData from '@/data/circuits.json';
 
 export class ReplayAnimationEngine {
   private map: mapboxgl.Map | null = null;
@@ -37,20 +39,19 @@ export class ReplayAnimationEngine {
 
   async loadReplayData(session: ReplaySessionData): Promise<boolean> {
     try {
-      console.log('🏁 Loading replay data for session:', session.sessionName);
+      // 기존 데이터가 있다면 먼저 정리
+      this.cleanupPreviousData();
+      
       
       // FastF1 텔레메트리 데이터 먼저 시도
       try {
         const fastF1Response = await replayDataService.getFastF1TelemetryData(2024, 1, 1);
-        if (fastF1Response.success) {
-          console.log('✅ Using FastF1 telemetry data');
+        if (fastF1Response.success && fastF1Response.data) {
           const convertedData = replayDataService.convertFastF1ToReplayData(fastF1Response.data);
           
           this.driversData = convertedData.drivers;
           this.lapsData = convertedData.laps;
           this.telemetryData = convertedData.telemetryPoints; // 텔레메트리 데이터 저장
-          
-          console.log(`📊 Loaded ${this.driversData.length} drivers, ${this.lapsData.length} laps, ${this.telemetryData.length} telemetry points`);
           
           // 서킷 ID 매핑
           this.circuitId = this.mapCircuitName(session.circuitShortName);
@@ -146,11 +147,12 @@ export class ReplayAnimationEngine {
 
   private drawCircuitTrackImmediately(): void {
     if (!this.map || !this.circuitId) {
-      console.warn('Map or circuit ID not available for track drawing');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Map or circuit ID not available for track drawing');
+      }
       return;
     }
 
-    console.log(`🛣️ Drawing track immediately for circuit: ${this.circuitId}`);
 
     try {
       // 기존 트랙 제거 (있다면)
@@ -162,22 +164,26 @@ export class ReplayAnimationEngine {
       // 트랙 데이터를 비동기로 로드하고 즉시 그리기
       getTrackCoordinates(this.circuitId).then(trackData => {
         if (!trackData || !this.map) {
-          console.warn(`No track data found for circuit: ${this.circuitId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`No track data found for circuit: ${this.circuitId}`);
+          }
           return;
         }
 
-        console.log(`📍 Track data loaded for ${this.circuitId}: ${trackData.length} coordinates`);
 
         // 줌 레벨에 관계없이 트랙을 항상 그리기 (리플레이 모드에서는 항상 표시)
         this.addTrackToMap(trackData);
-        console.log(`✅ Track immediately drawn for ${this.circuitId}`);
 
       }).catch(error => {
-        console.error(`❌ Error loading track data for ${this.circuitId}:`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`❌ Error loading track data for ${this.circuitId}:`, error);
+        }
       });
 
     } catch (error) {
-      console.error(`❌ Error drawing track for ${this.circuitId}:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`❌ Error drawing track for ${this.circuitId}:`, error);
+      }
     }
   }
 
@@ -194,6 +200,14 @@ export class ReplayAnimationEngine {
           coordinates: trackCoordinates
         }
       };
+
+      // 기존 레이어와 소스 제거 (있다면)
+      if (this.map.getLayer(this.trackLayerId)) {
+        this.map.removeLayer(this.trackLayerId);
+      }
+      if (this.map.getSource(this.trackLayerId)) {
+        this.map.removeSource(this.trackLayerId);
+      }
 
       // 소스 추가
       this.map.addSource(this.trackLayerId, {
@@ -225,10 +239,11 @@ export class ReplayAnimationEngine {
         }
       });
 
-      console.log(`🎨 Track layer added: ${this.trackLayerId} with color ${getCircuitColor(this.circuitId)}`);
 
     } catch (error) {
-      console.error(`❌ Error adding track to map:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`❌ Error adding track to map:`, error);
+      }
     }
   }
 
@@ -239,9 +254,10 @@ export class ReplayAnimationEngine {
     if (this.trackLayerId && this.map.getLayer(this.trackLayerId)) {
       try {
         this.map.removeLayer(this.trackLayerId);
-        console.log(`🧹 Removed existing track layer: ${this.trackLayerId}`);
       } catch (error) {
-        console.warn(`Failed to remove track layer ${this.trackLayerId}:`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Failed to remove track layer ${this.trackLayerId}:`, error);
+        }
       }
     }
 
@@ -249,9 +265,10 @@ export class ReplayAnimationEngine {
     if (this.trackLayerId && this.map.getSource(this.trackLayerId)) {
       try {
         this.map.removeSource(this.trackLayerId);
-        console.log(`🧹 Removed existing track source: ${this.trackLayerId}`);
       } catch (error) {
-        console.warn(`Failed to remove track source ${this.trackLayerId}:`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Failed to remove track source ${this.trackLayerId}:`, error);
+        }
       }
     }
 
@@ -283,51 +300,27 @@ export class ReplayAnimationEngine {
         marker.setLngLat([startPosition[0], startPosition[1]]);
         if (this.map) {
           marker.addTo(this.map);
-          console.log(`✅ Marker created for driver ${driver.driverNumber} (${driver.nameAcronym}) at START LINE [${startPosition[0].toFixed(6)}, ${startPosition[1].toFixed(6)}]`);
           
           // DOM에 실제로 추가되었는지 확인
           setTimeout(() => {
             const addedElement = document.getElementById(`driver-marker-${driver.driverNumber}`);
             if (addedElement) {
-              console.log(`✅ Marker element found in DOM for driver ${driver.driverNumber}`);
-            } else {
+            } else if (process.env.NODE_ENV === 'development') {
               console.error(`❌ Marker element NOT found in DOM for driver ${driver.driverNumber}`);
             }
           }, 100);
         }
-      } else {
+      } else if (process.env.NODE_ENV === 'development') {
         console.error(`❌ Failed to get position for circuit ${this.circuitId} at start line`);
       }
 
       this.driverMarkers.set(driver.driverNumber, marker);
     });
     
-    console.log(`🏎️ Total markers created: ${this.driverMarkers.size}`);
     
-    // Monaco 트랙으로 카메라 이동
-    if (this.map && this.circuitId === 'monaco') {
-      const monacoCenter: [number, number] = [7.4255, 43.7384]; // Monaco 중심 좌표
-      console.log('🎯 Moving camera to Monaco circuit...');
-      this.map.flyTo({
-        center: monacoCenter,
-        zoom: 16, // 줌 레벨을 높여서 마커들이 더 잘 보이도록
-        duration: 2000
-      });
-      
-      // 카메라 이동 완료 후 마커 확인
-      this.map.once('moveend', () => {
-        console.log('🎯 Camera move completed. Current view:', {
-          center: this.map?.getCenter(),
-          zoom: this.map?.getZoom(),
-          bounds: this.map?.getBounds()
-        });
-        
-        // 모든 마커가 현재 뷰에 있는지 확인
-        this.driverMarkers.forEach((marker, driverNumber) => {
-          const lngLat = marker.getLngLat();
-          console.log(`📍 Driver ${driverNumber} marker position:`, lngLat);
-        });
-      });
+    // 서킷으로 카메라 이동
+    if (this.map && this.circuitId) {
+      this.flyToCircuit();
     }
   }
 
@@ -360,32 +353,25 @@ export class ReplayAnimationEngine {
       cursor: pointer;
       position: absolute;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       user-select: none;
       pointer-events: auto;
-      transition: box-shadow 0.2s ease, border-width 0.2s ease;
+      transition: border-width 0.2s ease;
     `;
     
     element.textContent = driver.driverNumber.toString();
     
-    // 디버깅을 위한 콘솔 로그
-    console.log(`🎨 Created marker element for driver ${driver.driverNumber} with color #${driver.teamColor}`);
     
-    // 호버 효과 - transform 대신 box-shadow와 border 변경으로 시각적 효과
+    // 호버 효과 - border 변경으로 시각적 효과
     element.addEventListener('mouseenter', () => {
-      element.style.boxShadow = '0 6px 20px rgba(0,0,0,0.7)';
       element.style.borderWidth = '6px';
-      console.log(`🎯 Hover on driver ${driver.driverNumber} marker`);
     });
     
     element.addEventListener('mouseleave', () => {
-      element.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
       element.style.borderWidth = '4px';
     });
 
     // 클릭 이벤트 추가
     element.addEventListener('click', () => {
-      console.log(`🖱️ Clicked driver ${driver.driverNumber} marker`);
     });
 
     return element;
@@ -495,7 +481,6 @@ export class ReplayAnimationEngine {
       if (currentTime >= lap.lapStartTime && currentTime <= lapEndTime) {
         currentLap = lap;
         lapProgress = (currentTime - lap.lapStartTime) / lap.lapDuration;
-        console.log(`🏁 Driver ${driverNumber}: Lap ${lap.lapNumber}, Progress ${(lapProgress * 100).toFixed(1)}%, Time ${currentTime.toFixed(1)}s`);
         break;
       }
     }
@@ -598,7 +583,6 @@ export class ReplayAnimationEngine {
 
   // 일시정지 시 마커 안정화
   private stabilizeDriverMarkers(): void {
-    console.log(`🔧 Stabilizing ${this.driverMarkers.size} driver markers at time ${this.currentTime.toFixed(2)}s`);
     
     this.driverMarkers.forEach((marker, driverNumber) => {
       // 현재 위치를 다시 설정하여 마커를 안정화
@@ -608,11 +592,10 @@ export class ReplayAnimationEngine {
         // 유효한 좌표인 경우에만 위치 재설정
         if (!isNaN(lng) && !isNaN(lat)) {
           marker.setLngLat([lng, lat]);
-          console.log(`🔧 Stabilized driver ${driverNumber} at [${lng.toFixed(6)}, ${lat.toFixed(6)}]`);
-        } else {
+        } else if (process.env.NODE_ENV === 'development') {
           console.warn(`⚠️ Invalid coordinates for driver ${driverNumber}: [${lng}, ${lat}]`);
         }
-      } else {
+      } else if (process.env.NODE_ENV === 'development') {
         console.warn(`⚠️ Could not calculate position for driver ${driverNumber}`);
       }
     });
@@ -680,7 +663,6 @@ export class ReplayAnimationEngine {
       }
     });
     
-    console.log(`🔍 Zoom: ${currentZoom.toFixed(1)}, Marker Size: ${markerSize}px`);
   }
 
   // 팀 컬러의 밝기에 따른 최적 텍스트 색상 결정
@@ -696,6 +678,42 @@ export class ReplayAnimationEngine {
     
     // 밝기가 0.5 이상이면 어두운 텍스트, 미만이면 밝은 텍스트
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  }
+
+  // 서킷으로 카메라 이동
+  private flyToCircuit(): void {
+    if (!this.map || !this.circuitId) return;
+
+    // 서킷 정보 찾기
+    const circuit = circuitsData.circuits.find(c => c.id === this.circuitId);
+    if (!circuit) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Circuit not found: ${this.circuitId}`);
+      }
+      return;
+    }
+
+    // 카메라 설정 가져오기
+    const cameraConfig = getCircuitCameraConfig(this.circuitId);
+    
+    
+    this.map.flyTo({
+      center: [circuit.location.lng, circuit.location.lat],
+      zoom: cameraConfig.zoom,
+      pitch: cameraConfig.pitch,
+      bearing: cameraConfig.bearing,
+      duration: 2000
+    });
+    
+    // 카메라 이동 완료 후 마커 확인
+    this.map.once('moveend', () => {
+      
+      // 모든 마커가 현재 뷰에 있는지 확인
+      this.driverMarkers.forEach((marker) => {
+        // 마커 위치 확인 (현재는 로깅하지 않음)
+        marker.getLngLat();
+      });
+    });
   }
 
   // 현재 상태 조회
@@ -716,16 +734,16 @@ export class ReplayAnimationEngine {
     if (!this.telemetryData.length) return null;
 
     // 현재 시간에 가장 가까운 텔레메트리 포인트 찾기
-    const startTime = this.telemetryData[0].time;
-    const adjustedTime = startTime + currentTime;
+    const startTime: number = this.telemetryData[0].time;
+    const adjustedTime: number = startTime + currentTime;
 
     // 이진 검색으로 가장 가까운 포인트 찾기
-    let left = 0;
-    let right = this.telemetryData.length - 1;
+    let left: number = 0;
+    let right: number = this.telemetryData.length - 1;
     let closestPoint = this.telemetryData[0];
 
     while (left <= right) {
-      const mid = Math.floor((left + right) / 2);
+      const mid: number = Math.floor((left + right) / 2);
       const point = this.telemetryData[mid];
       
       if (Math.abs(point.time - adjustedTime) < Math.abs(closestPoint.time - adjustedTime)) {
@@ -740,18 +758,16 @@ export class ReplayAnimationEngine {
     }
 
     // 실제 위도/경도 좌표 사용 (안전성 체크)
-    const longitude = closestPoint.longitude ?? 0;
-    const latitude = closestPoint.latitude ?? 0;
+    const longitude: number = closestPoint.longitude ?? 0;
+    const latitude: number = closestPoint.latitude ?? 0;
     const coordinates: [number, number] = [longitude, latitude];
     
     // 트랙 진행률 계산 (distance 기반)
-    const totalDistance = Math.max(...this.telemetryData.map(p => p.distance || 0));
-    const lapProgress = Math.min(1, (closestPoint.distance || 0) / totalDistance);
+    const totalDistance: number = Math.max(...this.telemetryData.map(p => p.distance || 0));
+    const lapProgress: number = Math.min(1, (closestPoint.distance || 0) / totalDistance);
 
-    // 좌표가 유효한 경우에만 로그 출력
-    if (longitude !== 0 && latitude !== 0) {
-      console.log(`🎯 Driver ${driverNumber}: FastF1 position [${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}] at ${currentTime.toFixed(1)}s, progress ${(lapProgress * 100).toFixed(1)}%`);
-    } else {
+    // 좌표가 유효하지 않은 경우 경고 (개발 중에만)
+    if (longitude === 0 && latitude === 0 && process.env.NODE_ENV === 'development') {
       console.warn(`⚠️ Driver ${driverNumber}: Invalid coordinates at ${currentTime.toFixed(1)}s`);
     }
 
@@ -763,5 +779,91 @@ export class ReplayAnimationEngine {
       lapTime: 90, // 평균 랩 타임
       position: 1 // 단일 드라이버이므로 1위
     };
+  }
+
+  /**
+   * 이전 리플레이 데이터 정리 (새 세션 로드 시 사용)
+   */
+  private cleanupPreviousData(): void {
+    // 1. 애니메이션 정지
+    if (this.isPlaying) {
+      this.stop();
+    }
+    
+    // 2. 기존 드라이버 마커들 제거
+    this.driverMarkers.forEach((marker) => {
+      marker.remove();
+    });
+    this.driverMarkers.clear();
+    
+    // 3. 기존 트랙 레이어 제거 (있다면)
+    if (this.map && this.trackLayerId) {
+      try {
+        if (this.map.getLayer(this.trackLayerId)) {
+          this.map.removeLayer(this.trackLayerId);
+        }
+        if (this.map.getSource(this.trackLayerId)) {
+          this.map.removeSource(this.trackLayerId);
+        }
+      } catch {
+        // 레이어나 소스가 없을 수 있으므로 무시
+      }
+    }
+    
+    // 4. 데이터 초기화
+    this.driversData = [];
+    this.lapsData = [];
+    this.telemetryData = [];
+    this.currentTime = 0;
+    this.startTime = 0;
+    this.isPlaying = false;
+  }
+
+  /**
+   * 리플레이 엔진 완전 정리 (Exit 시 사용)
+   */
+  cleanup(): void {
+    // 1. 애니메이션 정지
+    this.stop();
+    
+    // 2. 모든 드라이버 마커 제거
+    this.driverMarkers.forEach((marker) => {
+      marker.remove();
+    });
+    this.driverMarkers.clear();
+    
+    // 3. 트랙 레이어 제거 (만약 있다면)
+    if (this.map && this.trackLayerId) {
+      try {
+        const map = this.map;
+        if (map.getLayer(this.trackLayerId)) {
+          map.removeLayer(this.trackLayerId);
+        }
+        if (map.getSource(this.trackLayerId)) {
+          map.removeSource(this.trackLayerId);
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('트랙 레이어 제거 중 오류:', error);
+        }
+      }
+    }
+    
+    // 4. 데이터 초기화
+    this.driversData = [];
+    this.lapsData = [];
+    this.telemetryData = [];
+    this.circuitId = '';
+    this.trackLayerId = '';
+    
+    // 5. 상태 초기화
+    this.isPlaying = false;
+    this.currentTime = 0;
+    this.startTime = 0;
+    this.playbackSpeed = 1;
+    
+    // 6. 콜백 함수는 유지 (재사용을 위해 초기화하지 않음)
+    // this.onTimeUpdate = undefined;
+    // this.onDriverPositionsUpdate = undefined;
   }
 }

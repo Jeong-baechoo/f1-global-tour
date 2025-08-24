@@ -7,7 +7,6 @@ import { DriverSelector } from './DriverSelector';
 import { SessionSelector } from './SessionSelector';
 import { useReplayStore } from '@/src/features/replay';
 import { useReplayEngine } from '@/src/features/replay';
-import { ReplaySessionData } from '../types';
 import { cn } from '@/lib/utils';
 
 interface ReplayPanelProps {
@@ -18,7 +17,7 @@ interface ReplayPanelProps {
 
 type PanelTab = 'session' | 'drivers' | 'controls' | 'settings';
 
-export const ReplayPanel: React.FC<ReplayPanelProps> = ({ 
+export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   isOpen, 
   onClose,
   className 
@@ -27,16 +26,20 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   const currentSession = useReplayStore(state => state.currentSession);
   
   // ReplayEngine 훅 사용
-  const { isEngineReady } = useReplayEngine();
+  useReplayEngine();
 
-  // 세션이 선택되면 자동으로 드라이버 탭으로 전환
+  // 세션 상태에 따른 탭 전환
   useEffect(() => {
     if (currentSession) {
+      // 세션이 선택되면 자동으로 드라이버 탭으로 전환
       setActiveTab('drivers');
+    } else {
+      // 세션이 없으면 session 탭으로 돌아가기
+      setActiveTab('session');
     }
   }, [currentSession]);
 
-  const handleSessionSelect = useCallback((_session: ReplaySessionData) => {
+  const handleSessionSelect = useCallback(() => {
     // useEffect에서 자동으로 탭 전환되므로 여기서는 추가 로직 없음
   }, []);
 

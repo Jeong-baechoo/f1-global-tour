@@ -71,7 +71,8 @@
       "Bash(diff:*)",
       "Bash(gh pr create:*)",
       "Bash(gh pr merge:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "WebFetch(domain:api.openf1.org)"
     ],
     "deny": []
   }

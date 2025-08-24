@@ -29,10 +29,12 @@ export class TrackEventBus {
     const sectorInfoHandler: EventHandler = (event) => {
       const { enabled } = event.detail;
       SectorTrackManager.toggleSectorColors(trackId, enabled, map);
-      // Also toggle sector markers
-      window.dispatchEvent(new CustomEvent('toggleSectorMarkers', { 
-        detail: { enabled } 
-      }));
+      // Also toggle sector markers (클라이언트에서만 실행)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('toggleSectorMarkers', { 
+          detail: { enabled } 
+        }));
+      }
     };
     
     // 3D Elevation toggle handler
@@ -53,11 +55,13 @@ export class TrackEventBus {
     handlers.set('toggleElevation', elevationHandler);
     this.eventHandlers.set(trackId, handlers);
 
-    // Register global event listeners
-    window.addEventListener('toggleDRSZones', drsZonesHandler as EventListener);
-    window.addEventListener('toggleDRSAnimations', drsAnimationsHandler as EventListener);
-    window.addEventListener('toggleSectorInfo', sectorInfoHandler as EventListener);
-    window.addEventListener('toggleElevation', elevationHandler as EventListener);
+    // Register global event listeners (클라이언트에서만 실행)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('toggleDRSZones', drsZonesHandler as EventListener);
+      window.addEventListener('toggleDRSAnimations', drsAnimationsHandler as EventListener);
+      window.addEventListener('toggleSectorInfo', sectorInfoHandler as EventListener);
+      window.addEventListener('toggleElevation', elevationHandler as EventListener);
+    }
   }
 
 
@@ -66,12 +70,14 @@ export class TrackEventBus {
    * Clean up all event handlers
    */
   static cleanup(): void {
-    // Remove all event listeners
-    this.eventHandlers.forEach((handlers) => {
-      handlers.forEach((handler, eventName) => {
-        window.removeEventListener(eventName, handler as EventListener);
+    // Remove all event listeners (클라이언트에서만 실행)
+    if (typeof window !== 'undefined') {
+      this.eventHandlers.forEach((handlers) => {
+        handlers.forEach((handler, eventName) => {
+          window.removeEventListener(eventName, handler as EventListener);
+        });
       });
-    });
+    }
     
     // Clear the map
     this.eventHandlers.clear();

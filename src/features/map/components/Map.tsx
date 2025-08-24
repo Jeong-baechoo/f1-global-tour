@@ -169,6 +169,9 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
         resetView();
       }
     },
+    getMapboxMap: () => {
+      return map || null;
+    },
   }), [map, flyToLocation, flyToCircuit, flyToTeam, getCurrentBounds, getCurrentZoom, getCurrentCenter, resetView]);
 
   return (

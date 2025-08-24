@@ -30,6 +30,16 @@ export const mockSessions: ReplaySessionData[] = [
     year: 2024,
     dateStart: '2024-05-25T10:30:00Z',
     dateEnd: '2024-05-25T11:30:00Z'
+  },
+  {
+    sessionKey: 9574,
+    sessionName: 'Race',
+    sessionType: 'Race',
+    circuitShortName: 'Spa-Francorchamps',
+    countryName: 'Belgium',
+    year: 2024,
+    dateStart: '2024-07-28T13:00:00Z',
+    dateEnd: '2024-07-28T15:00:00Z'
   }
 ];
 
@@ -164,8 +174,8 @@ export const mockDrivers: ReplayDriverData[] = [
     driverNumber: 77,
     name: 'Valtteri Bottas',
     nameAcronym: 'BOT',
-    teamName: 'Alfa Romeo',
-    teamColor: 'C92D4B',
+    teamName: 'Kick Sauber',
+    teamColor: '52E252',
     broadcastName: 'V BOTTAS',
     countryCode: 'FIN'
   },
@@ -173,8 +183,8 @@ export const mockDrivers: ReplayDriverData[] = [
     driverNumber: 24,
     name: 'Zhou Guanyu',
     nameAcronym: 'ZHO',
-    teamName: 'Alfa Romeo',
-    teamColor: 'C92D4B',
+    teamName: 'Kick Sauber',
+    teamColor: '52E252',
     broadcastName: 'G ZHOU',
     countryCode: 'CHN'
   },
@@ -200,8 +210,8 @@ export const mockDrivers: ReplayDriverData[] = [
     driverNumber: 3,
     name: 'Daniel Ricciardo',
     nameAcronym: 'RIC',
-    teamName: 'AlphaTauri',
-    teamColor: '4E7C9B',
+    teamName: 'RB',
+    teamColor: '6692FF',
     broadcastName: 'D RICCIARDO',
     countryCode: 'AUS'
   },
@@ -209,8 +219,8 @@ export const mockDrivers: ReplayDriverData[] = [
     driverNumber: 22,
     name: 'Yuki Tsunoda',
     nameAcronym: 'TSU',
-    teamName: 'AlphaTauri',
-    teamColor: '4E7C9B',
+    teamName: 'RB',
+    teamColor: '6692FF',
     broadcastName: 'Y TSUNODA',
     countryCode: 'JPN'
   }
@@ -733,16 +743,538 @@ export const mockLaps: ReplayLapData[] = [
     lapStartTime: 174.023,
     sectorTimes: [28.012, 29.123, 28.099],
     isPitOutLap: false
+  },
+
+  // === 2024년 벨기에 GP (스파 서킷) 실제 랩 데이터 ===
+  
+  // Charles Leclerc (Ferrari) - 스파 랩 데이터
+  {
+    driverNumber: 16,
+    lapNumber: 1,
+    lapDuration: 110.240,
+    lapStartTime: 0,
+    sectorTimes: [36.745, 44.382, 29.113],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 16,
+    lapNumber: 2,
+    lapDuration: 110.519,
+    lapStartTime: 110.240,
+    sectorTimes: [36.892, 44.515, 29.112],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 16,
+    lapNumber: 3,
+    lapDuration: 109.494,
+    lapStartTime: 220.759,
+    sectorTimes: [36.234, 44.182, 29.078],
+    isPitOutLap: false
+  },
+
+  // Lewis Hamilton (Mercedes) - 스파 랩 데이터
+  {
+    driverNumber: 44,
+    lapNumber: 1,
+    lapDuration: 109.849,
+    lapStartTime: 0,
+    sectorTimes: [36.523, 44.198, 29.128],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 44,
+    lapNumber: 2,
+    lapDuration: 109.109,
+    lapStartTime: 109.849,
+    sectorTimes: [36.187, 43.876, 29.046],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 44,
+    lapNumber: 3,
+    lapDuration: 109.376,
+    lapStartTime: 218.958,
+    sectorTimes: [36.298, 43.992, 29.086],
+    isPitOutLap: false
+  },
+
+  // Sergio Perez (Red Bull Racing) - 스파 랩 데이터
+  {
+    driverNumber: 11,
+    lapNumber: 1,
+    lapDuration: 110.240,
+    lapStartTime: 0,
+    sectorTimes: [36.756, 44.371, 29.113],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 11,
+    lapNumber: 2,
+    lapDuration: 109.983,
+    lapStartTime: 110.240,
+    sectorTimes: [36.445, 44.456, 29.082],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 11,
+    lapNumber: 3,
+    lapDuration: 109.896,
+    lapStartTime: 220.223,
+    sectorTimes: [36.387, 44.423, 29.086],
+    isPitOutLap: false
+  },
+
+  // Oscar Piastri (McLaren) - 스파 랩 데이터
+  {
+    driverNumber: 81,
+    lapNumber: 1,
+    lapDuration: 110.164,
+    lapStartTime: 0,
+    sectorTimes: [36.721, 44.334, 29.109],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 81,
+    lapNumber: 2,
+    lapDuration: 109.971,
+    lapStartTime: 110.164,
+    sectorTimes: [36.443, 44.441, 29.087],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 81,
+    lapNumber: 3,
+    lapDuration: 110.085,
+    lapStartTime: 220.135,
+    sectorTimes: [36.512, 44.467, 29.106],
+    isPitOutLap: false
+  },
+
+  // George Russell (Mercedes) - 스파 랩 데이터
+  {
+    driverNumber: 63,
+    lapNumber: 1,
+    lapDuration: 110.160,
+    lapStartTime: 0,
+    sectorTimes: [36.718, 44.331, 29.111],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 63,
+    lapNumber: 2,
+    lapDuration: 110.012,
+    lapStartTime: 110.160,
+    sectorTimes: [36.467, 44.458, 29.087],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 63,
+    lapNumber: 3,
+    lapDuration: 109.784,
+    lapStartTime: 220.172,
+    sectorTimes: [36.345, 44.367, 29.072],
+    isPitOutLap: false
+  },
+
+  // Max Verstappen (Red Bull Racing) - 스파 랩 데이터
+  {
+    driverNumber: 1,
+    lapNumber: 1,
+    lapDuration: 110.567,
+    lapStartTime: 0,
+    sectorTimes: [36.823, 44.512, 29.232],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 1,
+    lapNumber: 2,
+    lapDuration: 109.234,
+    lapStartTime: 110.567,
+    sectorTimes: [36.112, 43.945, 29.177],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 1,
+    lapNumber: 3,
+    lapDuration: 108.892,
+    lapStartTime: 219.801,
+    sectorTimes: [35.987, 43.823, 29.082],
+    isPitOutLap: false
+  },
+
+  // Lando Norris (McLaren) - 스파 랩 데이터
+  {
+    driverNumber: 4,
+    lapNumber: 1,
+    lapDuration: 110.445,
+    lapStartTime: 0,
+    sectorTimes: [36.798, 44.489, 29.158],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 4,
+    lapNumber: 2,
+    lapDuration: 109.567,
+    lapStartTime: 110.445,
+    sectorTimes: [36.234, 44.223, 29.110],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 4,
+    lapNumber: 3,
+    lapDuration: 109.334,
+    lapStartTime: 220.012,
+    sectorTimes: [36.156, 44.098, 29.080],
+    isPitOutLap: false
+  },
+
+  // Carlos Sainz (Ferrari) - 스파 랩 데이터
+  {
+    driverNumber: 55,
+    lapNumber: 1,
+    lapDuration: 110.892,
+    lapStartTime: 0,
+    sectorTimes: [37.123, 44.567, 29.202],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 55,
+    lapNumber: 2,
+    lapDuration: 110.234,
+    lapStartTime: 110.892,
+    sectorTimes: [36.789, 44.334, 29.111],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 55,
+    lapNumber: 3,
+    lapDuration: 109.876,
+    lapStartTime: 221.126,
+    sectorTimes: [36.445, 44.287, 29.144],
+    isPitOutLap: false
+  },
+
+  // Fernando Alonso (Aston Martin) - 스파 랩 데이터
+  {
+    driverNumber: 14,
+    lapNumber: 1,
+    lapDuration: 111.234,
+    lapStartTime: 0,
+    sectorTimes: [37.234, 44.789, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 14,
+    lapNumber: 2,
+    lapDuration: 110.567,
+    lapStartTime: 111.234,
+    sectorTimes: [36.891, 44.456, 29.220],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 14,
+    lapNumber: 3,
+    lapDuration: 110.123,
+    lapStartTime: 221.801,
+    sectorTimes: [36.567, 44.334, 29.222],
+    isPitOutLap: false
+  },
+
+  // Lance Stroll (Aston Martin) - 스파 랩 데이터
+  {
+    driverNumber: 18,
+    lapNumber: 1,
+    lapDuration: 111.567,
+    lapStartTime: 0,
+    sectorTimes: [37.456, 44.912, 29.199],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 18,
+    lapNumber: 2,
+    lapDuration: 110.891,
+    lapStartTime: 111.567,
+    sectorTimes: [37.012, 44.567, 29.312],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 18,
+    lapNumber: 3,
+    lapDuration: 110.445,
+    lapStartTime: 222.458,
+    sectorTimes: [36.789, 44.445, 29.211],
+    isPitOutLap: false
+  },
+
+  // Pierre Gasly (Alpine) - 스파 랩 데이터
+  {
+    driverNumber: 10,
+    lapNumber: 1,
+    lapDuration: 111.123,
+    lapStartTime: 0,
+    sectorTimes: [37.234, 44.678, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 10,
+    lapNumber: 2,
+    lapDuration: 110.456,
+    lapStartTime: 111.123,
+    sectorTimes: [36.789, 44.445, 29.222],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 10,
+    lapNumber: 3,
+    lapDuration: 110.234,
+    lapStartTime: 221.579,
+    sectorTimes: [36.567, 44.356, 29.311],
+    isPitOutLap: false
+  },
+
+  // Esteban Ocon (Alpine) - 스파 랩 데이터
+  {
+    driverNumber: 31,
+    lapNumber: 1,
+    lapDuration: 111.345,
+    lapStartTime: 0,
+    sectorTimes: [37.345, 44.789, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 31,
+    lapNumber: 2,
+    lapDuration: 110.678,
+    lapStartTime: 111.345,
+    sectorTimes: [36.891, 44.567, 29.220],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 31,
+    lapNumber: 3,
+    lapDuration: 110.345,
+    lapStartTime: 222.023,
+    sectorTimes: [36.678, 44.445, 29.222],
+    isPitOutLap: false
+  },
+
+  // Alexander Albon (Williams) - 스파 랩 데이터
+  {
+    driverNumber: 23,
+    lapNumber: 1,
+    lapDuration: 111.789,
+    lapStartTime: 0,
+    sectorTimes: [37.567, 44.991, 29.231],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 23,
+    lapNumber: 2,
+    lapDuration: 111.123,
+    lapStartTime: 111.789,
+    sectorTimes: [37.234, 44.678, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 23,
+    lapNumber: 3,
+    lapDuration: 110.678,
+    lapStartTime: 222.912,
+    sectorTimes: [36.891, 44.567, 29.220],
+    isPitOutLap: false
+  },
+
+  // Logan Sargeant (Williams) - 스파 랩 데이터
+  {
+    driverNumber: 2,
+    lapNumber: 1,
+    lapDuration: 112.123,
+    lapStartTime: 0,
+    sectorTimes: [37.789, 45.123, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 2,
+    lapNumber: 2,
+    lapDuration: 111.567,
+    lapStartTime: 112.123,
+    sectorTimes: [37.456, 44.912, 29.199],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 2,
+    lapNumber: 3,
+    lapDuration: 111.234,
+    lapStartTime: 223.690,
+    sectorTimes: [37.234, 44.789, 29.211],
+    isPitOutLap: false
+  },
+
+  // Valtteri Bottas (Kick Sauber) - 스파 랩 데이터
+  {
+    driverNumber: 77,
+    lapNumber: 1,
+    lapDuration: 111.456,
+    lapStartTime: 0,
+    sectorTimes: [37.345, 44.891, 29.220],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 77,
+    lapNumber: 2,
+    lapDuration: 110.789,
+    lapStartTime: 111.456,
+    sectorTimes: [37.012, 44.567, 29.210],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 77,
+    lapNumber: 3,
+    lapDuration: 110.456,
+    lapStartTime: 222.245,
+    sectorTimes: [36.789, 44.445, 29.222],
+    isPitOutLap: false
+  },
+
+  // Zhou Guanyu (Kick Sauber) - 스파 랩 데이터
+  {
+    driverNumber: 24,
+    lapNumber: 1,
+    lapDuration: 111.891,
+    lapStartTime: 0,
+    sectorTimes: [37.678, 45.012, 29.201],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 24,
+    lapNumber: 2,
+    lapDuration: 111.234,
+    lapStartTime: 111.891,
+    sectorTimes: [37.345, 44.678, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 24,
+    lapNumber: 3,
+    lapDuration: 110.789,
+    lapStartTime: 223.125,
+    sectorTimes: [37.012, 44.567, 29.210],
+    isPitOutLap: false
+  },
+
+  // Kevin Magnussen (Haas) - 스파 랩 데이터
+  {
+    driverNumber: 20,
+    lapNumber: 1,
+    lapDuration: 111.678,
+    lapStartTime: 0,
+    sectorTimes: [37.567, 44.912, 29.199],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 20,
+    lapNumber: 2,
+    lapDuration: 111.012,
+    lapStartTime: 111.678,
+    sectorTimes: [37.234, 44.567, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 20,
+    lapNumber: 3,
+    lapDuration: 110.567,
+    lapStartTime: 222.690,
+    sectorTimes: [36.891, 44.456, 29.220],
+    isPitOutLap: false
+  },
+
+  // Nico Hulkenberg (Haas) - 스파 랩 데이터
+  {
+    driverNumber: 27,
+    lapNumber: 1,
+    lapDuration: 111.345,
+    lapStartTime: 0,
+    sectorTimes: [37.456, 44.678, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 27,
+    lapNumber: 2,
+    lapDuration: 110.789,
+    lapStartTime: 111.345,
+    sectorTimes: [37.012, 44.567, 29.210],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 27,
+    lapNumber: 3,
+    lapDuration: 110.345,
+    lapStartTime: 222.134,
+    sectorTimes: [36.789, 44.334, 29.222],
+    isPitOutLap: false
+  },
+
+  // Daniel Ricciardo (RB) - 스파 랩 데이터
+  {
+    driverNumber: 3,
+    lapNumber: 1,
+    lapDuration: 111.567,
+    lapStartTime: 0,
+    sectorTimes: [37.345, 44.912, 29.310],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 3,
+    lapNumber: 2,
+    lapDuration: 110.891,
+    lapStartTime: 111.567,
+    sectorTimes: [37.123, 44.567, 29.201],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 3,
+    lapNumber: 3,
+    lapDuration: 110.456,
+    lapStartTime: 222.458,
+    sectorTimes: [36.789, 44.445, 29.222],
+    isPitOutLap: false
+  },
+
+  // Yuki Tsunoda (RB) - 스파 랩 데이터
+  {
+    driverNumber: 22,
+    lapNumber: 1,
+    lapDuration: 111.789,
+    lapStartTime: 0,
+    sectorTimes: [37.567, 44.991, 29.231],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 22,
+    lapNumber: 2,
+    lapDuration: 111.123,
+    lapStartTime: 111.789,
+    sectorTimes: [37.234, 44.678, 29.211],
+    isPitOutLap: false
+  },
+  {
+    driverNumber: 22,
+    lapNumber: 3,
+    lapDuration: 110.678,
+    lapStartTime: 222.912,
+    sectorTimes: [36.891, 44.567, 29.220],
+    isPitOutLap: false
   }
 ];
 
 // 개발 모드 체크 함수
-export const isDevelopmentMode = (): boolean => {
+export const checkIsDevelopmentMode = (): boolean => {
   return process.env.NODE_ENV === 'development';
 };
 
 // Mock 데이터를 강제로 사용할지 결정 (실제 API 호출 전에 체크)
-export const shouldForceMockData = (): boolean => {
+export const checkShouldForceMockData = (): boolean => {
   // 환경변수로 강제 목 데이터 사용 설정 가능
   return process.env.NEXT_PUBLIC_FORCE_MOCK_DATA === 'true';
 };
