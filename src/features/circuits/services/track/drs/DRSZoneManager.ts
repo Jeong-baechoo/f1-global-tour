@@ -215,7 +215,12 @@ export class DRSZoneManager {
    * Toggle DRS zone visibility
    */
   static toggleDRSZoneLayers(trackId: string, enabled: boolean, map: mapboxgl.Map): void {
-    const savedLayers = trackStateManager.findDRSLayer(trackId);
+    try {
+      if (!map || !map.getLayer) {
+        return;
+      }
+
+      const savedLayers = trackStateManager.findDRSLayer(trackId);
     
     if (savedLayers) {
       savedLayers.drsLayers.forEach(layerId => {
@@ -242,6 +247,12 @@ export class DRSZoneManager {
             }, UI_TIMING.LANGUAGE_CHANGE_DELAY);
           })
           .catch(console.error);
+      }
+    }
+    } catch (error) {
+      // Silently handle map errors during page transitions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('DRS zone error:', error);
       }
     }
   }

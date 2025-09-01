@@ -29,7 +29,7 @@ interface MapControlsProps {
  * CircuitInfoPanel, ZoomScrollbar를 포함
  */
 export const MapControls: React.FC<MapControlsProps> = ({
-  map,
+  // map,
   // isCircuitView,
   sectorInfoEnabled,
   drsInfoEnabled,
@@ -76,12 +76,12 @@ export const MapControls: React.FC<MapControlsProps> = ({
           <Play className="w-5 h-5" />
         </button>
       </div>
-      
+
       {/* 모바일 줌 스크롤바 */}
       <ZoomScrollbar map={map} className="sm:hidden" />
 
       {/* 리플레이 패널 */}
-      <ReplayPanel 
+      <ReplayPanel
         isOpen={isReplayPanelOpen}
         onCloseAction={() => setIsReplayPanelOpen(false)}
       />

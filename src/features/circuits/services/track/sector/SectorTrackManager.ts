@@ -201,12 +201,17 @@ export class SectorTrackManager {
    * Toggle sector track colors visibility
    */
   static toggleSectorColors(trackId: string, enabled: boolean, map: mapboxgl.Map): void {
-    const savedLayers = trackStateManager.findSectorLayer(trackId);
-    
-    if (savedLayers) {
+    try {
+      if (!map || !map.getLayer) {
+        return;
+      }
+
+      const savedLayers = trackStateManager.findSectorLayer(trackId);
+      
+      if (savedLayers) {
       // Hide/show sector layers
       savedLayers.sectorLayers.forEach(layerId => {
-        if (map.getLayer(layerId)) {
+        if (map && map.getLayer && map.getLayer(layerId)) {
           map.setLayoutProperty(layerId, 'visibility', enabled ? 'visible' : 'none');
         }
       });
@@ -230,6 +235,12 @@ export class SectorTrackManager {
       const originalData = trackStateManager.findOriginalTrackData(trackId);
       if (originalData && map.getSource(trackId)) {
         (map.getSource(trackId) as mapboxgl.GeoJSONSource).setData(originalData.originalData);
+      }
+    }
+    } catch (error) {
+      // Silently handle map errors during page transitions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Sector track error:', error);
       }
     }
   }

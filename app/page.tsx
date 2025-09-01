@@ -8,9 +8,11 @@ import { MobileCircuitTimeline } from '@/src/features/race-info/components/Mobil
 import circuitsData from '@/data/circuits.json';
 import { MapAPI } from '@/src/shared/types';
 import LanguageSelector from '@/src/shared/components/ui/LanguageSelector';
+import NextRaceButton from '@/src/shared/components/ui/NextRaceButton';
+import { f1ApiService, type F1RaceData } from '@/src/shared/services/F1ApiService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
-import type { PanelData } from '@/src/features/race-info/types';
+import type { PanelData, NextRaceData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
 import { UI_TIMING } from '@/src/shared/constants';
 import { ExitReplayButton } from '@/src/features/replay/components/ExitReplayButton';
@@ -341,70 +343,77 @@ export default function Home() {
     animationRef.current = requestAnimationFrame(momentumScroll);
   }, [momentumScroll]);
 
-  useEffect(() => {
-    // Find the next race based on current date
-    const findNextRace = () => {
-      const today = new Date();
+  // Next Race 관련 헬퍼 함수들
+  const findMatchingCircuit = useCallback((apiCircuit: { circuitName?: string; city?: string } | undefined): Circuit | null => {
+    if (!apiCircuit) return null;
 
-      // Sort circuits by race date
-      const sortedCircuits = circuitsData.circuits
-        .filter((circuit) => circuit.raceDate2025 !== null)
-        .sort((a, b) => {
-          // We know these are not null because of the filter above
-          const dateA = new Date(a.raceDate2025!).getTime();
-          const dateB = new Date(b.raceDate2025!).getTime();
-          return dateA - dateB;
-        });
+    const apiCircuitName = apiCircuit.circuitName?.toLowerCase() || '';
+    const apiCity = apiCircuit.city?.toLowerCase() || '';
 
-      // Find the next race
-      const nextRace = sortedCircuits.find((circuit) => {
-        if (!circuit.raceDate2025) return false;
-        return new Date(circuit.raceDate2025) > today;
-      });
+    return circuitsData.circuits.find(circuit => {
+      const circuitName = circuit.name.en.toLowerCase();
+      const cityName = circuit.location.city.en.toLowerCase();
 
-      return nextRace || sortedCircuits[0]; // If no future races, show first race of next season
+      return circuitName.includes(apiCircuitName) ||
+             apiCircuitName.includes(circuitName) ||
+             cityName.includes(apiCity) ||
+             apiCity.includes(cityName);
+    }) || null;
+  }, []);
+
+  const createNextRacePanelData = useCallback((circuit: Circuit, raceData: F1RaceData): NextRaceData => {
+    const raceDate = f1ApiService.formatRaceDateTime(raceData.schedule || {});
+    const schedule = f1ApiService.convertScheduleToNextRaceFormat(raceData.schedule || {});
+
+    return {
+      grandPrix: circuit.grandPrix,
+      name: circuit.name,
+      location: circuit.location,
+      raceDate,
+      schedule
     };
+  }, []);
 
-    // 처음 로드 시 즉시 next race 패널 설정
-    const nextRace = findNextRace();
-    console.log('Next race found:', nextRace);
+  useEffect(() => {
 
-    setNextRaceCircuitId(nextRace.id); // 다음 레이스 서킷 ID 저장
+    const setupNextRacePanel = async () => {
+      try {
+        const nextRaceData = await f1ApiService.getNextRaceExcludingCompleted();
+        if (!nextRaceData) return;
 
-    console.log('Setting panel for next race');
-    setPanelModule('next-race');
-    setPanelData({
-      grandPrix: nextRace.grandPrix,
-      name: nextRace.name,
-      location: nextRace.location,
-      raceDate: nextRace.raceDate2025 + 'T13:00:00Z'
-    });
-    
-    // Show next race panel after 1 second to ensure map is loaded
-    const timer = setTimeout(() => {
-      console.log('Next race timer fired', { 
-        hasMapRef: !!mapRef.current, 
-        hasUserInteracted 
-      });
-      
-      if (!mapRef.current || hasUserInteracted) return;
+        const matchingCircuit = findMatchingCircuit(nextRaceData.circuit);
+        if (!matchingCircuit) return;
 
-      // Add a small delay for flyTo to ensure map is ready
-      initialFocusTimerRef.current = setTimeout(() => {
-        if (nextRace.id && mapRef.current && !hasUserInteracted) {
-          mapRef.current.flyToCircuit(nextRace.id, true);
-        }
-      }, 500);
-    }, 2000);
+        setNextRaceCircuitId(matchingCircuit.id);
+        setPanelModule('next-race');
+        setPanelData(createNextRacePanelData(matchingCircuit, nextRaceData));
 
-    return () => {
-      clearTimeout(timer);
-      if (initialFocusTimerRef.current) {
-        clearTimeout(initialFocusTimerRef.current);
-        initialFocusTimerRef.current = null;
+        // Show next race panel after 1 second to ensure map is loaded
+        const timer = setTimeout(() => {
+          if (!mapRef.current || hasUserInteracted) return;
+
+          // Add a small delay for flyTo to ensure map is ready
+          initialFocusTimerRef.current = setTimeout(() => {
+            if (matchingCircuit.id && mapRef.current && !hasUserInteracted) {
+              mapRef.current.flyToCircuit(matchingCircuit.id, true);
+            }
+          }, 500);
+        }, 2000);
+
+        return () => {
+          clearTimeout(timer);
+          if (initialFocusTimerRef.current) {
+            clearTimeout(initialFocusTimerRef.current);
+            initialFocusTimerRef.current = null;
+          }
+        };
+      } catch (error) {
+        console.error('Failed to setup next race panel:', error);
       }
     };
-  }, [hasUserInteracted]);
+
+    setupNextRacePanel();
+  }, [hasUserInteracted, findMatchingCircuit, createNextRacePanelData]);
 
   // 언어 변경 시 선택된 그랑프리를 중앙으로 유지
   useEffect(() => {
@@ -417,6 +426,32 @@ export default function Home() {
       return () => clearTimeout(timeoutId);
     }
   }, [language, currentCircuit, scrollToCircuit]);
+
+  // 넥스트 레이스 패널을 여는 함수
+  const handleOpenNextRace = useCallback(async () => {
+    try {
+      const nextRaceData = await f1ApiService.getNextRaceExcludingCompleted();
+      if (!nextRaceData) return;
+
+      const matchingCircuit = findMatchingCircuit(nextRaceData.circuit);
+      if (!matchingCircuit) return;
+
+      setNextRaceCircuitId(matchingCircuit.id);
+      setPanelModule('next-race');
+      setPanelData(createNextRacePanelData(matchingCircuit, nextRaceData));
+
+      // 패널 열기
+      setPanelOpen(true);
+      setPanelMinimized(false);
+
+      // 지도를 해당 서킷으로 이동
+      if (mapRef.current && matchingCircuit.id) {
+        mapRef.current.flyToCircuit(matchingCircuit.id);
+      }
+    } catch (error) {
+      console.error('Failed to open next race panel:', error);
+    }
+  }, [findMatchingCircuit, createNextRacePanelData]);
 
   return (
     <>
@@ -451,7 +486,7 @@ export default function Home() {
       <ExitReplayButton mapRef={mapRef} />
 
       {/* F1 로고 - 모바일 */}
-      <div className="absolute top-2 left-4 z-10 sm:hidden">
+      <div className="absolute top-0 left-7 z-10 sm:hidden">
         <Image
           src="/f1_logo.png"
           alt="F1 Logo"
@@ -463,7 +498,7 @@ export default function Home() {
       </div>
 
       {/* 언어 선택 버튼 - 모바일 */}
-      <div className="absolute top-7 right-14 z-10 sm:hidden">
+      <div className="absolute top-5 right-14 z-10 sm:hidden">
         <LanguageSelector
           currentLanguage={language}
           onLanguageChangeAction={setLanguage}
@@ -482,6 +517,22 @@ export default function Home() {
         />
       </div>
 
+
+      {/* 넥스트 레이스 버튼 - 데스크탑 */}
+      <div className="hidden sm:block absolute bottom-48 left-6 z-30">
+        <NextRaceButton
+          onClickAction={handleOpenNextRace}
+          isActive={panelModule === 'next-race' && panelOpen}
+        />
+      </div>
+
+      {/* 넥스트 레이스 버튼 - 모바일 */}
+      <div className="block sm:hidden absolute bottom-72 right-4 z-30 scale-90">
+        <NextRaceButton
+          onClickAction={handleOpenNextRace}
+          isActive={panelModule === 'next-race' && panelOpen}
+        />
+      </div>
 
       {/* 언어 선택 버튼 - 데스크탑 */}
       <div className="hidden sm:block absolute bottom-32 left-6 z-10">
@@ -625,10 +676,10 @@ export default function Home() {
         onExploreCircuit={handleExploreCircuit}
       />
 
-      {/* Mobile Circuit Timeline - Fixed above bottom sheet */}
+      {/* Mobile Circuit Timeline - Race calendar */}
       <MobileCircuitTimeline
         circuits={circuitsData.circuits}
-        onSelectCircuit={handleMobileCircuitSelect}
+        onSelectCircuitAction={handleMobileCircuitSelect}
         selectedCircuitId={
           panelData?.type === 'circuit' 
             ? panelData.id 
@@ -640,6 +691,7 @@ export default function Home() {
           isOpen: panelOpen,
           isMinimized: panelMinimized
         }}
+        hasUserInteracted={hasUserInteracted}
       />
     </>
   );

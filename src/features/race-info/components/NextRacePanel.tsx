@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { useCountdown } from '../hooks/useCountdown';
 import { NextRaceData } from '../types';
+import { WeatherWidget } from './WeatherWidget';
 
 interface NextRacePanelProps {
   data: NextRaceData;
@@ -20,6 +21,81 @@ export const NextRacePanel: React.FC<NextRacePanelProps> = ({
 }) => {
   const { language } = useLanguage();
   const countdown = useCountdown(data.raceDate);
+
+  const formatScheduleDateTime = (dateTimeString: string | undefined) => {
+    if (!dateTimeString) return null;
+    
+    const date = new Date(dateTimeString);
+    const day = date.toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+    const time = date.toLocaleTimeString(language === 'ko' ? 'ko-KR' : 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    
+    return { day, time };
+  };
+
+  const getSessionName = (sessionKey: string): string => {
+    const sessionNames = {
+      ko: {
+        practice1: '연습주행 1',
+        practice2: '연습주행 2', 
+        practice3: '연습주행 3',
+        qualifying: '예선',
+        sprintRace: '스프린트',
+        sprintQualy: '스프린트 예선'
+      },
+      en: {
+        practice1: 'Practice 1',
+        practice2: 'Practice 2',
+        practice3: 'Practice 3',
+        qualifying: 'Qualifying',
+        sprintRace: 'Sprint',
+        sprintQualy: 'Sprint Qualifying'
+      }
+    };
+    
+    return sessionNames[language][sessionKey as keyof typeof sessionNames.en] || sessionKey;
+  };
+
+  // 스케줄 세션들을 정렬된 순서로 렌더링
+  const renderScheduleSession = (sessionKey: string, sessionDateTime: string | undefined) => {
+    if (!sessionDateTime) return null;
+    
+    const formatted = formatScheduleDateTime(sessionDateTime);
+    if (!formatted) return null;
+
+    return (
+      <div key={sessionKey} className="flex justify-between items-center py-2 border-b border-[#FF1801]/10">
+        <span className="text-[#C0C0C0] text-sm">{getSessionName(sessionKey)}</span>
+        <div className="text-right">
+          <div className="text-white text-sm font-medium">
+            {formatted.day}
+          </div>
+          <div className="text-[#C0C0C0] text-sm">
+            {formatted.time}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 표시할 세션들을 정의된 순서대로 정렬
+  const getOrderedSessions = () => {
+    if (!data.schedule) return [];
+    
+    const sessionOrder = ['practice1', 'sprintQualy', 'sprintRace', 'qualifying'];
+    return sessionOrder
+      .filter(sessionKey => data.schedule![sessionKey as keyof typeof data.schedule])
+      .map(sessionKey => ({
+        key: sessionKey,
+        dateTime: data.schedule![sessionKey as keyof typeof data.schedule]
+      }));
+  };
 
   return (
     <div className="space-y-6">
@@ -87,6 +163,26 @@ export const NextRacePanel: React.FC<NextRacePanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 레이스 스케줄 */}
+      {data.schedule && (
+        <div className="bg-[#1A1A1A]/40 backdrop-blur-sm rounded border border-[#FF1801]/10 p-4">
+          <div className="text-center mb-4">
+            <div className="text-[#C0C0C0] text-xs tracking-widest mb-3">
+              {language === 'ko' ? '레이스 스케줄' : 'RACE SCHEDULE'}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            {getOrderedSessions().map(session => 
+              renderScheduleSession(session.key, session.dateTime)
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 날씨 정보 */}
+      <WeatherWidget raceData={data} className="w-full" />
 
       <button
         onClick={onExploreCircuit}

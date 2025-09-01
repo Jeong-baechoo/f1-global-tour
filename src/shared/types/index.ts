@@ -13,5 +13,8 @@ export * from './marker';
 // 맵 관련 타입
 export * from './map';
 
+// 날씨 관련 타입
+export * from './weather';
+
 // Re-export 타입들
 export type { LocalizedText } from '@/utils/i18n';

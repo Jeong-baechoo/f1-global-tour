@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ChevronRight, Car, Trophy, Newspaper, Store } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
 import { TeamHQData } from '../types';
+import { f1ApiService, type F1ConstructorStanding } from '@/src/shared/services/F1ApiService';
 
 // Nationality to country code mapping for flag icons
 // noinspection JSNonASCIINames
@@ -21,6 +22,19 @@ const NATIONALITY_TO_CODE: Record<string, string> = {
     
     // Legacy compatibility
     'Argentinian': 'ar', 'New Zealander': 'nz'
+} as const;
+
+// Hardcoded season statistics (F1 API에서 제공하지 않는 데이터)
+const SEASON_STATS = {
+    podiums: {
+        'mclaren': 12, 'ferrari': 4, 'red-bull': 5, 'mercedes': 3, 'sauber': 1, default: 2
+    },
+    poles: {
+        'mclaren': 4, 'ferrari': 2, 'red-bull': 2, 'mercedes': 1, 'sauber': 0, default: 1
+    },
+    fastestLaps: {
+        'mclaren': 5, 'ferrari': 1, 'red-bull': 3, 'mercedes': 2, 'sauber': 0, default: 1
+    }
 } as const;
 
 // Reusable flag icon component
@@ -45,6 +59,56 @@ const FlagIcon: React.FC<{ nationality: string; className?: string }> = ({
         />
     );
 };
+
+// Reusable loading spinner component
+const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({ 
+    size = 'md', 
+    className = '' 
+}) => {
+    const sizeClasses = {
+        sm: 'w-6 h-6',
+        md: 'w-8 h-8', 
+        lg: 'w-12 h-12'
+    };
+    
+    return (
+        <div className={`flex items-center justify-center ${className}`}>
+            <div className={`animate-spin ${sizeClasses[size]} border-2 border-white/20 border-t-white rounded-full`} />
+        </div>
+    );
+};
+
+// Statistics card component for reusability
+const StatCard: React.FC<{
+    value: string | number;
+    label: string;
+    teamColor: string;
+    isLoading: boolean;
+}> = ({ value, label, teamColor, isLoading }) => (
+    <div className="relative p-6 rounded-xl border transform hover:scale-[1.03] transition-all duration-300 group"
+         style={{
+           backgroundColor: 'rgba(255, 255, 255, 0.04)',
+           borderColor: 'rgba(255, 255, 255, 0.12)',
+           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+         }}>
+        <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+             style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
+        <div className="relative z-10 text-center">
+            {isLoading ? (
+                <LoadingSpinner size="sm" className="h-16" />
+            ) : (
+                <>
+                    <p className="text-5xl font-black mb-3" style={{ color: teamColor }}>
+                        {value}
+                    </p>
+                    <p className="text-sm text-white/70 uppercase tracking-wider font-medium">
+                        {label}
+                    </p>
+                </>
+            )}
+        </div>
+    </div>
+);
 
 interface TeamHQPanelProps {
     data: TeamHQData;
@@ -166,6 +230,27 @@ const DriverCard = ({ driver, teamColors }: { driver: unknown, teamColors: unkno
 export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
     const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'car' | 'stats' | 'news'>('car');
+    const [championshipData, setChampionshipData] = useState<F1ConstructorStanding | null>(null);
+    const [isLoadingChampionship, setIsLoadingChampionship] = useState(false);
+
+    // 챔피언십 데이터 로딩
+    useEffect(() => {
+        const loadChampionshipData = async () => {
+            if (!data?.id) return;
+            
+            setIsLoadingChampionship(true);
+            try {
+                const standing = await f1ApiService.getTeamChampionshipData(data.id);
+                setChampionshipData(standing);
+            } catch (error) {
+                console.error('Failed to load championship data:', error);
+            } finally {
+                setIsLoadingChampionship(false);
+            }
+        };
+
+        loadChampionshipData();
+    }, [data?.id]);
 
     if (!data) {
         return <div className="p-6 text-white/50">No team data available</div>;
@@ -344,24 +429,44 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                         <p className="text-sm text-white/60 uppercase tracking-[0.3em] font-medium">
                                             {language === 'ko' ? '컨스트럭터 순위' : 'Constructor Standing'}
                                         </p>
-                                        <p className="text-[120px] lg:text-[140px] font-black leading-none" style={{color: teamColor}}>
-                                            {data.id === 'mclaren' ? '1' : data.id === 'mercedes' ? '2' : data.id === 'ferrari' ? '3' : data.id === 'red-bull' ? '4' : data.id === 'sauber' ? '8' : '5'}
-                                        </p>
-                                        <p className="text-xs text-white/40 uppercase tracking-[0.2em]">
-                                            {language === 'ko' ? '위' : 'st Place'}
-                                        </p>
+                                        {isLoadingChampionship ? (
+                                            <LoadingSpinner size="md" className="h-32" />
+                                        ) : (
+                                            <>
+                                                <p className="text-[120px] lg:text-[140px] font-black leading-none" style={{color: teamColor}}>
+                                                    {championshipData?.position || '?'}
+                                                </p>
+                                                <p className="text-xs text-white/40 uppercase tracking-[0.2em]">
+                                                    {language === 'ko' ? '위' : 'st Place'}
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                     <div className="pt-4 border-t border-white/20">
-                                        <p className="text-4xl lg:text-5xl font-black text-white leading-none">{data.championships2025.totalPoints}</p>
-                                        <p className="text-sm text-white/60 uppercase tracking-[0.3em] font-medium mt-2">
-                                            {language === 'ko' ? '총 포인트' : 'Championship Points'}
-                                        </p>
+                                        {isLoadingChampionship ? (
+                                            <LoadingSpinner size="sm" className="h-16" />
+                                        ) : (
+                                            <>
+                                                <p className="text-4xl lg:text-5xl font-black text-white leading-none">
+                                                    {championshipData?.points || data.championships2025?.totalPoints || 0}
+                                                </p>
+                                                <p className="text-sm text-white/60 uppercase tracking-[0.3em] font-medium mt-2">
+                                                    {language === 'ko' ? '총 포인트' : 'Championship Points'}
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Season Statistics - 2x3 Grid Layout */}
+                        {/* 
+                            NOTE: 챔피언십 데이터 소스 정보
+                            - 컨스트럭터 순위 & 총 포인트 & 승리 수: F1 API (https://f1api.dev/api/current/constructors-championship)에서 실시간 데이터
+                            - 포디움 수, 폴 포지션 수, 최고 기록 수: F1 API에서 제공하지 않아 하드코딩 유지
+                            - 추가 통계 데이터가 필요한 경우 다른 API 소스 연동 필요 (예: Ergast API, OpenF1 API 등)
+                        */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
                                 <h3 className="text-lg font-bold text-white/90">
@@ -371,77 +476,33 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="relative p-6 rounded-xl border transform hover:scale-[1.03] transition-all duration-300 group"
-                                     style={{
-                                       backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                                       borderColor: 'rgba(255, 255, 255, 0.12)',
-                                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                     }}>
-                                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                         style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
-                                    <div className="relative z-10 text-center">
-                                        <p className="text-5xl font-black mb-3" style={{ color: teamColor }}>
-                                            {data.id === 'mclaren' ? '6' : data.id === 'ferrari' ? '2' : data.id === 'red-bull' ? '3' : data.id === 'mercedes' ? '2' : data.id === 'sauber' ? '0' : '1'}
-                                        </p>
-                                        <p className="text-sm text-white/70 uppercase tracking-wider font-medium">
-                                            {language === 'ko' ? '승리' : 'Race Wins'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="relative p-6 rounded-xl border transform hover:scale-[1.03] transition-all duration-300 group"
-                                     style={{
-                                       backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                                       borderColor: 'rgba(255, 255, 255, 0.12)',
-                                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                     }}>
-                                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                         style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
-                                    <div className="relative z-10 text-center">
-                                        <p className="text-5xl font-black mb-3" style={{ color: teamColor }}>
-                                            {data.id === 'mclaren' ? '12' : data.id === 'ferrari' ? '4' : data.id === 'red-bull' ? '5' : data.id === 'mercedes' ? '3' : data.id === 'sauber' ? '1' : '2'}
-                                        </p>
-                                        <p className="text-sm text-white/70 uppercase tracking-wider font-medium">
-                                            {language === 'ko' ? '포디움' : 'Podiums'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="relative p-6 rounded-xl border transform hover:scale-[1.03] transition-all duration-300 group"
-                                     style={{
-                                       backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                                       borderColor: 'rgba(255, 255, 255, 0.12)',
-                                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                     }}>
-                                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                         style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
-                                    <div className="relative z-10 text-center">
-                                        <p className="text-5xl font-black mb-3" style={{ color: teamColor }}>
-                                            {data.id === 'mclaren' ? '4' : data.id === 'ferrari' ? '2' : data.id === 'red-bull' ? '2' : data.id === 'mercedes' ? '1' : data.id === 'sauber' ? '0' : '1'}
-                                        </p>
-                                        <p className="text-sm text-white/70 uppercase tracking-wider font-medium">
-                                            {language === 'ko' ? '폴 포지션' : 'Pole Positions'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="relative p-6 rounded-xl border transform hover:scale-[1.03] transition-all duration-300 group"
-                                     style={{
-                                       backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                                       borderColor: 'rgba(255, 255, 255, 0.12)',
-                                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                     }}>
-                                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                         style={{ background: `linear-gradient(135deg, ${teamColor}10 0%, transparent 100%)` }} />
-                                    <div className="relative z-10 text-center">
-                                        <p className="text-5xl font-black mb-3" style={{ color: teamColor }}>
-                                            {data.id === 'mclaren' ? '5' : data.id === 'ferrari' ? '1' : data.id === 'red-bull' ? '3' : data.id === 'mercedes' ? '2' : data.id === 'sauber' ? '0' : '1'}
-                                        </p>
-                                        <p className="text-sm text-white/70 uppercase tracking-wider font-medium">
-                                            {language === 'ko' ? '최고 기록' : 'Fastest Laps'}
-                                        </p>
-                                    </div>
-                                </div>
+                                <StatCard
+                                    value={championshipData?.wins || 0}
+                                    label={language === 'ko' ? '승리' : 'Race Wins'}
+                                    teamColor={teamColor}
+                                    isLoading={isLoadingChampionship}
+                                />
+                                
+                                <StatCard
+                                    value={SEASON_STATS.podiums[data.id as keyof typeof SEASON_STATS.podiums] ?? SEASON_STATS.podiums.default}
+                                    label={language === 'ko' ? '포디움' : 'Podiums'}
+                                    teamColor={teamColor}
+                                    isLoading={isLoadingChampionship}
+                                />
+                                
+                                <StatCard
+                                    value={SEASON_STATS.poles[data.id as keyof typeof SEASON_STATS.poles] ?? SEASON_STATS.poles.default}
+                                    label={language === 'ko' ? '폴 포지션' : 'Pole Positions'}
+                                    teamColor={teamColor}
+                                    isLoading={isLoadingChampionship}
+                                />
+                                
+                                <StatCard
+                                    value={SEASON_STATS.fastestLaps[data.id as keyof typeof SEASON_STATS.fastestLaps] ?? SEASON_STATS.fastestLaps.default}
+                                    label={language === 'ko' ? '최고 기록' : 'Fastest Laps'}
+                                    teamColor={teamColor}
+                                    isLoading={isLoadingChampionship}
+                                />
                             </div>
                         </div>
                     </div>

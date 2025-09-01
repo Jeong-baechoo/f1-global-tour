@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Layers } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getText } from '@/utils/i18n';
+import MobileViewerOptionsPanel from './MobileViewerOptionsPanel';
 import type { Circuit } from '@/src/shared/types/circuit';
 
 interface CircuitInfoPanelProps {
@@ -32,6 +34,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileBottomSheetOpen, setIsMobileBottomSheetOpen] = useState(false);
   const { language } = useLanguage();
 
 
@@ -40,46 +43,69 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
   // 접힌 상태에서는 작은 버튼만 표시
   if (isCollapsed) {
     return (
-      <div className="fixed left-4 top-1/4 transform -translate-y-1/2 transition-all duration-300 ease-in-out z-50">
+      <div className="fixed right-[10px] top-20 sm:left-4 sm:top-1/4 sm:transform sm:-translate-y-1/2 transition-all duration-300 ease-in-out z-50">
         <button
-          onClick={() => setIsCollapsed(false)}
-          className="w-12 h-12 flex items-center justify-center text-white bg-red-600/90 rounded-lg shadow-2xl border-2 border-red-400/50"
+          onClick={() => {
+            // 모바일에서는 바텀시트 열기, 데스크톱에서는 기존 동작
+            if (window.innerWidth < 640) {
+              setIsMobileBottomSheetOpen(true);
+            } else {
+              setIsCollapsed(false);
+            }
+          }}
+          className="w-[29px] h-[29px] sm:w-12 sm:h-12 flex items-center justify-center text-white bg-[#1A1A1A]/60 hover:bg-[#1A1A1A]/80 sm:bg-red-600/90 rounded-lg shadow-2xl sm:shadow-2xl border border-[#FF1801]/20 hover:border-[#FF1801]/40 sm:border-2 sm:border-red-400/50 backdrop-blur-sm transition-all duration-300"
           aria-label="Show circuit info panel"
         >
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"></div>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full hidden sm:block"></div>
+          {/* 데스크톱 화살표 아이콘 */}
+          <svg className="w-6 h-6 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
+          
+          {/* 모바일 레이어 아이콘 */}
+          <Layers className="w-6 h-6 block sm:hidden" />
         </button>
       </div>
     );
   }
 
   return (
-    <div className={`fixed left-4 top-1/4 transform -translate-y-1/2 transition-all duration-300 ease-in-out z-50 ${
-      isExpanded ? 'w-80' : 'w-12'
-    }`}>
+    <>
+      <div className={`fixed right-[10px] top-20 sm:left-4 sm:top-1/4 sm:transform sm:-translate-y-1/2 transition-all duration-300 ease-in-out z-50 ${
+        isExpanded ? 'w-80 sm:w-80' : 'w-[29px] sm:w-12'
+      }`}>
       {/* 토글 버튼 - 더 눈에 띄게 */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-12 h-12 flex items-center justify-center text-white rounded-lg shadow-2xl border-2 ${
+        onClick={() => {
+          // 모바일에서는 바텀시트 열기, 데스크톱에서는 기존 동작
+          if (window.innerWidth < 640) {
+            setIsMobileBottomSheetOpen(true);
+          } else {
+            setIsExpanded(!isExpanded);
+          }
+        }}
+        className={`w-[29px] h-[29px] sm:w-12 sm:h-12 flex items-center justify-center text-white rounded-lg shadow-2xl border border-[#FF1801]/20 hover:border-[#FF1801]/40 sm:border-2 backdrop-blur-sm transition-all duration-300 ${
           isExpanded 
-            ? 'bg-blue-600/90 border-blue-400/50' 
-            : 'bg-red-600/90 border-red-400/50'
+            ? 'bg-[#1A1A1A]/60 hover:bg-[#1A1A1A]/80 sm:bg-blue-600/90 sm:border-blue-400/50' 
+            : 'bg-[#1A1A1A]/60 hover:bg-[#1A1A1A]/80 sm:bg-red-600/90 sm:border-red-400/50'
         }`}
         aria-label={isExpanded ? 'Close circuit info panel' : 'Open circuit info panel'}
       >
         {!isExpanded && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"></div>
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full hidden sm:block"></div>
         )}
+        {/* 모바일: 레이어 아이콘, 데스크톱: 화살표 아이콘 */}
         <svg 
-          className={`w-6 h-6 ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-6 h-6 ${isExpanded ? 'rotate-180' : ''} hidden sm:block`}
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
+        
+        {/* 모바일 전용 레이어 아이콘 */}
+        <Layers className="w-4 h-4 block sm:hidden" />
       </button>
 
       {/* 확장된 패널 배경 */}
@@ -252,7 +278,23 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
           </div>
         </div>
       )}
-    </div>
+      
+      {/* 모바일 바텀시트 */}
+      <MobileViewerOptionsPanel
+        isVisible={isMobileBottomSheetOpen}
+        onClose={() => setIsMobileBottomSheetOpen(false)}
+        onToggleSectorInfoAction={onToggleSectorInfoAction}
+        onToggleDRSInfoAction={onToggleDRSInfoAction}
+        onToggleElevationAction={onToggleElevationAction}
+        sectorInfoEnabled={sectorInfoEnabled}
+        drsInfoEnabled={drsInfoEnabled}
+        elevationEnabled={elevationEnabled}
+        currentCircuit={currentCircuit}
+        drsZoneCount={drsZoneCount}
+        drsDetectionCount={drsDetectionCount}
+      />
+      </div>
+    </>
   );
 };
 
