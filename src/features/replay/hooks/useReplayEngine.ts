@@ -90,8 +90,10 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
       const success = await engineRef.current.loadReplayData(session);
       
       if (success) {
-        setTotalDuration(5400);
-        console.log('✅ Session loaded successfully');
+        // 실제 레이스 시간을 계산하여 설정
+        const actualDuration = engineRef.current.getTotalRaceDuration();
+        setTotalDuration(actualDuration);
+        console.log(`✅ Session loaded successfully, duration: ${(actualDuration / 60).toFixed(1)} minutes`);
       } else {
         console.error('❌ Failed to load session');
       }

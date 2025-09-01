@@ -73,7 +73,11 @@
       "Bash(gh pr merge:*)",
       "WebFetch(domain:localhost)",
       "WebFetch(domain:api.openf1.org)",
-      "Read(//mnt/d/Screenshot_Video/**)"
+      "Read(//mnt/d/Screenshot_Video/**)",
+      "Bash(docker exec:*)",
+      "Bash(docker restart:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": []
   }

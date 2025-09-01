@@ -166,25 +166,28 @@ export interface ReplayError {
 
 // FastF1 API 응답 타입
 export interface FastF1TelemetryPoint {
-  time: number;
-  longitude?: number;
-  latitude?: number;
-  distance?: number;
-  speed?: number;
-  rpm?: number;
-  gear?: number;
-  throttle?: number;
-  brake?: number;
-  drs?: number;
+  time: number;          // 시간 (초)
+  x: number;             // 트랙 X 좌표 (미터)
+  y: number;             // 트랙 Y 좌표 (미터)
+  speed: number;         // 속도 (km/h)
+  throttle: number;      // 스로틀 (0-100%)
+  brake: number;         // 브레이크 (0-1)
+  gear: number;          // 기어 번호
+  rpm: number;           // RPM
+  drs: number;           // DRS 상태 (0=닫힘, >0=열림)
+  distance?: number;     // 트랙 거리 (계산됨)
+  longitude: number;     // ✨ 백엔드에서 변환된 경도 (required)
+  latitude: number;      // ✨ 백엔드에서 변환된 위도 (required)
 }
 
 export interface FastF1Data {
   driver_number: number;
+  driver: string;           // 드라이버 약칭 (VER, LEC, etc.)
   full_name: string;
-  driver: string;
-  team: string;
-  team_name: string;
-  team_color: string;
+  team: string;             // 팀명
+  lap_time: number;         // 랩 타임 (초)
+  lap_number: number;       // 랩 번호
+  telemetry_points: number; // 텔레메트리 포인트 수
   telemetry: FastF1TelemetryPoint[];
 }
 
