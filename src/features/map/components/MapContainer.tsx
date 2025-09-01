@@ -15,6 +15,10 @@ interface MapContainerProps {
   currentCircuit?: Circuit | null;
   drsZoneCount?: number;
   drsDetectionCount?: number;
+  resetPanelStates?: () => void;
+  // 리플레이 모드 관련 props
+  isReplayMode?: boolean;
+  setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
 /**
@@ -28,6 +32,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   currentCircuit = null,
   drsZoneCount = 0,
   drsDetectionCount = 0,
+  resetPanelStates,
+  isReplayMode = false,
+  setIsReplayMode,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { setUserInteracting, map, isMapLoaded, sectorInfoEnabled, drsInfoEnabled, elevationEnabled, setSectorInfoEnabled, setDrsInfoEnabled, setElevationEnabled } = useMapStore();
@@ -140,6 +147,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           onToggleSectorInfoAction={handleToggleSectorInfo}
           onToggleDRSInfoAction={handleToggleDRSInfo}
           onToggleElevationAction={handleToggleElevation}
+          resetPanelStates={resetPanelStates}
+          isReplayMode={isReplayMode}
+          setIsReplayMode={setIsReplayMode}
         />
       )}
     </div>

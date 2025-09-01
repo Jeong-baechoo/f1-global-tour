@@ -10,12 +10,14 @@ interface ExitReplayButtonProps {
   className?: string;
   onExitAction?: () => void;
   mapRef?: React.RefObject<MapAPI | null>;
+  setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
 export const ExitReplayButton: React.FC<ExitReplayButtonProps> = ({ 
   className,
   onExitAction,
-  mapRef 
+  mapRef,
+  setIsReplayMode
 }) => {
   const isPlaying = useReplayStore(state => state.isPlaying);
   const currentSession = useReplayStore(state => state.currentSession);
@@ -46,9 +48,14 @@ export const ExitReplayButton: React.FC<ExitReplayButtonProps> = ({
     // 리플레이 엔진 정리 및 스토어 완전 초기화
     cleanup();
     
+    // 리플레이 모드 비활성화
+    if (setIsReplayMode) {
+      setIsReplayMode(false);
+    }
+    
     // 커스텀 콜백 실행
     onExitAction?.();
-  }, [isPlaying, stop, cleanup, mapRef, onExitAction]);
+  }, [isPlaying, stop, cleanup, mapRef, onExitAction, setIsReplayMode]);
 
   // 리플레이 세션이 있을 때만 표시 (진행 중이 아니어도)
   if (!currentSession) {

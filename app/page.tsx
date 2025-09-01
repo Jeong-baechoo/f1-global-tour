@@ -16,6 +16,7 @@ import type { PanelData, NextRaceData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
 import { UI_TIMING } from '@/src/shared/constants';
 import { ExitReplayButton } from '@/src/features/replay/components/ExitReplayButton';
+import { DriverInfoPanel } from '@/src/features/replay/components/ui';
 
 // Dynamic imports for better code splitting
 const Map = dynamic(
@@ -51,6 +52,9 @@ export default function Home() {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
   const [nextRaceCircuitId, setNextRaceCircuitId] = useState<string | null>(null);
+
+  // 리플레이 모드 상태
+  const [isReplayMode, setIsReplayMode] = useState(false);
 
   
   // Circuit 관련 상태
@@ -475,15 +479,29 @@ export default function Home() {
         setDrsZoneCount={setDrsZoneCount}
         setDrsDetectionCount={setDrsDetectionCount}
         resetPanelStates={() => {
-          setPanelOpen(false);
-          // 사용자가 명시적으로 닫을 때만 최소화 상태 리셋
-          // setPanelMinimized(false);
+          // 리플레이 버튼을 누를 때 패널을 완전히 닫지 않고 최소화 상태로만 변경
+          if (panelOpen && !panelMinimized) {
+            setPanelMinimized(true);
+          }
         }}
         setIsTrackAnimating={setIsTrackAnimating}
+        isReplayMode={isReplayMode}
+        setIsReplayMode={setIsReplayMode}
       />
 
       {/* 리플레이 나가기 버튼 */}
-      <ExitReplayButton mapRef={mapRef} />
+      <ExitReplayButton mapRef={mapRef} setIsReplayMode={setIsReplayMode} />
+
+      {/* 리플레이 모드 전용 UI - 드라이버 인포 패널 */}
+      {isReplayMode && (
+        <DriverInfoPanel
+          isReplayMode={isReplayMode}
+          drivers={[]} // 드라이버 패널이 자체적으로 데이터를 관리하도록 변경
+          onDriverSelect={(driverCode) => {
+            console.log('Selected driver:', driverCode);
+          }}
+        />
+      )}
 
       {/* F1 로고 - 모바일 */}
       <div className="absolute top-0 left-7 z-10 sm:hidden">
@@ -518,21 +536,25 @@ export default function Home() {
       </div>
 
 
-      {/* 넥스트 레이스 버튼 - 데스크탑 */}
+      {/* 넥스트 레이스 버튼 - 데스크탑 - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <div className="hidden sm:block absolute bottom-48 left-6 z-30">
         <NextRaceButton
           onClickAction={handleOpenNextRace}
           isActive={panelModule === 'next-race' && panelOpen}
         />
       </div>
+      )}
 
-      {/* 넥스트 레이스 버튼 - 모바일 */}
+      {/* 넥스트 레이스 버튼 - 모바일 - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <div className="block sm:hidden absolute bottom-72 right-4 z-30 scale-90">
         <NextRaceButton
           onClickAction={handleOpenNextRace}
           isActive={panelModule === 'next-race' && panelOpen}
         />
       </div>
+      )}
 
       {/* 언어 선택 버튼 - 데스크탑 */}
       <div className="hidden sm:block absolute bottom-32 left-6 z-10">
@@ -542,7 +564,8 @@ export default function Home() {
         />
       </div>
 
-      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 */}
+      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <div 
         className="fixed bottom-6 z-50 transition-all duration-300 ease-out hidden sm:block"
         style={{
@@ -658,11 +681,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+      )}
 
       </main>
 
 
-      {/* Interactive Panel - Outside of main to avoid overflow clipping */}
+      {/* Interactive Panel - Outside of main to avoid overflow clipping - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <InteractivePanel
         isOpen={panelOpen}
         onCloseAction={() => {
@@ -675,8 +700,10 @@ export default function Home() {
         data={panelData}
         onExploreCircuit={handleExploreCircuit}
       />
+      )}
 
-      {/* Mobile Circuit Timeline - Race calendar */}
+      {/* Mobile Circuit Timeline - Fixed above bottom sheet - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <MobileCircuitTimeline
         circuits={circuitsData.circuits}
         onSelectCircuitAction={handleMobileCircuitSelect}
@@ -693,6 +720,7 @@ export default function Home() {
         }}
         hasUserInteracted={hasUserInteracted}
       />
+      )}
     </>
   );
 }

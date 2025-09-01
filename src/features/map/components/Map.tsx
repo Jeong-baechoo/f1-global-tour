@@ -31,6 +31,9 @@ interface MapProps {
   setDrsDetectionCount?: (count: number) => void;
   resetPanelStates?: () => void;
   setIsTrackAnimating?: (isAnimating: boolean) => void;
+  // 리플레이 모드 관련 props
+  isReplayMode?: boolean;
+  setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
 /**
@@ -182,6 +185,9 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       currentCircuit={props.currentCircuit}
       drsZoneCount={props.drsZoneCount}
       drsDetectionCount={props.drsDetectionCount}
+      resetPanelStates={props.resetPanelStates}
+      isReplayMode={props.isReplayMode}
+      setIsReplayMode={props.setIsReplayMode}
     >
       <MapCanvas
         onLoad={handleMapLoad}

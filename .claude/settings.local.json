@@ -73,7 +73,8 @@
       "Bash(gh pr merge:*)",
       "WebFetch(domain:localhost)",
       "WebFetch(domain:api.openf1.org)",
-      "Read(//mnt/d/Screenshot_Video/**)"
+      "Read(//mnt/d/Screenshot_Video/**)",
+      "WebFetch(domain:openf1.org)"
     ],
     "deny": []
   }

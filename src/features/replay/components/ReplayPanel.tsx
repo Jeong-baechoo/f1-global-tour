@@ -13,6 +13,7 @@ interface ReplayPanelProps {
   isOpen: boolean;
   onCloseAction: () => void;
   className?: string;
+  setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
 type PanelTab = 'session' | 'drivers' | 'controls' | 'settings';
@@ -20,7 +21,8 @@ type PanelTab = 'session' | 'drivers' | 'controls' | 'settings';
 export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   isOpen, 
   onCloseAction,
-  className 
+  className,
+  setIsReplayMode
 }) => {
   const [activeTab, setActiveTab] = useState<PanelTab>('session');
   const currentSession = useReplayStore(state => state.currentSession);
@@ -45,13 +47,16 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
 
   const handleStartReplay = useCallback(() => {
     if (activeTab === 'controls') {
-      // Controls 패널에 있으면 패널을 닫음
+      // Controls 패널에 있으면 리플레이 모드 활성화 하고 패널을 닫음
+      if (setIsReplayMode) {
+        setIsReplayMode(true);
+      }
       onCloseAction();
     } else {
       // 다른 탭에 있으면 Controls 패널로 이동
       setActiveTab('controls');
     }
-  }, [activeTab, onCloseAction]);
+  }, [activeTab, onCloseAction, setIsReplayMode]);
 
   const tabs = useMemo(() => [
     {

@@ -9,3 +9,6 @@ export { CircuitTrackManager } from './CircuitTrackManager';
 export { PositionCalculator } from './PositionCalculator';
 export { MockDataProvider } from './MockDataProvider';
 export { DataCacheManager } from './DataCacheManager';
+export { DriverTimingService } from './DriverTimingService';
+export { OpenF1MockDataService } from './OpenF1MockDataService';
+export { RealtimeUpdateService } from './RealtimeUpdateService';

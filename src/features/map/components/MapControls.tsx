@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Play } from 'lucide-react';
-import ZoomScrollbar from '@/src/shared/components/ui/map/ZoomScrollbar';
 import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
 import { ReplayPanel } from '@/src/features/replay';
 import type { Circuit } from '@/src/features/circuits/types';
@@ -22,6 +21,10 @@ interface MapControlsProps {
   onToggleSectorInfoAction: (enabled: boolean) => void;
   onToggleDRSInfoAction: (enabled: boolean) => void;
   onToggleElevationAction: (enabled: boolean) => void;
+  resetPanelStates?: () => void;
+  // 리플레이 모드 관련 props
+  isReplayMode?: boolean;
+  setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
 /**
@@ -40,16 +43,25 @@ export const MapControls: React.FC<MapControlsProps> = ({
   onToggleSectorInfoAction,
   onToggleDRSInfoAction,
   onToggleElevationAction,
+  resetPanelStates,
+  isReplayMode = false,
+  setIsReplayMode,
 }) => {
   const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);
 
   const handleReplayToggle = () => {
+    // 리플레이 패널을 열기 전에 다른 패널들을 닫기
+    if (resetPanelStates) {
+      resetPanelStates();
+    }
+    
     setIsReplayPanelOpen(!isReplayPanelOpen);
   };
 
   return (
     <>
-      {/* Circuit Info Panel - 항상 표시 (원본과 동일) */}
+      {/* Circuit Info Panel - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <CircuitInfoPanel
         isVisible={true}
         onToggleSectorInfoAction={onToggleSectorInfoAction}
@@ -62,6 +74,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
         drsZoneCount={drsZoneCount}
         drsDetectionCount={drsDetectionCount}
       />
+      )}
 
       {/* 리플레이 버튼 - 왼쪽 사이드로 이동 */}
       <div className="fixed left-6 top-1/2 -translate-y-1/2 z-40">
@@ -77,13 +90,11 @@ export const MapControls: React.FC<MapControlsProps> = ({
         </button>
       </div>
 
-      {/* 모바일 줌 스크롤바 */}
-      <ZoomScrollbar map={map} className="sm:hidden" />
-
       {/* 리플레이 패널 */}
       <ReplayPanel
         isOpen={isReplayPanelOpen}
         onCloseAction={() => setIsReplayPanelOpen(false)}
+        setIsReplayMode={setIsReplayMode}
       />
     </>
   );
