@@ -55,6 +55,7 @@ export default function Home() {
 
   // 리플레이 모드 상태
   const [isReplayMode, setIsReplayMode] = useState(false);
+  const [selectedDriverForTelemetry, setSelectedDriverForTelemetry] = useState<string | null>(null);
 
   
   // Circuit 관련 상태
@@ -487,6 +488,8 @@ export default function Home() {
         setIsTrackAnimating={setIsTrackAnimating}
         isReplayMode={isReplayMode}
         setIsReplayMode={setIsReplayMode}
+        onDriverSelect={setSelectedDriverForTelemetry}
+        selectedDriverForTelemetry={selectedDriverForTelemetry}
       />
 
       {/* 리플레이 나가기 버튼 */}
@@ -497,9 +500,7 @@ export default function Home() {
         <DriverInfoPanel
           isReplayMode={isReplayMode}
           drivers={[]} // 드라이버 패널이 자체적으로 데이터를 관리하도록 변경
-          onDriverSelect={(driverCode) => {
-            console.log('Selected driver:', driverCode);
-          }}
+          onDriverSelect={setSelectedDriverForTelemetry}
         />
       )}
 

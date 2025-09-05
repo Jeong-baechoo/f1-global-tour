@@ -15,6 +15,9 @@ export class ReplayAnimationEngine {
   private currentTime = 0;
   private playbackSpeed = 1;
   
+  private lastPositionUpdateTime = 0;
+  private positionUpdateInterval = 100; // 100ms마다 위치 업데이트
+  
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
   private telemetryData: Array<{
@@ -35,12 +38,10 @@ export class ReplayAnimationEngine {
   private onDriverPositionsUpdate?: (positions: DriverPosition[]) => void;
 
   constructor(map: mapboxgl.Map) {
-    console.log('🎬 ReplayAnimationEngine: Initializing with map instance');
     this.map = map;
     this.markerManager = new DriverMarkerManager(map);
     this.trackManager = new CircuitTrackManager(map);
     this.positionCalculator = new PositionCalculator();
-    console.log('🎬 ReplayAnimationEngine: All managers initialized');
   }
 
   async loadReplayData(session: ReplaySessionData): Promise<boolean> {
@@ -118,7 +119,6 @@ export class ReplayAnimationEngine {
     this.createDriverMarkers();
     
     // 트랙 레이아웃 생성 - 타이밍 개선
-    console.log(`🛤️ Drawing track for circuit: ${this.circuitId}`);
     this.trackManager.drawCircuitTrack(this.circuitId).catch(error => {
       console.error('❌ Failed to draw circuit track:', error);
     });
@@ -160,7 +160,6 @@ export class ReplayAnimationEngine {
   }
 
   private createDriverMarkers(): void {
-    console.log(`🏎️ Creating markers for ${this.driversData.length} drivers...`);
     
     this.markerManager.createDriverMarkers(this.driversData);
     
@@ -233,7 +232,12 @@ export class ReplayAnimationEngine {
     const now = performance.now();
     this.currentTime = (now - this.startTime) * this.playbackSpeed / 1000;
 
-    this.updateDriverPositions(this.currentTime);
+    // 위치 업데이트는 throttle 적용
+    if (now - this.lastPositionUpdateTime >= this.positionUpdateInterval) {
+      this.updateDriverPositions(this.currentTime);
+      this.lastPositionUpdateTime = now;
+    }
+    
     this.onTimeUpdate?.(this.currentTime);
 
     this.animationFrameId = requestAnimationFrame(this.animate);

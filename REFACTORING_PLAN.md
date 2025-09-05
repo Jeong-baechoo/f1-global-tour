@@ -29,6 +29,13 @@
    - 전역 상태 관리 부재
    - prop drilling 과다 사용
 
+### 트랙 드로잉 시스템 문제점
+5. **trackDrawing.ts God File (1208줄)**
+   - DRS 존, 섹터, 트랙 드로잉, 애니메이션 등 다중 책임
+   - 중복 함수: `animateDRSSequentialSignal` (라인 1030, 1139)
+   - 전역 상태 관리 분산
+   - 테스트 및 유지보수 어려움
+
 ## 목표 아키텍처
 
 ### 디렉토리 구조
@@ -55,7 +62,17 @@ src/
 │   │   ├── hooks/
 │   │   ├── services/
 │   │   ├── store/
-│   │   └── types/
+│   │   ├── types/
+│   │   └── utils/
+│   │       ├── drs/             # DRS 관련 유틸리티
+│   │       │   ├── DRSZoneManager.ts
+│   │       │   └── DRSAnimationController.ts
+│   │       ├── sectors/         # 섹터 관련 유틸리티
+│   │       │   └── SectorTrackManager.ts
+│   │       └── track/           # 트랙 관련 유틸리티
+│   │           ├── TrackRenderer.ts
+│   │           ├── TrackStateManager.ts
+│   │           └── TrackEventBus.ts
 │   │
 │   └── race-info/              # 레이스 정보 기능
 │       ├── components/
@@ -166,6 +183,63 @@ features/race-info/
 
 ### Phase 3: 기능별 모듈 구현 (5-7일)
 
+#### Track Drawing 모듈 리팩토링
+```typescript
+// circuits/utils/drs/DRSZoneManager.ts
+export class DRSZoneManager {
+  private drsLayers: Map<string, string[]> = new Map();
+  
+  async drawDRSZones(map: mapboxgl.Map, trackId: string, coordinates: number[][], circuitId: string) {
+    // DRS 존 그리기 로직
+  }
+  
+  toggleVisibility(trackId: string, visible: boolean, map: mapboxgl.Map) {
+    // DRS 레이어 표시/숨김
+  }
+  
+  clearAnimations() {
+    // DRS 애니메이션 정리
+  }
+}
+
+// circuits/utils/drs/DRSAnimationController.ts
+export class DRSAnimationController {
+  private activeDRSAnimations: Map<string, any> = new Map();
+  
+  animateDRSSequentialSignal(map: mapboxgl.Map, trackId: string, options: DRSAnimationOptions) {
+    // 중복 제거된 DRS 애니메이션 로직
+  }
+  
+  clearAllAnimations() {
+    // 모든 DRS 애니메이션 정리
+  }
+}
+
+// circuits/utils/sectors/SectorTrackManager.ts
+export class SectorTrackManager {
+  drawSectorColoredTrack(map: mapboxgl.Map, coordinates: number[][], sectors: SectorData[]) {
+    // 섹터별 트랙 색상 적용
+  }
+  
+  toggleSectorColors(trackId: string, visible: boolean) {
+    // 섹터 색상 토글
+  }
+}
+
+// circuits/utils/track/TrackRenderer.ts
+export class TrackRenderer {
+  constructor(
+    private drsManager: DRSZoneManager,
+    private sectorManager: SectorTrackManager,
+    private stateManager: TrackStateManager
+  ) {}
+  
+  async drawTrack(map: mapboxgl.Map, options: TrackDrawOptions) {
+    // 메인 트랙 그리기 로직
+  }
+}
+```
+
 #### Teams 모듈
 ```typescript
 // features/teams/types/index.ts
@@ -271,7 +345,14 @@ export const CircuitMarker: React.FC<CircuitMarkerProps> = ({ circuit, onClick }
 3. [~] 마커 관리 시스템 재구성 (진행 중)
    - [x] Teams 모듈 생성 (80%)
    - [~] Circuits 모듈 생성 (40%)
-4. [ ] 애니메이션 서비스 분리
+4. [ ] trackDrawing.ts 리팩토링 (1208줄 → 모듈별 분리)
+   - [ ] DRSZoneManager 분리 (라인 18-295, 990-1027)
+   - [ ] DRSAnimationController 분리 (라인 946-1208, 중복 제거)
+   - [ ] SectorTrackManager 분리 (라인 299-524, 640-673)
+   - [ ] TrackRenderer 분리 (라인 676-936)
+   - [ ] TrackStateManager 분리 (상태 관리 로직)
+   - [ ] 중복 함수 `animateDRSSequentialSignal` 제거
+5. [ ] 애니메이션 서비스 분리
 
 ### 중기 작업 (2-3주)
 1. [~] Teams 모듈 완성 (80% 완료)

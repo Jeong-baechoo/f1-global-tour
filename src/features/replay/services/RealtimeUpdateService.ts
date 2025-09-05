@@ -1,4 +1,4 @@
-import { OpenF1MockDataService } from './OpenF1MockDataService';
+import { OpenF1MockDataService } from '@/src/features/replay';
 import { DriverTimingService } from './DriverTimingService';
 
 export class RealtimeUpdateService {
@@ -18,11 +18,9 @@ export class RealtimeUpdateService {
   // 실시간 업데이트 시작
   startRealtimeUpdates(): void {
     if (this.isActive) {
-      console.log('⏱️ Realtime updates already active');
       return;
     }
 
-    console.log('🚦 Starting realtime driver timing updates');
     this.isActive = true;
 
     // 즉시 첫 업데이트 실행
@@ -37,11 +35,9 @@ export class RealtimeUpdateService {
   // 실시간 업데이트 중지
   stopRealtimeUpdates(): void {
     if (!this.isActive) {
-      console.log('⏱️ Realtime updates already inactive');
       return;
     }
 
-    console.log('🏁 Stopping realtime driver timing updates');
     this.isActive = false;
 
     if (this.updateInterval) {
@@ -96,7 +92,6 @@ export class RealtimeUpdateService {
       if (currentLap < maxLap) {
         const nextLap = currentLap + 1;
         driverTimingService.setCurrentLap(nextLap);
-        console.log(`🏎️ Auto-advanced to lap ${nextLap}`);
       }
     }
   }

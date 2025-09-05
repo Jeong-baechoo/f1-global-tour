@@ -54,6 +54,7 @@ src/
 - **Teams** (`src/features/teams/`): Team markers, headquarters, driver profiles
 - **Circuits** (`src/features/circuits/`): Circuit markers, track rendering, DRS zones  
 - **Race Info** (`src/features/race-info/`): Interactive panels, countdown timers
+- **Replay** (`src/features/replay/`): F1 race replay system with real-time driver tracking
 
 #### Shared Architecture (`src/shared/`)
 - **Components**: UI components with LocalizedText, sheet dialogs
@@ -238,3 +239,77 @@ When encountering complex bugs with unexpected behavior (especially in React use
    - **Lesson**: Debug logs revealed the issue in 1 attempt vs 3 failed code changes
 
 **Remember**: When stuck on complex side effects, always add debug logs before modifying code. The console output often reveals the real issue immediately.
+
+## Replay System Architecture
+
+### Overview
+The replay system (`src/features/replay/`) recreates historical F1 races with real-time driver position tracking, timing data, and interactive controls. Built with a service-oriented architecture using multiple specialized managers.
+
+### Core Services Architecture
+- **ReplayAnimationEngine**: Main orchestrator for animation loop and state management
+- **DriverMarkerManager**: Manages dynamic driver markers on the map with smooth animations
+- **CircuitTrackManager**: Handles circuit track rendering and visibility controls
+- **PositionCalculator**: Converts telemetry data to precise map coordinates
+- **TrackPositionService**: Calculates driver positions along circuit tracks using distance-based interpolation
+- **OpenF1MockDataService**: Generates realistic F1 timing data compatible with OpenF1 API format
+
+### Data Flow Pattern
+1. **Session Management**: `DriverTimingService` coordinates session state and lap progression
+2. **Real-time Updates**: `RealtimeUpdateService` provides 4-second interval updates
+3. **Position Calculation**: Telemetry data → track distance → lat/lng coordinates → marker positions
+4. **UI Synchronization**: Timing panels and driver info update automatically via Zustand store
+
+### Key Implementation Patterns
+
+#### Service Singleton Pattern
+```typescript
+// All services follow singleton pattern for consistent state
+const service = ServiceClass.getInstance();
+```
+
+#### Animation Loop Architecture
+- Uses `requestAnimationFrame` for 60fps smooth animations
+- Separates animation timing from data updates (4-second intervals)
+- Handles playback speed control and pause/resume states
+
+#### Mock Data Strategy
+Current implementation uses sophisticated mock data that:
+- Simulates realistic F1 race scenarios (Monaco GP with driver retirement, pit stops)
+- Follows OpenF1 API data structure for easy backend replacement
+- Includes sector performance, tire strategies, and timing intervals
+- **Backend Integration**: See `REPLAY_API_SPECIFICATION.md` for complete API requirements
+
+#### Driver Position Interpolation
+Uses advanced algorithms to:
+- Calculate precise positions along circuit tracks from telemetry distance data
+- Handle track coordinate gaps and discontinuities
+- Provide smooth animations between position updates
+- Support variable playback speeds (0.5x to 4x)
+
+### Critical Replay System Guidelines
+
+#### Timing Data Consistency
+- **Interval Calculation**: Must separate completed drivers from retired drivers
+- **Sector Performance**: Use 'none' state for retired drivers (requires extending TypeScript interfaces)
+- **DNF Handling**: Retired drivers show "DNF" instead of timing data and disappear after retirement lap
+
+#### Animation Performance
+- **Position Updates**: Batch marker position updates to prevent frame drops
+- **Memory Management**: Clean up animation frames and intervals on component unmount
+- **Track Rendering**: Use zoom-based visibility to optimize performance
+
+#### Data Synchronization
+- **Store Updates**: Coordinate between ReplayAnimationEngine and DriverTimingService
+- **Real-time Updates**: Maintain consistent 4-second interval matching OpenF1 API
+- **Session State**: Ensure lap progression and session changes are properly synchronized
+
+### Replay System File Organization
+```
+src/features/replay/
+├── components/           # UI controls and panels
+├── services/            # Core business logic and data management
+├── store/               # Zustand state management
+├── types/               # TypeScript definitions (includes openF1Types.ts)
+├── data/                # Mock data for development
+└── REPLAY_API_SPECIFICATION.md  # Backend API requirements
+```

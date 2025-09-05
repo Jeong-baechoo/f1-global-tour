@@ -1,5 +1,4 @@
 import mapboxgl from 'mapbox-gl';
-import { clearAllTrackState } from '@/src/features/circuits/services/track';
 import { getTrackCoordinates } from '@/src/features/circuits/utils/data/trackDataLoader';
 import { getCircuitCameraConfig } from '@/src/shared/utils/map/camera';
 import circuitsData from '@/data/circuits.json';
@@ -31,7 +30,6 @@ export class CircuitTrackManager {
       this.trackLayerId = `replay-${circuitId}-track`;
 
       // 트랙 데이터를 비동기로 로드하고 즉시 그리기
-      console.log(`📋 Loading track data for ${circuitId}...`);
       const trackData = await getTrackCoordinates(circuitId);
       
       if (!trackData) {
@@ -39,7 +37,7 @@ export class CircuitTrackManager {
         return;
       }
       
-      console.log(`✅ Track data loaded for ${circuitId}, coordinates:`, trackData.length, 'points');
+      // Track data loaded
       
       // 트랙 데이터 유효성 검증
       if (!Array.isArray(trackData) || trackData.length < 2) {
@@ -54,19 +52,13 @@ export class CircuitTrackManager {
         return;
       }
       
-      console.log(`📊 Track data sample:`, {
-        firstPoint: trackData[0],
-        lastPoint: trackData[trackData.length - 1],
-        totalPoints: trackData.length
-      });
+      // Track data validated
 
       // 맵 준비 후 트랙 추가
-      console.log(`🎨 Adding track to map...`);
       await this.addTrackToMapWithRetry(trackData, 3);
       
       // 트랙 추가 후 서킷으로 카메라 이동
       setTimeout(() => {
-        console.log(`📷 Flying to circuit ${circuitId}`);
         this.flyToCircuit(circuitId);
       }, 200);
 
@@ -83,7 +75,6 @@ export class CircuitTrackManager {
   }
 
   private addTrackToMap(trackCoordinates: number[][]): void {
-    console.log(`🗺️ Adding track layer ${this.trackLayerId} to map`);
     
     if (!this.map) {
       console.error('❌ No map instance for adding track');
@@ -121,7 +112,6 @@ export class CircuitTrackManager {
       });
 
       // 레이어 추가 (즉시 표시) - 최상단에 배치
-      console.log(`➕ Adding layer ${this.trackLayerId} to map at top`);
       
       // 가장 위 레이어 찾기 (라벨 레이어들 제외)
       const layers = this.map.getStyle().layers;
@@ -165,17 +155,14 @@ export class CircuitTrackManager {
         }
       }, beforeLayerId);
       
-      console.log(`✅ Successfully added track layer ${this.trackLayerId} to map`);
       
       // 레이어가 실제로 존재하는지 확인
       setTimeout(() => {
         const layerExists = this.map.getLayer(this.trackLayerId);
         const sourceExists = this.map.getSource(this.trackLayerId);
-        console.log(`🔎 Layer check - exists: ${!!layerExists}, source exists: ${!!sourceExists}`);
         
         if (layerExists) {
           const visibility = this.map.getLayoutProperty(this.trackLayerId, 'visibility');
-          console.log(`👁️ Layer visibility: ${visibility}`);
         }
       }, 100);
 
@@ -195,13 +182,11 @@ export class CircuitTrackManager {
   clearCircuitTrack(): void {
     if (!this.map) return;
 
-    console.log(`🧹 Clearing replay track: ${this.trackLayerId}`);
 
     // 기존 트랙 레이어 제거
     if (this.trackLayerId && this.map.getLayer(this.trackLayerId)) {
       try {
         this.map.removeLayer(this.trackLayerId);
-        console.log(`✅ Removed track layer: ${this.trackLayerId}`);
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`Failed to remove track layer ${this.trackLayerId}:`, error);
@@ -213,7 +198,6 @@ export class CircuitTrackManager {
     if (this.trackLayerId && this.map.getSource(this.trackLayerId)) {
       try {
         this.map.removeSource(this.trackLayerId);
-        console.log(`✅ Removed track source: ${this.trackLayerId}`);
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`Failed to remove track source ${this.trackLayerId}:`, error);
@@ -234,17 +218,12 @@ export class CircuitTrackManager {
     const trackLayer = this.map.getLayer(this.trackLayerId);
     const trackSource = this.map.getSource(this.trackLayerId);
 
-    console.log(`🔍 Track visibility check:`, {
-      trackLayerId: this.trackLayerId,
-      hasLayer: !!trackLayer,
-      hasSource: !!trackSource,
-      currentVisibility: trackLayer ? this.map.getLayoutProperty(this.trackLayerId, 'visibility') : 'N/A'
-    });
+    // Track visibility check (debug logs removed)
 
     // 리플레이 모드에서는 트랙을 항상 표시
     if (trackLayer) {
       this.map.setLayoutProperty(this.trackLayerId, 'visibility', 'visible');
-      console.log(`✅ Track visibility ensured for ${this.trackLayerId}`);
+      // Track visibility ensured
     } else {
       console.warn(`⚠️ Track layer ${this.trackLayerId} not found on map`);
     }
@@ -268,7 +247,7 @@ export class CircuitTrackManager {
         }
       };
 
-      this.map!.on('load', resolve);
+      this.map!.on('load', () => resolve());
       checkLoad(); // 즉시 체크도 해봄
     });
   }
@@ -285,17 +264,20 @@ export class CircuitTrackManager {
         await new Promise((resolve) => setTimeout(resolve, 100));
         
         if (this.map && this.map.getLayer(this.trackLayerId)) {
-          console.log(`✅ Track layer added successfully on attempt ${attempts + 1}`);
+          // Track layer added successfully
           return;
         } else {
-          throw new Error('Layer not found after adding');
+          // noinspection ExceptionCaughtLocallyJS
+            throw new Error('Layer not found after adding');
         }
       } catch (error) {
         attempts++;
-        console.warn(`⚠️ Track add attempt ${attempts} failed:`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`⚠️ Track add attempt ${attempts} failed:`, error);
+        }
         
         if (attempts < maxRetries) {
-          console.log(`🔄 Retrying in ${attempts * 200}ms...`);
+          // Retrying track add
           await new Promise((resolve) => setTimeout(resolve, attempts * 200));
         } else {
           console.error(`❌ All ${maxRetries} attempts failed to add track`);
@@ -306,7 +288,6 @@ export class CircuitTrackManager {
   }
 
   flyToCircuit(circuitId: string): void {
-    console.log(`📷 Flying to circuit: ${circuitId}`);
     
     if (!this.map) {
       console.error('❌ No map for flyToCircuit');
@@ -327,13 +308,6 @@ export class CircuitTrackManager {
 
     // 카메라 설정 가져오기
     const cameraConfig = getCircuitCameraConfig(circuitId);
-    
-    console.log(`🎥 Camera config for ${circuitId}:`, {
-      center: [circuit.location.lng, circuit.location.lat],
-      zoom: cameraConfig.zoom,
-      pitch: cameraConfig.pitch,
-      bearing: cameraConfig.bearing
-    });
     
     this.map.flyTo({
       center: [circuit.location.lng, circuit.location.lat],

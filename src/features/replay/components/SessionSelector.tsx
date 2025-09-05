@@ -5,6 +5,8 @@ import {Calendar, ChevronDown, Clock, MapPin} from 'lucide-react';
 import {useReplayActions} from '@/src/features/replay';
 import {replayDataService} from '../services';
 import {ReplaySessionData} from '../types';
+import {OpenF1MockDataService} from '@/src/features/replay/services/OpenF1MockDataService';
+import ReplayErrorHandler from '../services/ReplayErrorHandler';
 import {cn} from '@/lib/utils';
 
 interface SessionSelectorProps {
@@ -19,6 +21,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
   const [sessions, setSessions] = useState<ReplaySessionData[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(2024);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [selectedSession, setSelectedSession] = useState<ReplaySessionData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,11 +41,18 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
       if (response.success) {
         setSessions(response.data);
       } else {
-        setError(response.error?.message || 'Failed to load sessions');
+        const errorMessage = response.error?.message || 'Failed to load sessions';
+        const error = new Error(errorMessage);
+        ReplayErrorHandler.handleDataFetchError(error, { year, country });
+        setError(errorMessage);
         setSessions([]);
       }
-    } catch {
-      setError('Failed to load sessions');
+    } catch (error) {
+      const replayError = ReplayErrorHandler.handleDataFetchError(
+        error instanceof Error ? error : new Error('Unknown error occurred'),
+        { year, country, operation: 'loadSessions' }
+      );
+      setError(replayError.userFriendlyMessage);
       setSessions([]);
     } finally {
       setIsLoading(false);
@@ -64,7 +74,23 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
   }, []);
 
   const handleSessionSelect = useCallback(async (session: ReplaySessionData) => {
+    setSelectedSession(session); // 선택된 세션 상태 업데이트
     setCurrentSession(session);
+    
+    // OpenF1MockDataService에 세션 타입 업데이트
+    const openF1Service = OpenF1MockDataService.getInstance();
+    const sessionType = session.sessionType.toUpperCase() as 'RACE' | 'QUALIFYING' | 'PRACTICE';
+    
+    // 세션 타입에 따른 시간 설정
+    let totalMinutes: number | undefined;
+    if (sessionType === 'QUALIFYING') {
+      totalMinutes = 18; // Q1 기준 18분
+    } else if (sessionType === 'PRACTICE') {
+      totalMinutes = 90; // 연습 세션 90분
+    }
+    
+    openF1Service.setSessionType(sessionType, totalMinutes);
+    console.log(`🎯 Session type set to: ${sessionType}${totalMinutes ? ` (${totalMinutes} minutes)` : ''}`);
     
     // 세션 선택 시 자동으로 드라이버 데이터 로드
     try {
@@ -76,10 +102,22 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
         setDrivers(driversResponse.data);
         console.log(`✅ Loaded ${driversResponse.data.length} drivers for ${session.sessionName}`);
       } else {
-        console.error('❌ Failed to load drivers:', driversResponse.error);
+        const errorMessage = driversResponse.error?.message || 'Failed to load drivers';
+        const error = new Error(errorMessage);
+        ReplayErrorHandler.handleDriverDataError(error, { 
+          sessionKey: session.sessionKey, 
+          sessionName: session.sessionName 
+        });
       }
     } catch (error) {
-      console.error('❌ Error loading drivers:', error);
+      ReplayErrorHandler.handleDriverDataError(
+        error instanceof Error ? error : new Error('Unknown error occurred'),
+        { 
+          sessionKey: session.sessionKey, 
+          sessionName: session.sessionName,
+          operation: 'loadDrivers'
+        }
+      );
     }
     
     onSessionSelectAction?.(session);
@@ -181,8 +219,12 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
             <div
               key={session.sessionKey}
               onClick={() => handleSessionSelect(session)}
-              className="p-3 rounded border border-gray-700 hover:border-gray-600
-                         hover:bg-white/5 cursor-pointer transition-all"
+              className={cn(
+                "p-3 rounded border cursor-pointer transition-all",
+                selectedSession?.sessionKey === session.sessionKey
+                  ? "border-red-600 bg-red-600/10" // 선택된 상태
+                  : "border-gray-700 hover:border-gray-600 hover:bg-white/5" // 기본 상태
+              )}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="font-medium">{session.sessionName}</div>

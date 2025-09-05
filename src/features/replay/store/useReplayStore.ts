@@ -7,6 +7,7 @@ import {
   DriverPosition,
   ReplaySettings 
 } from '../types';
+import { DriverTimingService } from '../services/DriverTimingService';
 
 interface ReplayActions {
   // 세션 관리
@@ -124,6 +125,14 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
     setCurrentSession: (session) => {
       set({ currentSession: session });
       if (session) {
+        // DriverTimingService에 세션 정보 전달
+        try {
+          const driverTimingService = DriverTimingService.getInstance();
+          driverTimingService.setCurrentSession(session);
+        } catch (error) {
+          console.error('Failed to set session in DriverTimingService:', error);
+        }
+        
         // 세션이 변경되면 초기화
         get().actions.reset();
       }
@@ -254,7 +263,20 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
     
     // 드라이버 위치 업데이트
     updateDriverPositions: (positions) => {
-      set({ driverPositions: positions });
+      const currentState = get();
+      // 동일한 데이터인지 확인하여 불필요한 업데이트 방지
+      const positionsChanged = !currentState.driverPositions || 
+        currentState.driverPositions.length !== positions.length ||
+        currentState.driverPositions.some((pos, index) => {
+          const newPos = positions[index];
+          return pos.driverNumber !== newPos.driverNumber ||
+            pos.longitude !== newPos.longitude ||
+            pos.latitude !== newPos.latitude;
+        });
+      
+      if (positionsChanged) {
+        set({ driverPositions: positions });
+      }
     },
     
     // 초기화

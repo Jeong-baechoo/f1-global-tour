@@ -90,6 +90,8 @@ export class PositionCalculator {
     return {
       driverNumber,
       coordinates,
+      longitude: coordinates[0],
+      latitude: coordinates[1],
       currentLap: currentLap.lapNumber,
       lapProgress,
       lapTime: currentLap.lapDuration,
@@ -143,6 +145,8 @@ export class PositionCalculator {
     return {
       driverNumber,
       coordinates,
+      longitude: coordinates[0],
+      latitude: coordinates[1],
       currentLap: 1, // FastF1 데이터에서는 단일 랩
       lapProgress,
       lapTime: 90, // 평균 랩 타임

@@ -7,6 +7,7 @@ import { DriverSelector } from './DriverSelector';
 import { SessionSelector } from './SessionSelector';
 import { useReplayStore } from '@/src/features/replay';
 import { useReplayEngine } from '@/src/features/replay';
+import ReplayErrorHandler from '../services/ReplayErrorHandler';
 import { cn } from '@/lib/utils';
 
 interface ReplayPanelProps {
@@ -16,7 +17,7 @@ interface ReplayPanelProps {
   setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
-type PanelTab = 'session' | 'drivers' | 'controls' | 'settings';
+type PanelTab = 'session' | 'drivers';
 
 export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   isOpen, 
@@ -46,17 +47,34 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   }, []);
 
   const handleStartReplay = useCallback(() => {
-    if (activeTab === 'controls') {
-      // Controls 패널에 있으면 리플레이 모드 활성화 하고 패널을 닫음
+    try {
+      // Session 선택 시 바로 리플레이 모드 활성화 (Drivers 섹션 건너뛰기)
       if (setIsReplayMode) {
         setIsReplayMode(true);
       }
       onCloseAction();
-    } else {
-      // 다른 탭에 있으면 Controls 패널로 이동
-      setActiveTab('controls');
+      
+      // // 기존 로직 (주석처리)
+      // if (activeTab === 'drivers') {
+      //   // Drivers 패널에 있으면 리플레이 모드 활성화 하고 패널을 닫음
+      //   if (setIsReplayMode) {
+      //     setIsReplayMode(true);
+      //   }
+      //   onCloseAction();
+      // } else {
+      //   // Session 탭에 있으면 Drivers 패널로 이동
+      //   setActiveTab('drivers');
+      // }
+    } catch (error) {
+      ReplayErrorHandler.handleUserInteractionError(
+        error instanceof Error ? error : new Error('Failed to start replay'),
+        {
+          currentSession: currentSession?.sessionKey,
+          operation: 'startReplay'
+        }
+      );
     }
-  }, [activeTab, onCloseAction, setIsReplayMode]);
+  }, [onCloseAction, setIsReplayMode, currentSession]);
 
   const tabs = useMemo(() => [
     {
@@ -64,26 +82,21 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
       label: 'Session',
       icon: Calendar,
       disabled: false
-    },
-    {
-      id: 'drivers' as PanelTab,
-      label: 'Drivers',
-      icon: Users,
-      disabled: !currentSession
-    },
-    {
-      id: 'controls' as PanelTab,
-      label: 'Controls',
-      icon: Settings,
-      disabled: !currentSession
     }
-  ], [currentSession]);
+    // // Drivers 탭 임시 비활성화 (주석처리)
+    // {
+    //   id: 'drivers' as PanelTab,
+    //   label: 'Drivers',
+    //   icon: Users,
+    //   disabled: !currentSession
+    // }
+  ], []);
 
   if (!isOpen) return null;
 
   return (
     <div className={cn(
-      "fixed inset-0 z-50 flex items-center justify-center p-4",
+      "fixed inset-0 z-[60] flex items-center justify-center p-4",
       "bg-black/50 backdrop-blur-sm",
       className
     )}>
@@ -112,88 +125,16 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
           </div>
         )}
 
-        <div className="flex h-[600px]">
-          {/* 탭 네비게이션 */}
-          <div className="w-48 bg-gray-800 border-r border-gray-700">
-            <div className="p-4">
-              <div className="space-y-1">
-                {tabs.map(tab => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  const isDisabled = tab.disabled;
-
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => !isDisabled && setActiveTab(tab.id)}
-                      disabled={isDisabled}
-                      className={cn(
-                        "w-full flex items-center space-x-3 px-3 py-2 rounded text-left transition-colors",
-                        isActive 
-                          ? "bg-red-600 text-white" 
-                          : isDisabled
-                            ? "text-gray-600 cursor-not-allowed"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* 탭 콘텐츠 */}
-          <div className="flex-1 overflow-auto">
-            <div className="p-4">
-              {activeTab === 'session' && (
-                <SessionSelector onSessionSelectAction={handleSessionSelect} />
-              )}
-              
-              {activeTab === 'drivers' && currentSession && (
-                <DriverSelector />
-              )}
-              
-              {activeTab === 'controls' && currentSession && (
-                <div className="space-y-4">
-                  <ReplayControls />
-                  
-                  {/* 추가 컨트롤 옵션들 */}
-                  <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white border border-white/10">
-                    <h4 className="font-semibold mb-3">Replay Options</h4>
-                    
-                    <div className="space-y-3">
-                      <label className="flex items-center space-x-2">
-                        <input 
-                          type="checkbox" 
-                          className="rounded border-gray-600 bg-gray-700"
-                        />
-                        <span className="text-sm">Show driver trajectories</span>
-                      </label>
-                      
-                      <label className="flex items-center space-x-2">
-                        <input 
-                          type="checkbox" 
-                          className="rounded border-gray-600 bg-gray-700"
-                        />
-                        <span className="text-sm">Follow selected driver</span>
-                      </label>
-                      
-                      <label className="flex items-center space-x-2">
-                        <input 
-                          type="checkbox" 
-                          className="rounded border-gray-600 bg-gray-700" 
-                          defaultChecked
-                        />
-                        <span className="text-sm">Show lap information</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* 컨텐츠 영역 - 탭 네비게이션 임시 제거 */}
+        <div className="h-[600px] overflow-auto">
+          <div className="p-4">
+            {/* SessionSelector 항상 표시 */}
+            <SessionSelector onSessionSelectAction={handleSessionSelect} />
+            
+            {/* Drivers 섹션 임시 비활성화 (주석처리) */}
+            {/* {activeTab === 'drivers' && currentSession && (
+              <DriverSelector />
+            )} */}
           </div>
         </div>
 
@@ -221,7 +162,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
                   onClick={handleStartReplay}
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                 >
-                  {activeTab === 'controls' ? 'Start Replay' : 'Go to Controls'}
+                  Start Replay
                 </button>
               )}
             </div>

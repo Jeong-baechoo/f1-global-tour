@@ -110,6 +110,8 @@ export interface ReplayState {
 export interface DriverPosition {
   driverNumber: number;
   coordinates: [number, number]; // [lng, lat]
+  longitude: number;
+  latitude: number;
   currentLap: number;
   lapProgress: number; // 0-1
   lapTime: number | null;
@@ -238,4 +240,18 @@ export interface PositionCalculationOptions {
   useInterpolation: boolean;
   smoothingFactor: number;
   accuracyThreshold: number;
+}
+
+// 레이스 상태 정보 (플래그 포함)
+export interface RaceStatus {
+  sessionType: 'RACE' | 'QUALIFYING' | 'PRACTICE';
+  currentFlag: 'GREEN' | 'RED' | 'SC' | 'VSC';
+  // 레이스용 프로퍼티
+  currentLap: number;
+  totalLaps: number;
+  lapFlags: ('NONE' | 'RED' | 'SC' | 'VSC')[];
+  // 퀄리파잉/연습용 프로퍼티
+  currentMinute: number;
+  totalMinutes: number;
+  minuteFlags: ('NONE' | 'RED' | 'SC' | 'VSC')[];
 }

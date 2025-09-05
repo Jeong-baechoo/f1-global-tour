@@ -19,6 +19,8 @@ interface MapContainerProps {
   // 리플레이 모드 관련 props
   isReplayMode?: boolean;
   setIsReplayMode?: (isReplayMode: boolean) => void;
+  onDriverSelect?: (driverCode: string) => void;
+  selectedDriverForTelemetry?: string | null;
 }
 
 /**
@@ -35,6 +37,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   resetPanelStates,
   isReplayMode = false,
   setIsReplayMode,
+  onDriverSelect,
+  selectedDriverForTelemetry,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { setUserInteracting, map, isMapLoaded, sectorInfoEnabled, drsInfoEnabled, elevationEnabled, setSectorInfoEnabled, setDrsInfoEnabled, setElevationEnabled } = useMapStore();
@@ -150,6 +154,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           resetPanelStates={resetPanelStates}
           isReplayMode={isReplayMode}
           setIsReplayMode={setIsReplayMode}
+          onDriverSelect={onDriverSelect}
+          selectedDriverForTelemetry={selectedDriverForTelemetry}
         />
       )}
     </div>

@@ -74,12 +74,12 @@ export interface RealtimeDriverData {
     sector3: number | null;
   };
   sector_performance: {
-    sector1: 'fastest' | 'personal_best' | 'normal' | 'slow';
-    sector2: 'fastest' | 'personal_best' | 'normal' | 'slow';
-    sector3: 'fastest' | 'personal_best' | 'normal' | 'slow';
+    sector1: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+    sector2: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+    sector3: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
   };
   tire_info: {
-    compound: string;
+    compound: 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET';
     age: number; // laps on current tires
     pit_stops: number;
   };
@@ -87,5 +87,13 @@ export interface RealtimeDriverData {
     i1_speed: number | null;
     i2_speed: number | null;
     st_speed: number | null;
+  };
+  telemetry: {
+    speed: number; // km/h
+    gear: number; // 1-8, 0 for neutral, -1 for reverse  
+    throttle: number; // 0-100%
+    brake: number; // 0-100%
+    drs_enabled: boolean;
+    drs_available: boolean;
   };
 }

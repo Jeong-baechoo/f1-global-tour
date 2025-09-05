@@ -7,9 +7,9 @@ export interface DriverTiming {
   currentLapTime: string; // "1:14.119"
   bestLapTime: string; // "1:13.965"
   miniSector: {
-    sector1: 'fastest' | 'personal_best' | 'normal' | 'slow'; // purple, green, yellow, gray
-    sector2: 'fastest' | 'personal_best' | 'normal' | 'slow';
-    sector3: 'fastest' | 'personal_best' | 'normal' | 'slow';
+    sector1: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none'; // purple, green, yellow, gray, transparent
+    sector2: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+    sector3: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
   };
   tireInfo: {
     pitStops: number; // 1 for "1PIT", -1 for "-PIT"

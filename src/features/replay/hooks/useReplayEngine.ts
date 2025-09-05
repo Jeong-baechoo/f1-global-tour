@@ -41,7 +41,6 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
 
     if (!engineRef.current) {
       engineRef.current = new ReplayAnimationEngine(map);
-      console.log('🎨 Replay engine initialized');
     }
     
     // 엔진 콜백 설정
@@ -71,7 +70,6 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
       if (engineRef.current) {
         engineRef.current.destroy();
         engineRef.current = null;
-        console.log('🎨 Replay engine destroyed');
       }
     };
   }, [map, setCurrentTime, updateDriverPositions]);
@@ -86,14 +84,12 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     }
 
     try {
-      console.log('🎨 Loading session:', session.sessionName);
       const success = await engineRef.current.loadReplayData(session);
       
       if (success) {
         setTotalDuration(5400);
-        console.log('✅ Session loaded successfully');
       } else {
-        console.error('❌ Failed to load session');
+        console.error('Failed to load session');
       }
       
       return success;
@@ -107,35 +103,30 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
   const play = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.play();
-      console.log('▶️ Replay started');
     }
   }, []);
 
   const pause = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.pause();
-      console.log('⏸️ Replay paused');
     }
   }, []);
 
   const stop = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.stop();
-      console.log('⏹️ Replay stopped');
     }
   }, []);
 
   const setSpeed = useCallback((speed: number) => {
     if (engineRef.current) {
       engineRef.current.setPlaybackSpeed(speed);
-      console.log(`⏩ Playback speed set to ${speed}x`);
     }
   }, []);
 
   const seekTo = useCallback((time: number) => {
     if (engineRef.current) {
       engineRef.current.seekTo(time);
-      console.log(`⏭️ Seeked to ${time.toFixed(1)}s`);
     }
   }, []);
 
@@ -164,18 +155,14 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     if (!engineRef.current) return;
 
     if (selectedDrivers.length === 0) {
-      console.log('🏎️ No drivers selected, showing all drivers');
       return;
     }
-
-    console.log(`🏎️ Selected ${selectedDrivers.length} drivers:`, selectedDrivers);
     // TODO: 개별 마커 표시/숨기기 구현
   }, [selectedDrivers]);
 
   // 현재 세션이 변경되면 로드 (엔진이 준비된 후에만)
   useEffect(() => {
     if (currentSession && engineRef.current) {
-      console.log('🎬 Loading session:', currentSession.sessionName);
       loadSession(currentSession);
     }
   }, [currentSession, loadSession, map]); // map을 dependency에 추가하여 맵 로드 후 재시도
@@ -183,7 +170,6 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
   const cleanup = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.cleanup();
-      console.log('🧹 Manual cleanup performed');
     }
   }, []);
 

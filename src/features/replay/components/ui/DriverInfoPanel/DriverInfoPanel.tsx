@@ -4,16 +4,18 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { DriverInfoPanelProps } from './types';
 import { cn } from '@/lib/utils';
 import { useReplayStore } from '@/src/features/replay';
-import { getDriverTimings } from './mockData';
-import { RealtimeUpdateService } from '../../../services/RealtimeUpdateService';
+import { DriverTimingService } from '@/src/features/replay';
+import { RealtimeUpdateService } from '@/src/features/replay';
+import ReplayErrorHandler from '../../../services/ReplayErrorHandler';
 
-const getSectorColor = (performance: 'fastest' | 'personal_best' | 'normal' | 'slow') => {
+const getSectorColor = (performance: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none') => {
   switch (performance) {
     case 'fastest': return 'bg-purple-500'; // Purple for fastest overall
     case 'personal_best': return 'bg-green-500'; // Green for personal best
     case 'normal': return 'bg-yellow-500'; // Yellow for normal
     case 'slow': return 'bg-gray-600'; // Gray for slow
-    default: return 'bg-gray-600';
+    case 'none': return 'bg-gray-300'; // Light gray for no data
+    default: return 'bg-gray-300';
   }
 };
 
@@ -38,6 +40,7 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
   const currentLap = useReplayStore(state => state.currentLap);
   const currentSession = useReplayStore(state => state.currentSession);
   const isPlaying = useReplayStore(state => state.isPlaying);
+  const driverPositions = useReplayStore(state => state.driverPositions);
   const [drivers, setDrivers] = useState(propDrivers || []);
   const [updateKey, setUpdateKey] = useState(0);
 
@@ -45,11 +48,29 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
   const updateDriverData = useCallback(() => {
     if (isReplayMode && currentSession) {
       try {
-        const updatedDrivers = getDriverTimings(currentLap);
+        const driverTimingService = DriverTimingService.getInstance();
+        driverTimingService.setCurrentLap(currentLap);
+        
+        // 실제 드라이버 위치를 DriverTimingService에 전달
+        if (driverPositions.length > 0) {
+          driverTimingService.updateDriverPositions(driverPositions);
+        }
+        
+        const updatedDrivers = driverTimingService.generateCurrentDriverTimings();
         setDrivers(updatedDrivers);
         setUpdateKey(prev => prev + 1); // 강제 리렌더링을 위한 키 업데이트
       } catch (error) {
-        console.warn('Failed to update driver timings:', error);
+        ReplayErrorHandler.handleDriverDataError(
+          error instanceof Error ? error : new Error('Driver timing update failed'),
+          { 
+            currentLap,
+            currentSession: currentSession?.sessionKey,
+            driverCount: driverPositions.length,
+            operation: 'updateDriverTimings'
+          }
+        );
+        
+        // 폴백으로 원본 드라이버 데이터 사용
         if (propDrivers) {
           setDrivers(propDrivers);
         }
@@ -57,7 +78,7 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
     } else if (propDrivers) {
       setDrivers(propDrivers);
     }
-  }, [isReplayMode, currentSession, currentLap, propDrivers]);
+  }, [isReplayMode, currentSession, currentLap, propDrivers, driverPositions]);
 
   // 실시간 업데이트 서비스 관리
   useEffect(() => {
@@ -67,7 +88,6 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
       // 리플레이 재생 중일 때 실시간 업데이트 시작
       realtimeService.onUpdate(updateDriverData);
       realtimeService.startRealtimeUpdates();
-      console.log('🏎️ Started realtime driver updates for replay mode');
     } else {
       // 리플레이 일시정지 또는 비활성화 시 실시간 업데이트 중지
       realtimeService.offUpdate(updateDriverData);
@@ -90,13 +110,13 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
 
   return (
     <div className={cn(
-      "fixed right-6 top-24 z-40 w-[28rem]",
+      "fixed right-6 top-24 z-40 w-[26rem]",
       "flex flex-col",
       className
     )}
     style={{ 
       height: '66rem', // 기본 높이 (20명 드라이버용)
-      maxHeight: 'calc(100vh - 8rem)', // 화면 높이에서 top-24(6rem) + 여백(2rem) 제외
+      maxHeight: 'calc(100vh - 13rem)', // 화면 높이에서 top-24(6rem) + 하단 마진(6rem) 제외
     }}
     >
       <div className="relative rounded-3xl shadow-2xl p-1.5 transition-shadow duration-300 h-full flex flex-col"
@@ -129,7 +149,27 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
               "hover:bg-white/[0.05] transition-colors",
               selectedDrivers.includes(driver.driverCode) && "bg-white/[0.08]"
             )}
-            onClick={() => onDriverSelect?.(driver.driverCode)}
+            onClick={(e) => {
+              try {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`🖱️ Driver clicked: ${driver.driverCode}`);
+                onDriverSelect?.(driver.driverCode);
+              } catch (error) {
+                ReplayErrorHandler.handleUserInteractionError(
+                  error instanceof Error ? error : new Error('Driver selection failed'),
+                  {
+                    driverCode: driver.driverCode,
+                    driverPosition: driver.position,
+                    operation: 'driverSelect'
+                  }
+                );
+              }
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             <div className="grid grid-cols-12 gap-6 items-center">
               {/* Position & Driver */}

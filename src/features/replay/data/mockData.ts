@@ -1,6 +1,17 @@
 import { ReplaySessionData, ReplayDriverData, ReplayLapData } from '../types';
 
 export const mockSessions: ReplaySessionData[] = [
+  // Monaco 2-Lap Debug 시나리오 (디버깅 전용)
+  {
+    sessionKey: 9999,
+    sessionName: 'Race (2-Lap Debug)',
+    sessionType: 'Race',
+    circuitShortName: 'Monaco',
+    countryName: 'Monaco',
+    year: 2024,
+    dateStart: '2024-05-26T13:00:00Z',
+    dateEnd: '2024-05-26T15:30:00Z'
+  },
   {
     sessionKey: 9161,
     sessionName: 'Race',

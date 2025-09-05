@@ -34,6 +34,8 @@ interface MapProps {
   // 리플레이 모드 관련 props
   isReplayMode?: boolean;
   setIsReplayMode?: (isReplayMode: boolean) => void;
+  onDriverSelect?: (driverCode: string) => void;
+  selectedDriverForTelemetry?: string | null;
 }
 
 /**
@@ -188,6 +190,8 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       resetPanelStates={props.resetPanelStates}
       isReplayMode={props.isReplayMode}
       setIsReplayMode={props.setIsReplayMode}
+      onDriverSelect={props.onDriverSelect}
+      selectedDriverForTelemetry={props.selectedDriverForTelemetry}
     >
       <MapCanvas
         onLoad={handleMapLoad}
