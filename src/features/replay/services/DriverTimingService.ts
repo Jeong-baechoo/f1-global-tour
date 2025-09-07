@@ -158,7 +158,6 @@ export class DriverTimingService {
         lap.lapDuration < best.lapDuration ? lap : best
       );
 
-      const totalTime = driverLaps.reduce((total, lap) => total + lap.lapDuration, 0);
       const gapToLeader = this.calculateGapToLeader(driverLaps, leaderTime);
 
       // 섹터 성능 계산 (간소화된 버전)

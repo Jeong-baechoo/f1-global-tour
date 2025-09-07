@@ -46,7 +46,7 @@ export function FlagInfoPanel({
     }
   };
 
-  const getBarColor = (flagStatus: LapFlagStatus, index: number, isCurrent: boolean) => {
+  const getBarColor = (flagStatus: LapFlagStatus, index: number) => {
     const isRace = sessionType === 'RACE';
     const currentPosition = isRace ? currentLap : currentMinute;
     const itemNumber = index + 1;
@@ -149,7 +149,7 @@ export function FlagInfoPanel({
                 className={cn(
                   "h-4 w-full rounded-sm transition-all duration-300 relative overflow-hidden",
                   "shadow-sm border border-black/20",
-                  getBarColor(blockFlag, index, isCurrentBlock),
+                  getBarColor(blockFlag, index),
                   isCurrentBlock && "ring-2 ring-white ring-opacity-80 scale-110 z-10"
                 )}
                 title={`Min ${startMinute}-${endMinute}: ${blockFlag === 'NONE' ? 'Green Flag' : blockFlag}`}
@@ -185,7 +185,7 @@ export function FlagInfoPanel({
                 className={cn(
                   "h-4 w-full rounded-sm transition-all duration-300 relative overflow-hidden",
                   "shadow-sm border border-black/20",
-                  getBarColor(itemFlag, index, isCurrent),
+                  getBarColor(itemFlag, index),
                   isCurrent && "ring-2 ring-white ring-opacity-80 scale-110 z-10"
                 )}
                 title={`${itemLabel} ${itemNumber}: ${itemFlag === 'NONE' ? 'Green Flag' : itemFlag}`}

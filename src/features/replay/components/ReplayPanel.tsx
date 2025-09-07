@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { X, Settings, Users, Calendar } from 'lucide-react';
-import { ReplayControls } from './ReplayControls';
-import { DriverSelector } from './DriverSelector';
+import React, { useCallback, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { SessionSelector } from './SessionSelector';
 import { useReplayStore } from '@/src/features/replay';
 import { useReplayEngine } from '@/src/features/replay';
@@ -17,15 +15,12 @@ interface ReplayPanelProps {
   setIsReplayMode?: (isReplayMode: boolean) => void;
 }
 
-type PanelTab = 'session' | 'drivers';
-
 export const ReplayPanel: React.FC<ReplayPanelProps> = ({
   isOpen, 
   onCloseAction,
   className,
   setIsReplayMode
 }) => {
-  const [activeTab, setActiveTab] = useState<PanelTab>('session');
   const currentSession = useReplayStore(state => state.currentSession);
   
   // ReplayEngine 훅 사용
@@ -33,12 +28,9 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
 
   // 세션 상태에 따른 탭 전환
   useEffect(() => {
+    // Session handling logic
     if (currentSession) {
-      // 세션이 선택되면 자동으로 드라이버 탭으로 전환
-      setActiveTab('drivers');
-    } else {
-      // 세션이 없으면 session 탭으로 돌아가기
-      setActiveTab('session');
+      // Session is selected
     }
   }, [currentSession]);
 
@@ -63,27 +55,19 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
     }
   }, [onCloseAction, setIsReplayMode, currentSession]);
 
-  const tabs = useMemo(() => [
-    {
-      id: 'session' as PanelTab,
-      label: 'Session',
-      icon: Calendar,
-      disabled: false
-    }
-  ], []);
 
   if (!isOpen) return null;
 
   return (
     <div className={cn(
-      "fixed inset-0 z-[60] flex items-center justify-center p-4",
+      "fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4",
       "bg-black/50 backdrop-blur-sm",
       className
     )}>
-      <div className="bg-gray-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-gray-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white">F1 Race Replay</h2>
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700 flex-shrink-0">
+          <h2 className="text-lg sm:text-xl font-bold text-white">F1 Race Replay</h2>
           <button
             onClick={onCloseAction}
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
@@ -94,27 +78,27 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
 
         {/* 세션 정보 */}
         {currentSession && (
-          <div className="px-4 py-2 bg-gray-800 border-b border-gray-700">
-            <div className="text-sm text-gray-300">
+          <div className="px-3 sm:px-4 py-2 bg-gray-800 border-b border-gray-700 flex-shrink-0">
+            <div className="text-xs sm:text-sm text-gray-300">
               <span className="font-medium">{currentSession.sessionName}</span>
-              <span className="mx-2">•</span>
-              <span>{currentSession.circuitShortName}</span>
-              <span className="mx-2">•</span>
-              <span>{currentSession.year}</span>
+              <span className="mx-1 sm:mx-2 hidden sm:inline">•</span>
+              <span className="hidden sm:inline">{currentSession.circuitShortName}</span>
+              <span className="mx-1 sm:mx-2 hidden sm:inline">•</span>
+              <span className="ml-2 sm:ml-0">{currentSession.year}</span>
             </div>
           </div>
         )}
 
-        <div className="h-[600px] overflow-auto">
-          <div className="p-4">
+        <div className="flex-1 overflow-auto min-h-0">
+          <div className="p-3 sm:p-4">
             <SessionSelector onSessionSelectAction={handleSessionSelect} />
           </div>
         </div>
 
         {/* 하단 액션 */}
-        <div className="p-4 border-t border-gray-700 bg-gray-800">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-400">
+        <div className="p-3 sm:p-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+            <div className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
               {currentSession ? (
                 `Session loaded: ${currentSession.sessionName}`
               ) : (
@@ -122,10 +106,10 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
               )}
             </div>
             
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 justify-center sm:justify-end">
               <button
                 onClick={onCloseAction}
-                className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-400 hover:text-white transition-colors"
               >
                 Close
               </button>
@@ -133,7 +117,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
               {currentSession && (
                 <button
                   onClick={handleStartReplay}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
                 >
                   Start Replay
                 </button>

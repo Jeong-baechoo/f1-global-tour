@@ -1,7 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { getTrackCoordinates } from '@/src/features/circuits/utils/data/trackDataLoader';
 import { getCircuitCameraConfig } from '@/src/shared/utils/map/camera';
-import { TrackEventBus } from '@/src/features/circuits/services/track/events/TrackEventBus';
 import { SectorTrackManager } from '@/src/features/circuits/services/track/sector/SectorTrackManager';
 import { DRSZoneManager } from '@/src/features/circuits/services/track/drs/DRSZoneManager';
 import { DRSAnimationController } from '@/src/features/circuits/services/track/animation/DRSAnimationController';
@@ -167,10 +166,9 @@ export class CircuitTrackManager {
       // 레이어가 실제로 존재하는지 확인
       setTimeout(() => {
         const layerExists = this.map.getLayer(this.trackLayerId);
-        const sourceExists = this.map.getSource(this.trackLayerId);
         
         if (layerExists) {
-          const visibility = this.map.getLayoutProperty(this.trackLayerId, 'visibility');
+          // Track layer exists - ready for use
         }
       }, 100);
 
@@ -224,7 +222,6 @@ export class CircuitTrackManager {
     }
 
     const trackLayer = this.map.getLayer(this.trackLayerId);
-    const trackSource = this.map.getSource(this.trackLayerId);
 
     // Track visibility check (debug logs removed)
 
@@ -335,26 +332,26 @@ export class CircuitTrackManager {
     if (typeof window === 'undefined') return;
     
     // Sector toggle handler
-    const sectorHandler = (event: any) => {
+    const sectorHandler = (event: CustomEvent<{ enabled: boolean }>) => {
       const { enabled } = event.detail;
       this.handleSectorToggle(enabled);
     };
     
     // DRS toggle handlers  
-    const drsZonesHandler = (event: any) => {
+    const drsZonesHandler = (event: CustomEvent<{ enabled: boolean }>) => {
       const { enabled } = event.detail;
       DRSZoneManager.toggleDRSZoneLayers(this.trackLayerId, enabled, this.map);
     };
     
-    const drsAnimationsHandler = (event: any) => {
+    const drsAnimationsHandler = (event: CustomEvent<{ enabled: boolean }>) => {
       const { enabled } = event.detail;
       DRSAnimationController.toggleAnimation(this.trackLayerId, enabled);
     };
 
     // Register event listeners
-    window.addEventListener('track:toggleSectorInfo', sectorHandler);
-    window.addEventListener('track:toggleDRSZones', drsZonesHandler);
-    window.addEventListener('track:toggleDRSAnimations', drsAnimationsHandler);
+    window.addEventListener('track:toggleSectorInfo', sectorHandler as EventListener);
+    window.addEventListener('track:toggleDRSZones', drsZonesHandler as EventListener);
+    window.addEventListener('track:toggleDRSAnimations', drsAnimationsHandler as EventListener);
   }
 
   /**

@@ -14,7 +14,7 @@ export interface ReplayError {
   type: ReplayErrorType;
   message: string;
   originalError?: Error;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   timestamp: Date;
   userFriendlyMessage: string;
   recoveryAction?: string;
@@ -45,7 +45,7 @@ class ReplayErrorHandler {
   /**
    * 데이터 페치 에러 처리
    */
-  static handleDataFetchError(error: Error, context?: Record<string, any>): ReplayError {
+  static handleDataFetchError(error: Error, context?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {
@@ -67,7 +67,7 @@ class ReplayErrorHandler {
   /**
    * 사용자 인터랙션 에러 처리
    */
-  static handleUserInteractionError(error: Error, context?: Record<string, any>): ReplayError {
+  static handleUserInteractionError(error: Error, context?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {
@@ -89,7 +89,7 @@ class ReplayErrorHandler {
   /**
    * 세션 로딩 에러 처리
    */
-  static handleSessionLoadError(error: Error, sessionInfo?: Record<string, any>): ReplayError {
+  static handleSessionLoadError(error: Error, sessionInfo?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {
@@ -111,7 +111,7 @@ class ReplayErrorHandler {
   /**
    * 드라이버 데이터 에러 처리
    */
-  static handleDriverDataError(error: Error, driverInfo?: Record<string, any>): ReplayError {
+  static handleDriverDataError(error: Error, driverInfo?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {
@@ -133,7 +133,7 @@ class ReplayErrorHandler {
   /**
    * 텔레메트리 에러 처리
    */
-  static handleTelemetryError(error: Error, context?: Record<string, any>): ReplayError {
+  static handleTelemetryError(error: Error, context?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {
@@ -155,7 +155,7 @@ class ReplayErrorHandler {
   /**
    * 애니메이션 에러 처리
    */
-  static handleAnimationError(error: Error, context?: Record<string, any>): ReplayError {
+  static handleAnimationError(error: Error, context?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {
@@ -177,7 +177,7 @@ class ReplayErrorHandler {
   /**
    * 일반적인 에러 처리
    */
-  static handleGenericError(error: Error, type: ReplayErrorType = 'UNKNOWN_ERROR', context?: Record<string, any>): ReplayError {
+  static handleGenericError(error: Error, type: ReplayErrorType = 'UNKNOWN_ERROR', context?: Record<string, unknown>): ReplayError {
     const handler = ReplayErrorHandler.getInstance();
     
     const replayError: ReplayError = {

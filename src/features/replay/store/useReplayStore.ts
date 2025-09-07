@@ -7,7 +7,7 @@ import {
   DriverPosition,
   ReplaySettings 
 } from '../types';
-import { DriverTimingService } from '../services/DriverTimingService';
+import { DriverTimingService } from '@/src/features/replay';
 
 interface ReplayActions {
   // 세션 관리

@@ -19,7 +19,13 @@ const getSectorColor = (performance: 'fastest' | 'personal_best' | 'normal' | 's
   }
 };
 
-const SectorDisplay: React.FC<{ sector: any }> = ({ sector }) => (
+interface SectorData {
+  sector1: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+  sector2: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+  sector3: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+}
+
+const SectorDisplay: React.FC<{ sector: SectorData }> = ({ sector }) => (
   <div className="flex items-center gap-1">
     {/* Sector 1 */}
     <div className={cn("w-4 h-3 rounded-sm", getSectorColor(sector.sector1))} />
@@ -90,7 +96,7 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
     } else if (propDrivers) {
       setDrivers(propDrivers);
     }
-  }, [isReplayMode, currentSession?.sessionKey, currentLap]); // 의존성 최소화
+  }, [isReplayMode, currentSession, driverPositions, propDrivers, currentLap]);
 
   // 실시간 업데이트 서비스 관리
   useEffect(() => {

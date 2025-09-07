@@ -36,28 +36,6 @@ interface TrackInfoTogglePanelProps {
   initialDRSEnabled?: boolean;
 }
 
-// 토글 헬퍼 함수
-const createToggleHandler = (
-  currentState: boolean,
-  setState: (state: boolean) => void,
-  events: string[],
-  callback?: (enabled: boolean) => void
-) => {
-  return useCallback(() => {
-    const newState = !currentState;
-    setState(newState);
-    
-    // 커스텀 이벤트 발생
-    events.forEach(eventName => {
-      window.dispatchEvent(new CustomEvent(eventName, { 
-        detail: { enabled: newState } 
-      }));
-    });
-    
-    callback?.(newState);
-  }, [currentState, setState, events, callback]);
-};
-
 export const TrackInfoTogglePanel: React.FC<TrackInfoTogglePanelProps> = ({
   className,
   onSectorToggle,
@@ -68,19 +46,29 @@ export const TrackInfoTogglePanel: React.FC<TrackInfoTogglePanelProps> = ({
   const [sectorEnabled, setSectorEnabled] = useState(initialSectorEnabled);
   const [drsEnabled, setDrsEnabled] = useState(initialDRSEnabled);
 
-  const handleSectorToggle = createToggleHandler(
-    sectorEnabled,
-    setSectorEnabled,
-    [TRACK_EVENTS.SECTOR],
-    onSectorToggle
-  );
+  const handleSectorToggle = useCallback(() => {
+    const newState = !sectorEnabled;
+    setSectorEnabled(newState);
+    
+    window.dispatchEvent(new CustomEvent(TRACK_EVENTS.SECTOR, { 
+      detail: { enabled: newState } 
+    }));
+    
+    onSectorToggle?.(newState);
+  }, [sectorEnabled, onSectorToggle]);
 
-  const handleDRSToggle = createToggleHandler(
-    drsEnabled,
-    setDrsEnabled,
-    [TRACK_EVENTS.DRS_ZONES, TRACK_EVENTS.DRS_ANIMATIONS],
-    onDRSToggle
-  );
+  const handleDRSToggle = useCallback(() => {
+    const newState = !drsEnabled;
+    setDrsEnabled(newState);
+    
+    [TRACK_EVENTS.DRS_ZONES, TRACK_EVENTS.DRS_ANIMATIONS].forEach(eventName => {
+      window.dispatchEvent(new CustomEvent(eventName, { 
+        detail: { enabled: newState } 
+      }));
+    });
+    
+    onDRSToggle?.(newState);
+  }, [drsEnabled, onDRSToggle]);
 
   return (
     <div

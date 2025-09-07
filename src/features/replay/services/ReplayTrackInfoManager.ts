@@ -160,7 +160,7 @@ export class ReplayTrackInfoManager {
 
     const sourceData = trackSource._data;
     if (sourceData && typeof sourceData === 'object' && 'geometry' in sourceData) {
-      const geometry = sourceData.geometry as any;
+      const geometry = sourceData.geometry as { coordinates?: number[][] };
       if (geometry?.coordinates && Array.isArray(geometry.coordinates)) {
         return geometry.coordinates;
       }

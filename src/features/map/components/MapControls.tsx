@@ -9,6 +9,7 @@ import { DriverTelemetryPanel, FlagInfoPanel, TrackInfoTogglePanel, ErrorNotific
 import { OpenF1MockDataService } from '@/src/features/replay/services';
 import ReplayErrorHandler from '@/src/features/replay/services/ReplayErrorHandler';
 import type { Circuit } from '@/src/features/circuits/types';
+import type { RealtimeDriverData } from '@/src/features/replay/types/openF1Types';
 
 interface MapControlsProps {
   map: mapboxgl.Map | null;
@@ -38,8 +39,6 @@ interface MapControlsProps {
  * CircuitInfoPanel, ZoomScrollbar를 포함
  */
 export const MapControls: React.FC<MapControlsProps> = ({
-  map,
-  isCircuitView,
   sectorInfoEnabled,
   drsInfoEnabled,
   elevationEnabled,
@@ -52,20 +51,24 @@ export const MapControls: React.FC<MapControlsProps> = ({
   resetPanelStates,
   isReplayMode = false,
   setIsReplayMode,
-  onDriverSelect,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onDriverSelect: _,
   selectedDriverForTelemetry,
+  // Accept but don't use these props to maintain compatibility
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  map: __,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  isCircuitView: ___
 }) => {
   const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);
-  const [selectedDriverTelemetry, setSelectedDriverTelemetry] = useState<any>(null);
+  const [selectedDriverTelemetry, setSelectedDriverTelemetry] = useState<RealtimeDriverData | null>(null);
   
   // 사용자 선택 보호를 위한 락 메커니즘
   const userSelectionLockRef = useRef<NodeJS.Timeout | null>(null);
   const isUserSelectionActiveRef = useRef(false);
   
   // 리플레이 스토어에서 선택된 드라이버 정보 가져오기
-  const selectedDrivers = useReplayStore(state => state.selectedDrivers);
   const isPlaying = useReplayStore(state => state.isPlaying);
-  const currentSession = useReplayStore(state => state.currentSession);
   
   
   // 텔레메트리 데이터 업데이트 - 선택된 드라이버 우선, 없으면 1등 드라이버 표시
@@ -75,6 +78,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
       return;
     }
 
+    // Capture current timer reference at effect start for cleanup
+    const currentTimer = userSelectionLockRef.current;
     const openF1Service = OpenF1MockDataService.getInstance();
     
     const updateTelemetry = () => {
@@ -130,8 +135,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
     return () => {
       clearInterval(interval);
       // 사용자 선택 락 타이머도 정리
-      if (userSelectionLockRef.current) {
-        clearTimeout(userSelectionLockRef.current);
+      if (currentTimer) {
+        clearTimeout(currentTimer);
       }
     };
   }, [isReplayMode, selectedDriverForTelemetry]);
@@ -145,45 +150,6 @@ export const MapControls: React.FC<MapControlsProps> = ({
     setIsReplayPanelOpen(!isReplayPanelOpen);
   };
 
-  const handleDriverSelect = (driverCode: string) => {
-    // 🔒 사용자 선택 락 활성화 (5초간 자동 업데이트 차단)
-    isUserSelectionActiveRef.current = true;
-    
-    // 기존 타이머가 있으면 클리어
-    if (userSelectionLockRef.current) {
-      clearTimeout(userSelectionLockRef.current);
-    }
-    
-    // 즉시 텔레메트리 업데이트 (클릭 응답성 향상)
-    try {
-      const openF1Service = OpenF1MockDataService.getInstance();
-      const realtimeData = openF1Service.generateRealtimeDriverData();
-      const targetDriver = realtimeData.find(driver => driver.name_acronym === driverCode);
-      
-      if (targetDriver) {
-        setSelectedDriverTelemetry(targetDriver);
-        console.log(`🎯 User selected driver: ${driverCode} - Lock activated for 5 seconds`);
-      }
-    } catch (error) {
-      ReplayErrorHandler.handleUserInteractionError(
-        error instanceof Error ? error : new Error('Driver selection failed'),
-        {
-          driverCode,
-          operation: 'immediateDriverSelection',
-          lockState: isUserSelectionActiveRef.current
-        }
-      );
-    }
-    
-    // 상위 컴포넌트에 알림
-    onDriverSelect?.(driverCode);
-    
-    // 5초 후 락 해제 (자동 업데이트 재개)
-    userSelectionLockRef.current = setTimeout(() => {
-      isUserSelectionActiveRef.current = false;
-      console.log(`🔓 User selection lock released for: ${driverCode}`);
-    }, 5000);
-  };
 
   return (
     <>
@@ -320,18 +286,6 @@ export const MapControls: React.FC<MapControlsProps> = ({
         
         
         if (!leaderData) return null;
-        
-        // 재생 중이 아닐 때는 정적 데이터 사용
-        const staticTelemetry = {
-          speed: 0,
-          gear: 0,
-          throttle: 0,
-          brake: 0,
-          drs_enabled: false,
-          drs_available: false
-        };
-        
-        const displayTelemetry = isPlaying ? leaderData.telemetry : staticTelemetry;
         
         return null; // 패널들은 이제 스크롤 컨테이너에서 관리됨
       })()}

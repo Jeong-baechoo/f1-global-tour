@@ -177,7 +177,6 @@ export class OpenF1MockDataService {
 
   // Monaco 인터벌 데이터 생성 (리타이어 및 피트스톱 고려)
   private generateIntervalData(lapNumber: number): OpenF1Interval[] {
-    const laps = this.lapData.get(lapNumber) || [];
     
     // 모든 드라이버 포함 (리타이어한 드라이버도 마지막 기록된 위치에 표시)
     const activeDrivers = this.drivers.filter(driver => {
@@ -382,8 +381,8 @@ export class OpenF1MockDataService {
               : this.getSectorPerformance(lapData?.segments_sector_3 || [], this.currentLap, 3),
           },
           tire_info: {
-            compound: this.getTireCompound(this.currentLap, driver.driver_number),
-            age: this.getTireAge(this.currentLap, driver.driver_number),
+            compound: this.getTireCompound(this.currentLap),
+            age: this.getTireAge(this.currentLap),
             pit_stops: Math.floor((this.currentLap - 1) / 20),
           },
           speeds: {
@@ -391,7 +390,7 @@ export class OpenF1MockDataService {
             i2_speed: lapData?.i2_speed || null,
             st_speed: lapData?.st_speed || null,
           },
-          telemetry: this.generateTelemetryData(driver.driver_number, this.currentLap)
+          telemetry: this.generateTelemetryData(driver.driver_number)
         };
       });
   }
@@ -417,14 +416,14 @@ export class OpenF1MockDataService {
   }
 
   // 타이어 컴파운드 결정
-  private getTireCompound(lapNumber: number, driverNumber: number): 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET' {
+  private getTireCompound(lapNumber: number): 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET' {
     const stints = Math.floor((lapNumber - 1) / 20);
     const compounds: ('SOFT' | 'MEDIUM' | 'HARD')[] = ['SOFT', 'MEDIUM', 'HARD'];
     return compounds[stints % compounds.length];
   }
 
   // 타이어 나이 계산
-  private getTireAge(lapNumber: number, driverNumber: number): number {
+  private getTireAge(lapNumber: number): number {
     return ((lapNumber - 1) % 20) + 1;
   }
 
@@ -533,7 +532,7 @@ export class OpenF1MockDataService {
   }
 
   // 드라이버별 텔레메트리 데이터 생성
-  private generateTelemetryData(driverNumber: number, lapNumber: number) {
+  private generateTelemetryData(driverNumber: number) {
     // 리타이어한 드라이버는 모든 텔레메트리 0
     if (this.retiredDrivers.has(driverNumber)) {
       return {
@@ -760,8 +759,6 @@ export class OpenF1MockDataService {
 
   // 플래그 정보가 포함된 세션 상태 가져오기
   getRaceStatus(): RaceStatus {
-    const isRace = this.sessionType === 'RACE';
-    
     return {
       sessionType: this.sessionType,
       // 레이스용 데이터
