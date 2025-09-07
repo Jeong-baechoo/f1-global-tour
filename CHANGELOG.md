@@ -15,6 +15,16 @@
   - Glassmorphism 디자인 패턴 적용
   - 자동 타임아웃 기능 및 수동 닫기 지원
   - 에러 레벨별 색상 구분 (error, warning, info)
+- 🎛️ **트랙 정보 토글 시스템**
+  - `TrackInfoTogglePanel` 컴포넌트: 섹터 및 DRS 존 토글 제어
+  - `ReplayTrackInfoManager` 서비스: 트랙 정보 표시 중앙 관리
+  - 커스텀 이벤트 시스템을 통한 트랙 기능 제어
+  - 상태 표시 인디케이터 및 실시간 UI 업데이트
+- 📋 **백엔드 API 설계 문서**
+  - OpenF1 API 통합을 위한 포괄적인 백엔드 아키텍처 설계
+  - NestJS + TypeScript + Redis 기반 기술 스택 정의
+  - 데이터 변환 및 프록시 패턴 구조 명세
+  - 단계별 구현 로드맵 및 테스트 시나리오
 
 ### Improved  
 - 🎯 **플래그 정보 패널 디스플레이 최적화**
@@ -26,6 +36,14 @@
   - 기술적 오류를 읽기 쉬운 한국어 메시지로 변환
   - 각 에러별 복구 액션 가이드라인 제공
   - 사용자 상황에 맞는 적절한 해결책 제시
+- 🎨 **UI 일관성 및 사용성 개선**
+  - 모든 패널의 Glassmorphism 디자인 일관성 확보
+  - TrackInfoTogglePanel의 패딩 최적화로 컴팩트한 UI 구현
+  - 상태 인디케이터 디자인 개선 및 시각적 피드백 강화
+- 🗺️ **트랙 렌더링 시스템 안정화**
+  - 섹터 및 DRS 존 Z-인덱스 계층 구조 정리
+  - 레이어 순서 자동 관리 시스템으로 표시 우선순위 보장
+  - 트랙 색상 리셋 로직 개선으로 상태 전환 안정화
 
 ### Fixed
 - 🐛 **Practice 세션 플래그 패널 레이아웃 오류**
@@ -35,6 +53,17 @@
 - 🔧 **TypeScript 컴파일 에러 수정**
   - ReplayErrorHandler의 정적/인스턴스 메소드 호출 불일치 해결
   - 모든 리플레이 컴포넌트에서 타입 안전성 확보
+- 🗺️ **Mapbox 레이어/소스 관리 문제 해결**
+  - "Source cannot be removed while layer is using it" 콘솔 오류 완전 해결
+  - CircuitTrackManager의 clearCircuitTrack() 메서드 개선: 레이어 제거 → 소스 제거 순서 보장
+  - 섹터 토글 초기 상태 문제 해결 (기본값 false 상태에서 섹터 표시 방지)
+- 🎮 **DRS 애니메이션 시스템 수정**
+  - DRS 화살표 애니메이션이 실행되지 않던 문제 해결
+  - restartFunction 콜백 누락으로 인한 애니메이션 재시작 실패 수정
+  - trackStateManager의 DRS 애니메이션 상태 관리 로직 개선
+- ⚡ **메모리 누수 방지**
+  - ReplayAnimationEngine의 zoom 이벤트 리스너 정리 로직 추가
+  - 컴포넌트 언마운트 시 이벤트 리스너 및 타이머 완전 정리
 
 ### Technical
 - 🏗️ **에러 처리 아키텍처 구축**
@@ -47,6 +76,14 @@
   - Singleton 패턴 기반 에러 핸들러 인스턴스 관리
   - 알림 콜백 시스템으로 UI 컴포넌트와 연동
   - 에러 발생 시간, 컨텍스트, 원본 에러 정보 보존
+- 🛠️ **코드 품질 및 리팩터링**
+  - TrackInfoTogglePanel 컴포넌트 코드 구조 개선 및 헬퍼 함수 분리
+  - ReplayTrackInfoManager 서비스 로직 최적화 및 에러 처리 강화
+  - 디버깅용 콘솔 메시지 정리로 프로덕션 환경 최적화
+- 📋 **API 명세서 업데이트**
+  - REPLAY_API_SPECIFICATION.md 전면 개편
+  - Mock 데이터 방식에서 OpenF1 API 통합 방식으로 전환
+  - 백엔드 아키텍처 및 데이터 변환 로직 상세 명세화
 
 ## [0.6.4] - 2025-08-16
 

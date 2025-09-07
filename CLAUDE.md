@@ -13,7 +13,15 @@ npm run dev       # Start development server on http://localhost:3000
 npm run build     # Build for production
 npm run start     # Start production server
 npm run lint      # Run ESLint
+npm test          # Run Jest tests (if configured)
 ```
+
+### Testing Framework
+- **Jest** with Next.js integration for unit/integration testing
+- **@testing-library/react** for React component testing
+- Coverage thresholds: 80% lines, 70% functions/branches
+- Test path patterns configured for feature-based architecture
+- Mapbox GL mocking configured for map component testing
 
 ## Technology Stack
 
@@ -187,9 +195,10 @@ const marker = new mapboxgl.Marker(markerElement, {
 ### Current Development Status
 - **Production**: `master` branch (protected) 
 - **Development**: `develop` branch (active development)
-- **Current**: `feature/improve-logic` branch with UI improvements and track feature stabilization
+- **Current**: `replay` branch with replay system enhancements and track info features
 
 ### Recent Major Versions
+- **v0.7.0**: Replay system enhancements, track info toggle system, backend API design
 - **v0.6.0**: Architecture consolidation & cleanup with feature-based structure
 - **v0.5.0**: Team details with driver profiles, major restructuring, performance optimizations
 - **v0.4.0**: Architecture refactoring, Map component improvements, critical marker bug fixes
@@ -244,6 +253,13 @@ When encountering complex bugs with unexpected behavior (especially in React use
 
 ### Overview
 The replay system (`src/features/replay/`) recreates historical F1 races with real-time driver position tracking, timing data, and interactive controls. Built with a service-oriented architecture using multiple specialized managers.
+
+### Track Info System (v0.7.0+)
+Recent addition for enhanced track visualization:
+- **TrackInfoTogglePanel**: UI component for toggling sector and DRS zone visibility
+- **ReplayTrackInfoManager**: Centralized service for managing track information display
+- **Custom Event System**: Communication between UI and track rendering services
+- **Layer Management**: Proper Z-index ordering to ensure DRS zones appear above sectors
 
 ### Core Services Architecture
 - **ReplayAnimationEngine**: Main orchestrator for animation loop and state management
@@ -303,13 +319,29 @@ Uses advanced algorithms to:
 - **Real-time Updates**: Maintain consistent 4-second interval matching OpenF1 API
 - **Session State**: Ensure lap progression and session changes are properly synchronized
 
+#### Layer Management (Critical for Track Visualization)
+- **Mapbox Layer Ordering**: Remove layers before removing sources to prevent "Source cannot be removed while layer is using it" errors
+- **Z-Index Management**: Use `map.moveLayer()` to ensure proper layer ordering (DRS zones above sectors)
+- **Initial State Handling**: Ensure toggle components start with correct default states (sectors/DRS disabled)
+
 ### Replay System File Organization
 ```
 src/features/replay/
 ├── components/           # UI controls and panels
+│   └── ui/TrackInfoTogglePanel/  # Track info toggle controls (v0.7.0+)
 ├── services/            # Core business logic and data management
+│   ├── ReplayTrackInfoManager.ts  # Track info display management (v0.7.0+)
+│   └── CircuitTrackManager.ts     # Circuit rendering with layer management fixes
 ├── store/               # Zustand state management
 ├── types/               # TypeScript definitions (includes openF1Types.ts)
 ├── data/                # Mock data for development
-└── REPLAY_API_SPECIFICATION.md  # Backend API requirements
+└── REPLAY_API_SPECIFICATION.md  # Backend API requirements (updated v0.7.0)
 ```
+
+### Backend Integration Notes (v0.7.0)
+The project includes comprehensive backend design documentation:
+- **OpenF1 API Integration**: Complete specification for real F1 data integration
+- **NestJS + TypeScript + Redis**: Recommended backend technology stack
+- **Data Transformation**: Detailed mapping between OpenF1 API and frontend data models
+- **Caching Strategy**: Redis-based caching for performance optimization
+- **API Proxy Pattern**: Backend acts as intelligent proxy between OpenF1 API and frontend
