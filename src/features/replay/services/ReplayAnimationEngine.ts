@@ -5,6 +5,7 @@ import { DriverPosition, ReplayDriverData, ReplayLapData, ReplaySessionData } fr
 import { DriverMarkerManager } from './DriverMarkerManager';
 import { CircuitTrackManager } from './CircuitTrackManager';
 import { PositionCalculator } from './PositionCalculator';
+import { TrackEventBus } from '@/src/features/circuits/services/track/events/TrackEventBus';
 
 export class ReplayAnimationEngine {
   private map: mapboxgl.Map | null = null;
@@ -16,7 +17,7 @@ export class ReplayAnimationEngine {
   private playbackSpeed = 1;
   
   private lastPositionUpdateTime = 0;
-  private positionUpdateInterval = 100; // 100ms마다 위치 업데이트
+  private positionUpdateInterval = 50; // 50ms마다 위치 업데이트 (부드러운 애니메이션, CSS transition 없이)
   
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
@@ -32,6 +33,7 @@ export class ReplayAnimationEngine {
   private markerManager: DriverMarkerManager;
   private trackManager: CircuitTrackManager;
   private positionCalculator: PositionCalculator;
+  private zoomListener: (() => void) | null = null;
   
   // 콜백 함수들
   private onTimeUpdate?: (time: number) => void;
@@ -118,10 +120,13 @@ export class ReplayAnimationEngine {
     // 드라이버 마커 생성
     this.createDriverMarkers();
     
-    // 트랙 레이아웃 생성 - 타이밍 개선
-    this.trackManager.drawCircuitTrack(this.circuitId).catch(error => {
+    // 트랙 레이아웃 생성 (TrackEventBus 등록도 포함)
+    try {
+      await this.trackManager.drawCircuitTrack(this.circuitId);
+      
+    } catch (error) {
       console.error('❌ Failed to draw circuit track:', error);
-    });
+    }
     
     // 줌 레벨 변경 시 마커 크기 조절 리스너 추가
     this.setupZoomListener();
@@ -275,11 +280,13 @@ export class ReplayAnimationEngine {
   private setupZoomListener(): void {
     if (!this.map) return;
     
-    this.map.on('zoom', () => {
+    this.zoomListener = () => {
       const currentZoom = this.map?.getZoom() || 10;
       this.markerManager.updateMarkerSizes(currentZoom);
       this.trackManager.ensureTrackVisibility();
-    });
+    };
+    
+    this.map.on('zoom', this.zoomListener);
     
     // 초기 크기 설정
     const initialZoom = this.map.getZoom();
@@ -319,8 +326,23 @@ export class ReplayAnimationEngine {
 
   cleanup(): void {
     this.stop();
+    
+    // 맵 이벤트 리스너 제거
+    if (this.map && this.zoomListener) {
+      this.map.off('zoom', this.zoomListener);
+      this.zoomListener = null;
+    }
+    
+    // 콜백 함수 제거
+    this.onTimeUpdate = undefined;
+    this.onDriverPositionsUpdate = undefined;
+    
     this.markerManager.clearMarkers();
     this.trackManager.clearCircuitTrack();
+    
+    // TrackEventBus cleanup은 CircuitTrackManager에서 처리하지 않으므로 여기서 정리
+    TrackEventBus.cleanup();
+    
     this.positionCalculator.clear();
     
     this.driversData = [];
@@ -332,6 +354,7 @@ export class ReplayAnimationEngine {
     this.currentTime = 0;
     this.startTime = 0;
     this.playbackSpeed = 1;
+    this.lastPositionUpdateTime = 0;
   }
 
   destroy(): void {

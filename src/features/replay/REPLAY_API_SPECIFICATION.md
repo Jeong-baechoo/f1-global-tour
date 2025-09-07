@@ -239,15 +239,6 @@ Authorization: Bearer {api_key}
       "drs": {
         "enabled": true,
         "available": true
-      },
-      "engine": {
-        "rpm": 11500,
-        "temperature": 105.2
-      },
-      "position": {
-        "x": 1234.56,
-        "y": 2345.67,
-        "z": 15.23
       }
     },
     "timestamp": "2024-03-15T10:30:00.250Z"

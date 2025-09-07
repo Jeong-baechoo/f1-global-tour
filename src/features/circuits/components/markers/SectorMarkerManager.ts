@@ -66,18 +66,49 @@ export const getSpeedTrapData = async (circuitId: string): Promise<SpeedTrapInfo
   }
 };
 
-// DRS 정보 토글 상태를 저장하는 전역 변수
-let drsInfoEnabled = false;
+// DRS 정보 상태 관리 클래스
+class DRSStateManager {
+  private static instance: DRSStateManager;
+  private drsInfoEnabled = false;
+  private eventListenerAdded = false;
 
-// DRS 토글 상태를 업데이트하는 리스너 (클라이언트에서만 실행)
-if (typeof window !== 'undefined') {
-  window.addEventListener('toggleDRSZones', ((event: CustomEvent) => {
-    drsInfoEnabled = event.detail.enabled;
-  }) as EventListener);
+  static getInstance(): DRSStateManager {
+    if (!DRSStateManager.instance) {
+      DRSStateManager.instance = new DRSStateManager();
+    }
+    return DRSStateManager.instance;
+  }
+
+  initialize(): void {
+    if (typeof window !== 'undefined' && !this.eventListenerAdded) {
+      window.addEventListener('track:toggleDRSZones', this.handleDRSToggle);
+      this.eventListenerAdded = true;
+    }
+  }
+
+  private handleDRSToggle = ((event: CustomEvent) => {
+    this.drsInfoEnabled = event.detail.enabled;
+  }) as EventListener;
+
+  isDRSEnabled(): boolean {
+    return this.drsInfoEnabled;
+  }
+
+  cleanup(): void {
+    if (typeof window !== 'undefined' && this.eventListenerAdded) {
+      window.removeEventListener('track:toggleDRSZones', this.handleDRSToggle);
+      this.eventListenerAdded = false;
+    }
+  }
 }
+
+const drsStateManager = DRSStateManager.getInstance();
 
 // DRS Detection과 Speed Trap 마커들을 애니메이션 완료 후 표시하는 함수
 export const showDRSAndSpeedTrapMarkers = (map?: mapboxgl.Map) => {
+  // Initialize DRS state manager if not done yet
+  drsStateManager.initialize();
+  
   // Check zoom level before showing markers
   if (map) {
     const currentZoom = map.getZoom();
@@ -87,7 +118,7 @@ export const showDRSAndSpeedTrapMarkers = (map?: mapboxgl.Map) => {
   }
   
   // DRS 정보가 활성화되어 있을 때만 마커 표시
-  if (drsInfoEnabled && typeof window !== 'undefined') {
+  if (drsStateManager.isDRSEnabled() && typeof window !== 'undefined') {
     // DRS Detection 마커 표시
     window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
       detail: { enabled: true } 

@@ -48,23 +48,10 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
 
   const handleStartReplay = useCallback(() => {
     try {
-      // Session 선택 시 바로 리플레이 모드 활성화 (Drivers 섹션 건너뛰기)
       if (setIsReplayMode) {
         setIsReplayMode(true);
       }
       onCloseAction();
-      
-      // // 기존 로직 (주석처리)
-      // if (activeTab === 'drivers') {
-      //   // Drivers 패널에 있으면 리플레이 모드 활성화 하고 패널을 닫음
-      //   if (setIsReplayMode) {
-      //     setIsReplayMode(true);
-      //   }
-      //   onCloseAction();
-      // } else {
-      //   // Session 탭에 있으면 Drivers 패널로 이동
-      //   setActiveTab('drivers');
-      // }
     } catch (error) {
       ReplayErrorHandler.handleUserInteractionError(
         error instanceof Error ? error : new Error('Failed to start replay'),
@@ -83,13 +70,6 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
       icon: Calendar,
       disabled: false
     }
-    // // Drivers 탭 임시 비활성화 (주석처리)
-    // {
-    //   id: 'drivers' as PanelTab,
-    //   label: 'Drivers',
-    //   icon: Users,
-    //   disabled: !currentSession
-    // }
   ], []);
 
   if (!isOpen) return null;
@@ -125,16 +105,9 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
           </div>
         )}
 
-        {/* 컨텐츠 영역 - 탭 네비게이션 임시 제거 */}
         <div className="h-[600px] overflow-auto">
           <div className="p-4">
-            {/* SessionSelector 항상 표시 */}
             <SessionSelector onSessionSelectAction={handleSessionSelect} />
-            
-            {/* Drivers 섹션 임시 비활성화 (주석처리) */}
-            {/* {activeTab === 'drivers' && currentSession && (
-              <DriverSelector />
-            )} */}
           </div>
         </div>
 

@@ -50,8 +50,10 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
 
   const handleTimelineChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(event.target.value);
-    seekTo(newTime);
-  }, [seekTo]);
+    if (!isNaN(newTime) && newTime >= 0 && newTime <= totalDuration) {
+      seekTo(newTime);
+    }
+  }, [seekTo, totalDuration]);
 
   const handlePreviousLap = useCallback(() => {
     jumpToLap(Math.max(1, currentLap - 1));
@@ -67,7 +69,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }, []);
 
-  const speedOptions = useMemo(() => [0.5, 1, 1.5, 2, 5, 10], []);
+  const speedOptions = useMemo(() => [0.25, 0.5, 1, 1.5, 2, 4], []);
 
   return (
     <div className={cn(

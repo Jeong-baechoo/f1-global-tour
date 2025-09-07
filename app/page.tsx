@@ -493,7 +493,10 @@ export default function Home() {
       />
 
       {/* 리플레이 나가기 버튼 */}
-      <ExitReplayButton mapRef={mapRef} setIsReplayMode={setIsReplayMode} />
+      <ExitReplayButton 
+        mapRef={mapRef} 
+        setIsReplayMode={setIsReplayMode}
+      />
 
       {/* 리플레이 모드 전용 UI - 드라이버 인포 패널 */}
       {isReplayMode && (
@@ -539,7 +542,7 @@ export default function Home() {
 
       {/* 넥스트 레이스 버튼 - 데스크탑 - 리플레이 모드에서 숨김 */}
       {!isReplayMode && (
-      <div className="hidden sm:block absolute bottom-48 left-6 z-30">
+      <div className="hidden sm:block absolute bottom-72 left-6 z-30">
         <NextRaceButton
           onClickAction={handleOpenNextRace}
           isActive={panelModule === 'next-race' && panelOpen}

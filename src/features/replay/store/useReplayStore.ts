@@ -121,9 +121,16 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
   ...initialState,
   
   actions: {
-    // 세션 관리
+    // 세션 관리 (순환 의존성 방지)
     setCurrentSession: (session) => {
+      // 현재 세션과 동일하면 무시
+      if (get().currentSession?.sessionKey === session?.sessionKey) {
+        return;
+      }
+      
+      // 먼저 세션 설정
       set({ currentSession: session });
+      
       if (session) {
         // DriverTimingService에 세션 정보 전달
         try {
@@ -133,8 +140,12 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
           console.error('Failed to set session in DriverTimingService:', error);
         }
         
-        // 세션이 변경되면 초기화
-        get().actions.reset();
+        // 직접 초기화 (순환 호출 방지)
+        set((state) => ({
+          ...initialState,
+          currentSession: session,
+          settings: state.settings
+        }));
       }
     },
     
@@ -261,22 +272,30 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
     setShowControls: (show) => set({ showControls: show }),
     setShowDriverInfo: (show) => set({ showDriverInfo: show }),
     
-    // 드라이버 위치 업데이트
+    // 드라이버 위치 업데이트 (성능 최적화)
     updateDriverPositions: (positions) => {
-      const currentState = get();
-      // 동일한 데이터인지 확인하여 불필요한 업데이트 방지
-      const positionsChanged = !currentState.driverPositions || 
-        currentState.driverPositions.length !== positions.length ||
-        currentState.driverPositions.some((pos, index) => {
-          const newPos = positions[index];
-          return pos.driverNumber !== newPos.driverNumber ||
-            pos.longitude !== newPos.longitude ||
-            pos.latitude !== newPos.latitude;
-        });
-      
-      if (positionsChanged) {
-        set({ driverPositions: positions });
-      }
+      set((state) => {
+        // 길이가 다르거나 배열이 없으면 즉시 업데이트
+        if (!state.driverPositions || state.driverPositions.length !== positions.length) {
+          return { driverPositions: positions };
+        }
+        
+        // 핵심 좌표만 빠르게 비교 (빈번한 업데이트를 위한 매우 민감한 임계값)
+        for (let i = 0; i < positions.length; i++) {
+          const current = state.driverPositions[i];
+          const newPos = positions[i];
+          
+          if (!current || 
+              current.driverNumber !== newPos.driverNumber ||
+              Math.abs(current.longitude - newPos.longitude) > 0.000001 ||
+              Math.abs(current.latitude - newPos.latitude) > 0.000001) {
+            return { driverPositions: positions };
+          }
+        }
+        
+        // 변경사항 없으면 현재 상태 유지
+        return state;
+      });
     },
     
     // 초기화
@@ -290,16 +309,21 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
     
     // 완전한 정리 (엔진 cleanup 포함)
     cleanup: () => {
+      // 재생 중지
+      set({ isPlaying: false, isPaused: false });
+      
       // 전역 cleanup 이벤트 발송하여 엔진 정리 요청
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('replayEngineCleanup'));
       }
       
-      // 스토어 완전 초기화
-      set({
-        ...initialState,
-        currentSession: null // 세션도 초기화
-      });
+      // 스토어 완전 초기화 (비동기로 처리하여 이벤트 처리 시간 확보)
+      setTimeout(() => {
+        set({
+          ...initialState,
+          currentSession: null
+        });
+      }, 0);
     },
     
     // 설정

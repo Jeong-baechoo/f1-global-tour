@@ -1,6 +1,11 @@
 import mapboxgl from 'mapbox-gl';
 import { getTrackCoordinates } from '@/src/features/circuits/utils/data/trackDataLoader';
 import { getCircuitCameraConfig } from '@/src/shared/utils/map/camera';
+import { TrackEventBus } from '@/src/features/circuits/services/track/events/TrackEventBus';
+import { SectorTrackManager } from '@/src/features/circuits/services/track/sector/SectorTrackManager';
+import { DRSZoneManager } from '@/src/features/circuits/services/track/drs/DRSZoneManager';
+import { DRSAnimationController } from '@/src/features/circuits/services/track/animation/DRSAnimationController';
+import { trackStateManager } from '@/src/features/circuits/services/track/state/TrackStateManager';
 import circuitsData from '@/data/circuits.json';
 
 export class CircuitTrackManager {
@@ -37,8 +42,6 @@ export class CircuitTrackManager {
         return;
       }
       
-      // Track data loaded
-      
       // 트랙 데이터 유효성 검증
       if (!Array.isArray(trackData) || trackData.length < 2) {
         console.error(`❌ Invalid track data for ${circuitId}:`, trackData);
@@ -52,11 +55,15 @@ export class CircuitTrackManager {
         return;
       }
       
+      // Track data loaded
+      
       // Track data validated
 
       // 맵 준비 후 트랙 추가
       await this.addTrackToMapWithRetry(trackData, 3);
       
+      // 섹터와 DRS 기능 준비 (숨김 상태로)
+      await this.prepareToggleFeatures(trackData, circuitId);
       // 트랙 추가 후 서킷으로 카메라 이동
       setTimeout(() => {
         this.flyToCircuit(circuitId);
@@ -73,6 +80,7 @@ export class CircuitTrackManager {
       });
     }
   }
+
 
   private addTrackToMap(trackCoordinates: number[][]): void {
     
@@ -252,6 +260,38 @@ export class CircuitTrackManager {
     });
   }
 
+  /**
+   * 섹터와 DRS 기능을 미리 준비 (기본적으로 숨김 상태)
+   */
+  private async prepareToggleFeatures(trackCoordinates: number[][], circuitId: string): Promise<void> {
+    if (!this.map || !this.trackLayerId) return;
+
+    try {
+      // 1. 섹터는 토글할 때만 적용 (초기에는 준비하지 않음)
+      
+      // 2. DRS 존 준비 (숨김 상태로)
+      await DRSZoneManager.drawDRSZones(this.map, this.trackLayerId, trackCoordinates, circuitId);
+      // DRS 존 즉시 숨기기
+      DRSZoneManager.toggleDRSZoneLayers(this.trackLayerId, false, this.map);
+      
+      // 3. DRS 애니메이션 데이터 준비 (활성 상태로)
+      trackStateManager.addDRSAnimation(this.trackLayerId, {
+        animationId: Date.now(),
+        isActive: false, // 초기에는 비활성으로 설정
+        restartFunction: () => {
+          // DRS 토글이 활성화될 때 호출될 함수
+          if (this.map && this.trackLayerId) {
+            DRSAnimationController.startAnimation(this.map, this.trackLayerId, true);
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error(`❌ Error preparing toggle features for ${circuitId}:`, error);
+    }
+  }
+
+
   // 재시도 로직이 포함된 트랙 추가 함수
   private async addTrackToMapWithRetry(trackCoordinates: number[][], maxRetries: number): Promise<void> {
     let attempts = 0;
@@ -264,7 +304,8 @@ export class CircuitTrackManager {
         await new Promise((resolve) => setTimeout(resolve, 100));
         
         if (this.map && this.map.getLayer(this.trackLayerId)) {
-          // Track layer added successfully
+          // Track layer added successfully - register custom event handlers for replay
+          this.registerReplayEventHandlers();
           return;
         } else {
           // noinspection ExceptionCaughtLocallyJS
@@ -286,6 +327,127 @@ export class CircuitTrackManager {
       }
     }
   }
+
+  /**
+   * 리플레이 전용 이벤트 핸들러 등록
+   */
+  private registerReplayEventHandlers(): void {
+    if (typeof window === 'undefined') return;
+    
+    // Sector toggle handler
+    const sectorHandler = (event: any) => {
+      const { enabled } = event.detail;
+      this.handleSectorToggle(enabled);
+    };
+    
+    // DRS toggle handlers  
+    const drsZonesHandler = (event: any) => {
+      const { enabled } = event.detail;
+      DRSZoneManager.toggleDRSZoneLayers(this.trackLayerId, enabled, this.map);
+    };
+    
+    const drsAnimationsHandler = (event: any) => {
+      const { enabled } = event.detail;
+      DRSAnimationController.toggleAnimation(this.trackLayerId, enabled);
+    };
+
+    // Register event listeners
+    window.addEventListener('track:toggleSectorInfo', sectorHandler);
+    window.addEventListener('track:toggleDRSZones', drsZonesHandler);
+    window.addEventListener('track:toggleDRSAnimations', drsAnimationsHandler);
+  }
+
+  /**
+   * 리플레이용 섹터 토글 처리 (단일 레이어 기반)
+   */
+  private async handleSectorToggle(enabled: boolean): Promise<void> {
+    if (!this.map || !this.trackLayerId) return;
+    
+    const circuitId = this.trackLayerId.replace('replay-', '').replace('-track', '');
+    const savedLayers = trackStateManager.findSectorLayer(this.trackLayerId);
+    
+    if (enabled) {
+      // 섹터 활성화
+      if (savedLayers && savedLayers.sectorLayers.length > 0) {
+        // 이미 섹터 레이어가 생성되어 있으면 visibility만 변경
+        
+        // 기본 트랙 숨기기
+        if (this.map.getLayer(this.trackLayerId)) {
+          this.map.setLayoutProperty(this.trackLayerId, 'visibility', 'none');
+        }
+        
+        // 기존 섹터 레이어들 보이기
+        savedLayers.sectorLayers.forEach(layerId => {
+          if (this.map.getLayer(layerId)) {
+            this.map.setLayoutProperty(layerId, 'visibility', 'visible');
+          }
+        });
+        
+        // DRS 레이어들을 섹터보다 위로 올리기
+        this.moveDRSLayersToTop();
+      } else {
+        // 처음 섹터 활성화: 새로 생성
+        
+        // 기본 트랙 숨기기
+        if (this.map.getLayer(this.trackLayerId)) {
+          this.map.setLayoutProperty(this.trackLayerId, 'visibility', 'none');
+        }
+        
+        try {
+          await SectorTrackManager.applySectorColors(this.map, this.trackLayerId, circuitId, true);
+          
+          // 섹터 레이어가 DRS를 가리지 않도록 DRS 레이어들을 맨 위로 올리기
+          this.moveDRSLayersToTop();
+        } catch (error) {
+          console.error('Failed to apply sector colors:', error);
+          // 실패 시 기본 트랙 다시 표시
+          if (this.map.getLayer(this.trackLayerId)) {
+            this.map.setLayoutProperty(this.trackLayerId, 'visibility', 'visible');
+          }
+        }
+      }
+    } else {
+      // 섹터 비활성화: 섹터 레이어 숨기고 기본 트랙 표시
+      if (savedLayers) {
+        savedLayers.sectorLayers.forEach(layerId => {
+          if (this.map.getLayer(layerId)) {
+            this.map.setLayoutProperty(layerId, 'visibility', 'none');
+          }
+        });
+      }
+      
+      // 기본 트랙 다시 표시
+      if (this.map.getLayer(this.trackLayerId)) {
+        this.map.setLayoutProperty(this.trackLayerId, 'visibility', 'visible');
+      }
+    }
+  }
+
+  /**
+   * DRS 레이어들을 맨 위로 이동시켜 섹터에 가려지지 않게 함
+   */
+  private moveDRSLayersToTop(): void {
+    if (!this.map || !this.trackLayerId) return;
+    
+    const drsLayerInfo = trackStateManager.findDRSLayer(this.trackLayerId);
+    
+    if (drsLayerInfo && drsLayerInfo.drsLayers.length > 0) {
+      
+      drsLayerInfo.drsLayers.forEach(layerId => {
+        try {
+          if (this.map.getLayer(layerId)) {
+            // 레이어를 맨 위로 이동 (beforeId 없이 호출하면 맨 위로 이동)
+            this.map.moveLayer(layerId);
+          }
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`Failed to move DRS layer ${layerId} to top:`, error);
+          }
+        }
+      });
+    }
+  }
+
 
   flyToCircuit(circuitId: string): void {
     

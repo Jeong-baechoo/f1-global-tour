@@ -42,7 +42,7 @@ export class DriverMarkerManager {
       ? '0 0 4px rgba(0,0,0,1)' 
       : '0 0 4px rgba(255,255,255,0.8)';
     
-    // 마커 스타일링 (더 눈에 띄게 크고 밝게)
+    // 마커 스타일링 (Mapbox 최적화)
     element.style.cssText = `
       width: 50px;
       height: 50px;
@@ -57,11 +57,10 @@ export class DriverMarkerManager {
       color: ${textColor};
       text-shadow: ${textShadow};
       cursor: pointer;
-      position: absolute;
-      z-index: 1000;
       user-select: none;
       pointer-events: auto;
       transition: border-width 0.2s ease;
+      transform: translateZ(0);
     `;
     
     element.textContent = driver.driverNumber.toString();

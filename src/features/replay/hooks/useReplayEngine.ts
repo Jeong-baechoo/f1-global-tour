@@ -74,11 +74,11 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     };
   }, [map, setCurrentTime, updateDriverPositions]);
 
-  // 세션 로드
+  // 세션 로드 (중복 로드 방지)
   const loadSession = useCallback(async (session: ReplaySessionData): Promise<boolean> => {
-    if (!engineRef.current) {
+    if (!engineRef.current || !map) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('⚠️ Animation engine not ready yet, skipping session load');
+        console.warn('⚠️ Animation engine or map not ready yet, skipping session load');
       }
       return false;
     }
@@ -88,8 +88,11 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
       
       if (success) {
         setTotalDuration(5400);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Session loaded successfully:', session.sessionName);
+        }
       } else {
-        console.error('Failed to load session');
+        console.error('❌ Failed to load session:', session.sessionName);
       }
       
       return success;
@@ -97,7 +100,7 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
       console.error('❌ Error loading session:', error);
       return false;
     }
-  }, [setTotalDuration]);
+  }, [setTotalDuration, map]);
 
   // 재생 제어 메서드들
   const play = useCallback(() => {
@@ -162,10 +165,10 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
 
   // 현재 세션이 변경되면 로드 (엔진이 준비된 후에만)
   useEffect(() => {
-    if (currentSession && engineRef.current) {
+    if (currentSession && engineRef.current && map) {
       loadSession(currentSession);
     }
-  }, [currentSession, loadSession, map]); // map을 dependency에 추가하여 맵 로드 후 재시도
+  }, [currentSession, loadSession, map]);
 
   const cleanup = useCallback(() => {
     if (engineRef.current) {

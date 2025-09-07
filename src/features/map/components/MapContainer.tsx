@@ -46,19 +46,19 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   // Track event dispatchers
   const handleToggleSectorInfo = (enabled: boolean) => {
     setSectorInfoEnabled(enabled);
-    // Dispatch event to toggle sector colors on track
-    window.dispatchEvent(new CustomEvent('toggleSectorInfo', { 
+    // Dispatch event to toggle sector colors on track (using proper namespace)
+    window.dispatchEvent(new CustomEvent('track:toggleSectorInfo', { 
       detail: { enabled } 
     }));
   };
   
   const handleToggleDRSInfo = (enabled: boolean) => {
     setDrsInfoEnabled(enabled);
-    // Dispatch events to toggle DRS animations and markers
-    window.dispatchEvent(new CustomEvent('toggleDRSAnimations', { 
+    // Dispatch events to toggle DRS animations and markers (using proper namespace)
+    window.dispatchEvent(new CustomEvent('track:toggleDRSAnimations', { 
       detail: { enabled } 
     }));
-    window.dispatchEvent(new CustomEvent('toggleDRSZones', { 
+    window.dispatchEvent(new CustomEvent('track:toggleDRSZones', { 
       detail: { enabled } 
     }));
     // Toggle DRS Detection markers and Speed Trap markers
@@ -72,8 +72,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   
   const handleToggleElevation = (enabled: boolean) => {
     setElevationEnabled(enabled);
-    // Dispatch event to toggle 3D elevation
-    window.dispatchEvent(new CustomEvent('toggleElevation', { 
+    // Dispatch event to toggle 3D elevation (using proper namespace)
+    window.dispatchEvent(new CustomEvent('track:toggleElevation', { 
       detail: { enabled } 
     }));
   };
@@ -105,16 +105,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }, [setUserInteracting, onUserInteraction]);
 
 
-  // 초기화 시 모든 토글 상태 이벤트 발생
+  // 초기화 시 모든 토글 상태 이벤트 발생 (네임스페이스 적용)
   useEffect(() => {
     // 모든 정보가 기본적으로 켜져 있음을 알림
-    window.dispatchEvent(new CustomEvent('toggleSectorInfo', { 
+    window.dispatchEvent(new CustomEvent('track:toggleSectorInfo', { 
       detail: { enabled: true } 
     }));
-    window.dispatchEvent(new CustomEvent('toggleDRSZones', { 
+    window.dispatchEvent(new CustomEvent('track:toggleDRSZones', { 
       detail: { enabled: true } 
     }));
-    window.dispatchEvent(new CustomEvent('toggleDRSAnimations', { 
+    window.dispatchEvent(new CustomEvent('track:toggleDRSAnimations', { 
       detail: { enabled: true } 
     }));
     window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
@@ -123,7 +123,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     window.dispatchEvent(new CustomEvent('toggleSpeedTrapMarkers', { 
       detail: { enabled: true } 
     }));
-    window.dispatchEvent(new CustomEvent('toggleElevation', { 
+    window.dispatchEvent(new CustomEvent('track:toggleElevation', { 
       detail: { enabled: true } 
     }));
   }, []);

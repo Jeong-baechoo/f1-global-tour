@@ -11,4 +11,5 @@ export type { DriverTiming, DriverInfoPanelProps } from './DriverInfoPanel';
 export { DriverTelemetryPanel } from './DriverTelemetryPanel';
 export { FlagInfoPanel } from './FlagInfoPanel';
 export type { FlagStatus, LapFlagStatus, SessionType } from './FlagInfoPanel';
+export { TrackInfoTogglePanel } from './TrackInfoTogglePanel';
 export { ErrorNotification } from './ErrorNotification';

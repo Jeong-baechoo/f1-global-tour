@@ -137,6 +137,14 @@ export interface PlaybackControls {
   getSpeed: () => number;
 }
 
+// 성능 메트릭스 (디버깅용)
+export interface PerformanceMetrics {
+  frameRate: number;
+  animationDuration: number;
+  positionUpdateCount: number;
+  memoryUsage?: number;
+}
+
 // 트랙 진행률 계산 관련
 export interface TrackProgress {
   lapNumber: number;
@@ -245,13 +253,22 @@ export interface PositionCalculationOptions {
 // 레이스 상태 정보 (플래그 포함)
 export interface RaceStatus {
   sessionType: 'RACE' | 'QUALIFYING' | 'PRACTICE';
-  currentFlag: 'GREEN' | 'RED' | 'SC' | 'VSC';
+  currentFlag: 'GREEN' | 'RED' | 'SC' | 'VSC' | 'YELLOW';
   // 레이스용 프로퍼티
   currentLap: number;
   totalLaps: number;
-  lapFlags: ('NONE' | 'RED' | 'SC' | 'VSC')[];
+  lapFlags: ('NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW')[];
   // 퀄리파잉/연습용 프로퍼티
   currentMinute: number;
   totalMinutes: number;
-  minuteFlags: ('NONE' | 'RED' | 'SC' | 'VSC')[];
+  minuteFlags: ('NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW')[];
+}
+
+// 드라이버 상태 (은퇴 포함)
+export interface DriverStatus {
+  driverNumber: number;
+  isActive: boolean;
+  status: 'RACING' | 'RETIRED' | 'DNF' | 'DSQ';
+  retirementReason?: string;
+  retirementLap?: number;
 }

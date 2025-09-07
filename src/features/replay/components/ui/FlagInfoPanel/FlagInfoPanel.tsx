@@ -3,8 +3,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-export type FlagStatus = 'GREEN' | 'RED' | 'SC' | 'VSC';
-export type LapFlagStatus = 'NONE' | 'RED' | 'SC' | 'VSC';
+export type FlagStatus = 'GREEN' | 'RED' | 'SC' | 'VSC' | 'YELLOW';
+export type LapFlagStatus = 'NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW';
 export type SessionType = 'RACE' | 'QUALIFYING' | 'PRACTICE';
 
 interface FlagInfoPanelProps {
@@ -39,6 +39,7 @@ export function FlagInfoPanel({
       case 'RED': return 'text-red-500';
       case 'SC': return 'text-yellow-400';
       case 'VSC': return 'text-yellow-400';
+      case 'YELLOW': return 'text-yellow-500';
       case 'GREEN':
       default:
         return 'text-gray-400';
@@ -60,6 +61,7 @@ export function FlagInfoPanel({
       case 'RED': return 'bg-red-500';
       case 'SC': return 'bg-yellow-400';
       case 'VSC': return 'bg-yellow-400';
+      case 'YELLOW': return 'bg-yellow-500';
       case 'NONE': return 'bg-blue-500';
       default: return 'bg-gray-600';
     }

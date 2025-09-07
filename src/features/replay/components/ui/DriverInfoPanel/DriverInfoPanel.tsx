@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { DriverInfoPanelProps } from './types';
 import { cn } from '@/lib/utils';
 import { useReplayStore } from '@/src/features/replay';
@@ -42,9 +42,22 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
   const isPlaying = useReplayStore(state => state.isPlaying);
   const driverPositions = useReplayStore(state => state.driverPositions);
   const [drivers, setDrivers] = useState(propDrivers || []);
-  const [updateKey, setUpdateKey] = useState(0);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // 드라이버 클릭 이벤트 디바운싱 및 안정화
+  const stableOnDriverSelect = useCallback((driverCode: string) => {
+    // 이전 클릭 타이머 취소
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+    
+    // 짧은 지연으로 클릭 이벤트 안정화
+    clickTimeoutRef.current = setTimeout(() => {
+      onDriverSelect?.(driverCode);
+    }, 10);
+  }, [onDriverSelect]);
 
-  // 드라이버 데이터 업데이트 함수
+  // 드라이버 데이터 업데이트 함수 (의존성 최적화)
   const updateDriverData = useCallback(() => {
     if (isReplayMode && currentSession) {
       try {
@@ -58,7 +71,6 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
         
         const updatedDrivers = driverTimingService.generateCurrentDriverTimings();
         setDrivers(updatedDrivers);
-        setUpdateKey(prev => prev + 1); // 강제 리렌더링을 위한 키 업데이트
       } catch (error) {
         ReplayErrorHandler.handleDriverDataError(
           error instanceof Error ? error : new Error('Driver timing update failed'),
@@ -78,7 +90,7 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
     } else if (propDrivers) {
       setDrivers(propDrivers);
     }
-  }, [isReplayMode, currentSession, currentLap, propDrivers, driverPositions]);
+  }, [isReplayMode, currentSession?.sessionKey, currentLap]); // 의존성 최소화
 
   // 실시간 업데이트 서비스 관리
   useEffect(() => {
@@ -98,6 +110,11 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
       // 컴포넌트 언마운트 시 콜백 해제
       realtimeService.offUpdate(updateDriverData);
       realtimeService.stopRealtimeUpdates();
+      
+      // 클릭 타이머 정리
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
     };
   }, [isReplayMode, isPlaying, updateDriverData]);
 
@@ -143,18 +160,15 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
       <div className="flex-1 overflow-y-auto rounded-b-2xl">
         {drivers.map((driver) => (
           <div
-            key={`${driver.driverCode}-${updateKey}`} // 강제 리렌더링을 위한 키
+            key={driver.driverCode} // 단순한 키 사용
             className={cn(
               "px-6 py-3 border-b border-white/10 cursor-pointer",
               "hover:bg-white/[0.05] transition-colors",
               selectedDrivers.includes(driver.driverCode) && "bg-white/[0.08]"
             )}
-            onClick={(e) => {
+            onClick={() => {
               try {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log(`🖱️ Driver clicked: ${driver.driverCode}`);
-                onDriverSelect?.(driver.driverCode);
+                stableOnDriverSelect(driver.driverCode);
               } catch (error) {
                 ReplayErrorHandler.handleUserInteractionError(
                   error instanceof Error ? error : new Error('Driver selection failed'),
@@ -165,10 +179,6 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
                   }
                 );
               }
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
             }}
           >
             <div className="grid grid-cols-12 gap-6 items-center">

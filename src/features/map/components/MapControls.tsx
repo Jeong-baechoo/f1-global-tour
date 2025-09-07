@@ -5,8 +5,8 @@ import mapboxgl from 'mapbox-gl';
 import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
 import { ReplayPanel, useReplayStore } from '@/src/features/replay';
 import { ReplayProgressBar } from '@/src/features/replay/components/ReplayProgressBar';
-import { DriverTelemetryPanel, FlagInfoPanel, ErrorNotification } from '@/src/features/replay/components/ui';
-import { OpenF1MockDataService } from '@/src/features/replay/services/OpenF1MockDataService';
+import { DriverTelemetryPanel, FlagInfoPanel, TrackInfoTogglePanel, ErrorNotification } from '@/src/features/replay/components/ui';
+import { OpenF1MockDataService } from '@/src/features/replay/services';
 import ReplayErrorHandler from '@/src/features/replay/services/ReplayErrorHandler';
 import type { Circuit } from '@/src/features/circuits/types';
 
@@ -38,8 +38,8 @@ interface MapControlsProps {
  * CircuitInfoPanel, ZoomScrollbar를 포함
  */
 export const MapControls: React.FC<MapControlsProps> = ({
-  // map,
-  // isCircuitView,
+  map,
+  isCircuitView,
   sectorInfoEnabled,
   drsInfoEnabled,
   elevationEnabled,
@@ -65,6 +65,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
   // 리플레이 스토어에서 선택된 드라이버 정보 가져오기
   const selectedDrivers = useReplayStore(state => state.selectedDrivers);
   const isPlaying = useReplayStore(state => state.isPlaying);
+  const currentSession = useReplayStore(state => state.currentSession);
+  
   
   // 텔레메트리 데이터 업데이트 - 선택된 드라이버 우선, 없으면 1등 드라이버 표시
   useEffect(() => {
@@ -201,8 +203,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
       />
       )}
 
-      {/* 리플레이 버튼 - F1 로고 오른쪽 */}
-      <div className="fixed left-56 top-10 z-40">
+      {/* 리플레이 버튼 - F1 로고 오른쪽 - 모바일에서 숨김 */}
+      <div className="fixed left-56 top-10 z-40 hidden sm:block">
         <button
           onClick={handleReplayToggle}
           className="px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg
@@ -285,6 +287,14 @@ export const MapControls: React.FC<MapControlsProps> = ({
                         totalMinutes={raceStatus.totalMinutes}
                         currentMinute={raceStatus.currentMinute}
                         minuteFlags={raceStatus.minuteFlags}
+                      />
+                    </div>
+
+                    {/* 트랙 정보 토글 패널 */}
+                    <div className="pointer-events-auto">
+                      <TrackInfoTogglePanel
+                        initialSectorEnabled={false}
+                        initialDRSEnabled={false}
                       />
                     </div>
                   </>
