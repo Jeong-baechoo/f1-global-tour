@@ -21,12 +21,6 @@ export class ReplayAnimationEngine {
   
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
-  private telemetryData: Array<{
-    time: number;
-    longitude?: number;
-    latitude?: number;
-    distance?: number;
-  }> = [];
   private circuitId = '';
   
   // 관리자 클래스들
@@ -50,43 +44,16 @@ export class ReplayAnimationEngine {
     try {
       // 기존 데이터가 있다면 먼저 정리
       this.cleanupPreviousData();
-      
-      // FastF1 텔레메트리 데이터 먼저 시도
-      if (await this.tryLoadFastF1Data(session)) {
-        return true;
-      }
 
-      // 기존 방식으로 fallback
+      // OpenF1 데이터 로드
       return await this.loadOpenF1Data(session);
-      
+
     } catch (error) {
       console.error('Error loading replay data:', error);
       return false;
     }
   }
 
-  private async tryLoadFastF1Data(session: ReplaySessionData): Promise<boolean> {
-    try {
-      const fastF1Response = await replayDataService.getFastF1TelemetryData(2024, 1, 1);
-      if (!fastF1Response.success || !fastF1Response.data) {
-        return false;
-      }
-
-      const convertedData = replayDataService.convertFastF1ToReplayData(fastF1Response.data);
-      
-      this.driversData = convertedData.drivers;
-      this.lapsData = convertedData.laps;
-      this.telemetryData = convertedData.telemetryPoints;
-      this.circuitId = this.mapCircuitName(session.circuitShortName);
-      
-      await this.initializeReplay();
-      return true;
-      
-    } catch (error) {
-      console.warn('FastF1 data loading failed, falling back to standard method:', error);
-      return false;
-    }
-  }
 
   private async loadOpenF1Data(session: ReplaySessionData): Promise<boolean> {
     const response = await replayDataService.getFullRaceData(session.sessionKey);
@@ -98,7 +65,6 @@ export class ReplayAnimationEngine {
 
     this.driversData = response.data.drivers;
     this.lapsData = response.data.laps;
-    this.telemetryData = [];
     this.circuitId = this.mapCircuitName(session.circuitShortName);
     
     await this.initializeReplay();
@@ -106,30 +72,39 @@ export class ReplayAnimationEngine {
   }
 
   private async initializeReplay(): Promise<void> {
+    console.log('🚀 [ReplayAnimationEngine] Initializing replay for circuit:', this.circuitId);
+
     // 트랙 좌표 데이터 로드
-    await trackPositionService.loadCircuitData(this.circuitId);
-    
+    try {
+      await trackPositionService.loadCircuitData(this.circuitId);
+      console.log('✅ [ReplayAnimationEngine] Circuit data loaded successfully');
+    } catch (error) {
+      console.error('🔴 [ReplayAnimationEngine] Failed to load circuit data:', error);
+      throw error;
+    }
+
     // 위치 계산기에 데이터 설정
     this.positionCalculator.setData(
-      this.driversData, 
-      this.lapsData, 
-      this.telemetryData, 
+      this.driversData,
+      this.lapsData,
+      [],
       this.circuitId
     );
-    
+
     // 드라이버 마커 생성
     this.createDriverMarkers();
-    
+
     // 트랙 레이아웃 생성 (TrackEventBus 등록도 포함)
     try {
       await this.trackManager.drawCircuitTrack(this.circuitId);
-      
+      console.log('✅ [ReplayAnimationEngine] Circuit track drawn successfully');
     } catch (error) {
       console.error('❌ Failed to draw circuit track:', error);
     }
-    
+
     // 줌 레벨 변경 시 마커 크기 조절 리스너 추가
     this.setupZoomListener();
+    console.log('✅ [ReplayAnimationEngine] Replay initialization completed');
   }
 
   private mapCircuitName(circuitShortName: string): string {
@@ -165,21 +140,28 @@ export class ReplayAnimationEngine {
   }
 
   private createDriverMarkers(): void {
-    
+    console.log('🚀 [ReplayAnimationEngine] Creating driver markers for circuit:', this.circuitId);
+    console.log('🚀 [ReplayAnimationEngine] Drivers data:', this.driversData.length, 'drivers');
+
     this.markerManager.createDriverMarkers(this.driversData);
-    
+
     // 모든 드라이버를 출발선에서 시작하도록 위치 설정
     const startPositions = new Map<number, [number, number]>();
-    
+
     this.driversData.forEach(driver => {
       const startPosition = trackPositionService.getPositionAtProgress(this.circuitId, 0);
+      console.log(`🎯 [ReplayAnimationEngine] Start position for driver ${driver.driverNumber}:`, startPosition);
+
       if (startPosition && Array.isArray(startPosition) && startPosition.length === 2) {
         startPositions.set(driver.driverNumber, [startPosition[0], startPosition[1]]);
+      } else {
+        console.error(`🔴 [ReplayAnimationEngine] Failed to get start position for driver ${driver.driverNumber}`);
       }
     });
 
+    console.log('🎯 [ReplayAnimationEngine] Final start positions map:', Array.from(startPositions.entries()));
     this.markerManager.addMarkersToMap(startPositions);
-    
+
     // 서킷으로 카메라 이동
     if (this.circuitId) {
       this.trackManager.flyToCircuit(this.circuitId);
@@ -318,7 +300,6 @@ export class ReplayAnimationEngine {
     
     this.driversData = [];
     this.lapsData = [];
-    this.telemetryData = [];
     this.currentTime = 0;
     this.startTime = 0;
     this.isPlaying = false;
@@ -347,7 +328,6 @@ export class ReplayAnimationEngine {
     
     this.driversData = [];
     this.lapsData = [];
-    this.telemetryData = [];
     this.circuitId = '';
     
     this.isPlaying = false;

@@ -3,7 +3,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Calendar, ChevronDown, Clock, MapPin} from 'lucide-react';
 import {useReplayActions} from '@/src/features/replay';
-import {replayDataService} from '../services';
+import {replayDataService, BackendReplayApiService} from '../services';
 import {ReplaySessionData} from '../types';
 import {OpenF1MockDataService} from '@/src/features/replay/services/OpenF1MockDataService';
 import ReplayErrorHandler from '../services/ReplayErrorHandler';
@@ -28,7 +28,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
   const { setCurrentSession, setDrivers } = useReplayActions();
 
   // 사용 가능한 연도 목록
-  const availableYears = useMemo(() => [2024, 2023, 2022, 2021, 2020], []);
+  const availableYears = useMemo(() => [2025, 2024, 2023], []);
 
   // 세션 데이터 로드
   const loadSessions = useCallback(async (year: number, country?: string) => {
@@ -90,17 +90,14 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
     }
     
     openF1Service.setSessionType(sessionType, totalMinutes);
-    console.log(`🎯 Session type set to: ${sessionType}${totalMinutes ? ` (${totalMinutes} minutes)` : ''}`);
     
     // 세션 선택 시 자동으로 드라이버 데이터 로드
     try {
-      console.log(`Loading drivers for session ${session.sessionKey}...`);
       const driversResponse = await replayDataService.getDrivers(session.sessionKey);
       
       if (driversResponse.success) {
         // Store에 드라이버 데이터 저장
         setDrivers(driversResponse.data);
-        console.log(`✅ Loaded ${driversResponse.data.length} drivers for ${session.sessionName}`);
       } else {
         const errorMessage = driversResponse.error?.message || 'Failed to load drivers';
         const error = new Error(errorMessage);

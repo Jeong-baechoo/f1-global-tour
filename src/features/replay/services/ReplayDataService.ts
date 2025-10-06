@@ -6,15 +6,13 @@ import {
   ReplaySessionData,
   ReplayDriverData,
   ReplayLapData,
-  ApiResponse,
-  FastF1Data,
-  FastF1TelemetryPoint
+  ApiResponse
 } from '../types';
 import { mockSessions, mockDrivers, mockLaps, checkShouldForceMockData } from '../data/mockData';
 
 export class ReplayDataService {
-  private fastF1BaseUrl = 'http://localhost:8000';
   private openF1BaseUrl = 'https://api.openf1.org/v1';
+  private backendApiUrl = 'http://localhost:4000/api/v1';
 
   async getSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
     // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
@@ -22,13 +20,11 @@ export class ReplayDataService {
       return this.getMockSessions(year, countryName);
     }
 
-    // FastF1 API 먼저 시도
+    // 백엔드 API 먼저 시도
     try {
-      console.log('Attempting to fetch sessions from FastF1 API...');
-      return await this.getSessionsFromFastF1(year, countryName);
-    } catch (fastF1Error) {
-      console.warn('FastF1 API failed, trying OpenF1 API:', fastF1Error);
-      
+      return await this.getSessionsFromBackend(year, countryName);
+    } catch (backendError) {
+
       // OpenF1 API로 fallback
       try {
         const params = new URLSearchParams();
@@ -40,32 +36,50 @@ export class ReplayDataService {
         const response = await axios.get(`${this.openF1BaseUrl}/sessions?${params.toString()}`, {
           timeout: 10000,
           headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'F1-Global-Tour/1.0'
+            'Accept': 'application/json'
           }
         });
         const sessions = this.transformSessions(response.data);
 
-        console.log(`Successfully fetched ${sessions.length} sessions from OpenF1 API`);
         return {
           data: sessions,
           success: true
         };
       } catch (openF1Error) {
-        console.warn('Both APIs failed, falling back to mock data:', openF1Error);
         return this.getMockSessions(year, countryName);
       }
     }
   }
 
-  private async getSessionsFromFastF1(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
-    // FastF1 API는 아직 세션 목록 엔드포인트가 없을 수 있으니 Mock 데이터 반환
-    console.log('FastF1 API sessions endpoint not implemented yet, using mock data');
-    return this.getMockSessions(year, countryName);
+  private async getSessionsFromBackend(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
+    const params = new URLSearchParams();
+    params.append('year', year.toString());
+    if (countryName) {
+      params.append('country', countryName);
+    }
+
+    const response = await axios.get(`${this.backendApiUrl}/sessions?${params.toString()}`, {
+      timeout: 30000,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // 백엔드 API 응답 형식: { success: true, data: [...] }
+    if (response.data.success) {
+      const sessions = this.transformBackendSessions(response.data.data);
+      return {
+        data: sessions,
+        success: true
+      };
+    } else {
+      throw new Error('Backend API returned unsuccessful response');
+    }
   }
 
+
   private getMockSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
-    console.log('Using mock session data');
     return new Promise((resolve) => {
       setTimeout(() => {
         let filteredSessions = mockSessions.filter(session => session.year === year);
@@ -90,30 +104,48 @@ export class ReplayDataService {
       return this.getMockDrivers(sessionKey);
     }
 
+    // 백엔드 API 먼저 시도
     try {
-      console.log('Attempting to fetch drivers from OpenF1 API for session:', sessionKey);
-      const response = await axios.get(`${this.openF1BaseUrl}/drivers?session_key=${sessionKey}`, {
-        timeout: 10000,
+      const response = await axios.get(`${this.backendApiUrl}/sessions/${sessionKey}/drivers`, {
+        timeout: 30000,
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'F1-Global-Tour/1.0'
+          'Content-Type': 'application/json'
         }
       });
-      const drivers = this.transformDrivers(response.data);
 
-      console.log(`Successfully fetched ${drivers.length} drivers from OpenF1 API`);
-      return {
-        data: drivers,
-        success: true
-      };
-    } catch (error) {
-      console.warn('Failed to fetch drivers from OpenF1 API, falling back to mock data:', error);
-      return this.getMockDrivers(sessionKey);
+      if (response.data.success) {
+        const drivers = this.transformBackendDrivers(response.data.data);
+        return {
+          data: drivers,
+          success: true
+        };
+      } else {
+        throw new Error('Backend API returned unsuccessful response');
+      }
+    } catch (backendError) {
+
+      // OpenF1 API로 fallback
+      try {
+        const response = await axios.get(`${this.openF1BaseUrl}/drivers?session_key=${sessionKey}`, {
+          timeout: 10000,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const drivers = this.transformDrivers(response.data);
+
+        return {
+          data: drivers,
+          success: true
+        };
+      } catch (openF1Error) {
+        return this.getMockDrivers(sessionKey);
+      }
     }
   }
 
   private getMockDrivers(sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
-    console.log('Using mock driver data for session:', sessionKey);
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -134,36 +166,68 @@ export class ReplayDataService {
       return this.getMockLaps(sessionKey, driverNumber, lapNumber);
     }
 
+    // 백엔드 API 먼저 시도
     try {
       const params = new URLSearchParams();
-      params.append('session_key', sessionKey.toString());
-      
       if (driverNumber !== undefined) {
-        params.append('driver_number', driverNumber.toString());
+        params.append('driverNumber', driverNumber.toString());
       }
-      
       if (lapNumber !== undefined) {
-        params.append('lap_number', lapNumber.toString());
+        params.append('lapNumber', lapNumber.toString());
       }
 
-      console.log('Attempting to fetch laps from OpenF1 API for session:', sessionKey);
-      const response = await axios.get(`${this.openF1BaseUrl}/laps?${params.toString()}`, {
-        timeout: 10000,
+      const endpoint = `/laps/session/${sessionKey}${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await axios.get(`${this.backendApiUrl}${endpoint}`, {
+        timeout: 30000, // 대량의 lap 데이터를 위해 30초로 증가
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'F1-Global-Tour/1.0'
+          'Content-Type': 'application/json'
         }
       });
-      const laps = this.transformLaps(response.data);
 
-      console.log(`Successfully fetched ${laps.length} laps from OpenF1 API`);
-      return {
-        data: laps,
-        success: true
-      };
-    } catch (error) {
-      console.warn('Failed to fetch laps from OpenF1 API, falling back to mock data:', error);
-      return this.getMockLaps(sessionKey, driverNumber, lapNumber);
+      if (response.data.success || response.data.data) {
+        const laps = this.transformBackendLaps(response.data.data);
+        console.log('✅ [ReplayDataService] Laps loaded from backend:', laps.length);
+        return {
+          data: laps,
+          success: true
+        };
+      } else {
+        throw new Error('Backend API returned unsuccessful response');
+      }
+    } catch (backendError) {
+      console.warn('⚠️ [ReplayDataService] Backend laps API failed, trying OpenF1:', backendError);
+
+      // OpenF1 API로 fallback
+      try {
+        const params = new URLSearchParams();
+        params.append('session_key', sessionKey.toString());
+
+        if (driverNumber !== undefined) {
+          params.append('driver_number', driverNumber.toString());
+        }
+
+        if (lapNumber !== undefined) {
+          params.append('lap_number', lapNumber.toString());
+        }
+
+        const response = await axios.get(`${this.openF1BaseUrl}/laps?${params.toString()}`, {
+          timeout: 10000,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const laps = this.transformLaps(response.data);
+        console.log('✅ [ReplayDataService] Laps loaded from OpenF1:', laps.length);
+
+        return {
+          data: laps,
+          success: true
+        };
+      } catch (openF1Error) {
+        console.warn('⚠️ [ReplayDataService] OpenF1 laps API also failed, using mock data');
+        return this.getMockLaps(sessionKey, driverNumber, lapNumber);
+      }
     }
   }
 
@@ -172,7 +236,6 @@ export class ReplayDataService {
     driverNumber?: number, 
     lapNumber?: number
   ): Promise<ApiResponse<ReplayLapData[]>> {
-    console.log('Using mock lap data for session:', sessionKey, 'driver:', driverNumber, 'lap:', lapNumber);
     return new Promise((resolve) => {
       setTimeout(() => {
         let filteredLaps = mockLaps;
@@ -198,13 +261,31 @@ export class ReplayDataService {
     laps: ReplayLapData[];
   }>> {
     try {
+      console.log('🚀 [ReplayDataService] Loading full race data for session:', sessionKey);
+
       // 병렬로 드라이버와 랩 데이터 가져오기
       const [driversResponse, lapsResponse] = await Promise.all([
         this.getDrivers(sessionKey),
         this.getLaps(sessionKey)
       ]);
 
+      console.log('🎯 [ReplayDataService] Drivers response:', {
+        success: driversResponse.success,
+        driversCount: driversResponse.data?.length || 0,
+        firstDriver: driversResponse.data?.[0]
+      });
+
+      console.log('🎯 [ReplayDataService] Laps response:', {
+        success: lapsResponse.success,
+        lapsCount: lapsResponse.data?.length || 0
+      });
+
       if (!driversResponse.success || !lapsResponse.success) {
+        console.error('🔴 [ReplayDataService] Failed to fetch race data:', {
+          driversSuccess: driversResponse.success,
+          lapsSuccess: lapsResponse.success
+        });
+
         return {
           data: { drivers: [], laps: [] },
           success: false,
@@ -219,6 +300,11 @@ export class ReplayDataService {
       // 랩 데이터 정렬 및 정리
       const sortedLaps = this.sortAndProcessLaps(lapsResponse.data);
 
+      console.log('✅ [ReplayDataService] Race data loaded successfully:', {
+        driversCount: driversResponse.data.length,
+        lapsCount: sortedLaps.length
+      });
+
       return {
         data: {
           drivers: driversResponse.data,
@@ -227,7 +313,7 @@ export class ReplayDataService {
         success: true
       };
     } catch (error) {
-      console.error('Error fetching full race data:', error);
+      console.error('🔴 [ReplayDataService] Error loading race data:', error);
       return {
         data: { drivers: [], laps: [] },
         success: false,
@@ -238,6 +324,19 @@ export class ReplayDataService {
         }
       };
     }
+  }
+
+  private transformBackendSessions(backendSessions: any[]): ReplaySessionData[] {
+    return backendSessions.map(session => ({
+      sessionKey: session.session_key,
+      sessionName: session.session_name,
+      sessionType: session.session_type,
+      circuitShortName: session.circuit_short_name,
+      countryName: session.country_name,
+      year: session.year,
+      dateStart: session.date_start,
+      dateEnd: session.date_end
+    }));
   }
 
   private transformSessions(openF1Sessions: OpenF1Session[]): ReplaySessionData[] {
@@ -253,6 +352,18 @@ export class ReplayDataService {
     }));
   }
 
+  private transformBackendDrivers(backendDrivers: any[]): ReplayDriverData[] {
+    return backendDrivers.map(driver => ({
+      driverNumber: driver.number,
+      name: driver.fullName,
+      nameAcronym: driver.name,
+      teamName: driver.team,
+      teamColor: driver.teamColor,
+      broadcastName: driver.fullName,
+      countryCode: driver.countryCode
+    }));
+  }
+
   private transformDrivers(openF1Drivers: OpenF1Driver[]): ReplayDriverData[] {
     return openF1Drivers.map(driver => ({
       driverNumber: driver.driver_number,
@@ -263,6 +374,43 @@ export class ReplayDataService {
       broadcastName: driver.broadcast_name,
       countryCode: driver.country_code
     }));
+  }
+
+  private transformBackendLaps(backendLaps: any[]): ReplayLapData[] {
+    console.log('🔍 [ReplayDataService] Transforming backend laps:', {
+      totalLaps: backendLaps.length,
+      sampleLap: backendLaps[0]
+    });
+
+    return backendLaps
+      .filter(lap => {
+        // 백엔드 데이터 구조: { lapNumber, lapTime, sectors: {sector1, sector2, sector3}, timestamp, driverNumber, ... }
+        const lapTime = lap.lapTime; // 백엔드는 lapTime 사용
+        const isValid = lapTime !== null && lapTime !== undefined;
+
+        if (!isValid) {
+          console.log('⚠️ [ReplayDataService] Filtering out invalid lap:', lap);
+        }
+
+        return isValid;
+      })
+      .map(lap => {
+        // 랩 시작 시간을 ISO 문자열에서 타임스탬프로 변환
+        const lapStartTimestamp = new Date(lap.timestamp).getTime();
+
+        return {
+          driverNumber: lap.driverNumber,
+          lapNumber: lap.lapNumber,
+          lapDuration: lap.lapTime, // 백엔드는 lapTime 필드 사용
+          lapStartTime: lapStartTimestamp,
+          sectorTimes: [
+            lap.sectors?.sector1,
+            lap.sectors?.sector2,
+            lap.sectors?.sector3
+          ] as [number | null, number | null, number | null],
+          isPitOutLap: lap.isPitOutLap || false
+        };
+      });
   }
 
   private transformLaps(openF1Laps: OpenF1Lap[]): ReplayLapData[] {
@@ -376,126 +524,5 @@ export class ReplayDataService {
     };
   }
 
-  // FastF1 API 지원 메서드들
-  async getFastF1TelemetryData(year: number, round: number, driverNumber: number): Promise<ApiResponse<FastF1Data | null>> {
-    try {
-      console.log(`Fetching FastF1 telemetry for ${year}/${round}/${driverNumber}... (This may take 1-2 minutes for first load)`);
-      const response = await axios.get(`${this.fastF1BaseUrl}/mapbox/${year}/${round}/${driverNumber}`, {
-        timeout: 120000, // 2분 타임아웃 (FastF1 첫 로드 시 시간이 오래 걸림)
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
-
-      console.log(`FastF1 telemetry data received: ${response.data.telemetry_points} points`);
-      return {
-        data: response.data,
-        success: true
-      };
-    } catch (error) {
-      console.error('FastF1 API error:', error);
-      return {
-        data: null,
-        success: false,
-        error: { 
-          code: 'FASTF1_FETCH_ERROR',
-          message: 'Failed to fetch FastF1 telemetry data' 
-        }
-      };
-    }
-  }
-
-  // FastF1 텔레메트리에서 리플레이용 데이터 변환
-  convertFastF1ToReplayData(fastF1Data: FastF1Data): {
-    drivers: ReplayDriverData[],
-    laps: ReplayLapData[],
-    telemetryPoints: FastF1TelemetryPoint[]
-  } {
-    if (!fastF1Data) {
-      return { drivers: [], laps: [], telemetryPoints: [] };
-    }
-
-    // 드라이버 정보 생성
-    const driver: ReplayDriverData = {
-      driverNumber: fastF1Data.driver_number,
-      name: fastF1Data.full_name,
-      nameAcronym: fastF1Data.driver,
-      teamName: fastF1Data.team,
-      teamColor: this.getTeamColor(fastF1Data.team),
-      broadcastName: fastF1Data.full_name,
-      countryCode: this.getCountryCode(fastF1Data.driver)
-    };
-
-    // 텔레메트리 포인트에서 랩 데이터 생성
-    const telemetryPoints = fastF1Data.telemetry || [];
-    const laps = this.generateLapsFromTelemetry(driver.driverNumber, telemetryPoints);
-
-    return {
-      drivers: [driver],
-      laps,
-      telemetryPoints
-    };
-  }
-
-  private generateLapsFromTelemetry(driverNumber: number, telemetryPoints: FastF1TelemetryPoint[]): ReplayLapData[] {
-    if (!telemetryPoints.length) return [];
-
-    const laps: ReplayLapData[] = [];
-    const lapDuration = 90; // 평균 랩 타임 90초
-    const startTime = telemetryPoints[0].time;
-    const endTime = telemetryPoints[telemetryPoints.length - 1].time;
-    const totalDuration = endTime - startTime;
-    const lapCount = Math.ceil(totalDuration / lapDuration);
-
-    for (let lapNumber = 1; lapNumber <= Math.min(lapCount, 10); lapNumber++) {
-      const lapStartTime = (lapNumber - 1) * lapDuration;
-      const currentLapDuration = lapDuration + (Math.random() - 0.5) * 10; // ±5초 변화
-
-      laps.push({
-        driverNumber,
-        lapNumber,
-        lapDuration: currentLapDuration,
-        lapStartTime,
-        sectorTimes: [
-          currentLapDuration * 0.33,
-          currentLapDuration * 0.33,
-          currentLapDuration * 0.34
-        ],
-        isPitOutLap: lapNumber === 1
-      });
-    }
-
-    return laps;
-  }
-
-  private getTeamColor(teamName: string): string {
-    const teamColors: Record<string, string> = {
-      'Red Bull Racing': '3671C6',
-      'Ferrari': 'E8002D',
-      'Mercedes': '27F4D2',
-      'McLaren': 'FF8000',
-      'Aston Martin': '229971',
-      'Alpine': '2293D1',
-      'Williams': '64C4FF',
-      'AlphaTauri': '5E8FAA',
-      'Alfa Romeo': 'C92D4B',
-      'Haas': 'B6BABD'
-    };
-    return teamColors[teamName] || 'FFFFFF';
-  }
-
-  private getCountryCode(driver: string): string {
-    const driverCountries: Record<string, string> = {
-      'VER': 'NLD',
-      'PER': 'MEX',
-      'LEC': 'MCO',
-      'SAI': 'ESP',
-      'HAM': 'GBR',
-      'RUS': 'GBR',
-      'NOR': 'GBR',
-      'PIA': 'AUS'
-    };
-    return driverCountries[driver] || 'UNK';
-  }
 }
 

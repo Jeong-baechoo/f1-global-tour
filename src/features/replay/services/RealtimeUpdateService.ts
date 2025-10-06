@@ -65,9 +65,13 @@ export class RealtimeUpdateService {
   }
 
   // 수동 업데이트 트리거
-  triggerUpdate(): void {
-    // OpenF1 서비스에 미세한 변동 적용 (실시간 느낌을 위해)
-    this.applyRealtimeVariations();
+  async triggerUpdate(): Promise<void> {
+    // 실시간 데이터 변동 적용
+    try {
+      await this.applyRealtimeVariations();
+    } catch (error) {
+      console.warn('Failed to apply realtime variations:', error);
+    }
 
     // 등록된 모든 콜백 실행
     this.callbacks.forEach(callback => {
@@ -80,13 +84,21 @@ export class RealtimeUpdateService {
   }
 
   // 실시간 데이터 변동 시뮬레이션
-  private applyRealtimeVariations(): void {
+  private async applyRealtimeVariations(): Promise<void> {
+    const driverTimingService = DriverTimingService.getInstance();
+    const serviceStatus = driverTimingService.getServiceStatus();
+    
+    // 백엔드 사용 중이면 자동 랩 진행 비활성화 (백엔드에서 제어)
+    if (serviceStatus.isUsingBackend) {
+      return;
+    }
+    
+    // Mock 서비스 사용 중일 때만 자동 랩 진행
     const openF1Service = OpenF1MockDataService.getInstance();
     const currentLap = openF1Service.getCurrentLap();
     
     // 10% 확률로 랩 자동 진행 (리플레이가 재생중일 때)
     if (Math.random() < 0.1 && this.isActive) {
-      const driverTimingService = DriverTimingService.getInstance();
       const maxLap = 58; // 일반적인 레이스 랩 수
       
       if (currentLap < maxLap) {

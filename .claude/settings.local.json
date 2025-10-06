@@ -74,7 +74,11 @@
       "WebFetch(domain:localhost)",
       "WebFetch(domain:api.openf1.org)",
       "Read(//mnt/d/Screenshot_Video/**)",
-      "WebFetch(domain:openf1.org)"
+      "WebFetch(domain:openf1.org)",
+      "Read(//mnt/d/spring-study/f1-global-tour-backend/**)",
+      "Read(//mnt/d/spring-study/**)",
+      "Bash(npm run start:dev:*)",
+      "Bash(netstat:*)"
     ],
     "deny": []
   }

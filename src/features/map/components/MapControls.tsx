@@ -169,7 +169,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
       />
       )}
 
-      {/* 리플레이 버튼 - F1 로고 오른쪽 - 모바일에서 숨김 */}
+      {/* 리플레이 버튼 - F1 로고 오른쪽 - 모바일에서 숨김, 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <div className="fixed left-56 top-10 z-40 hidden sm:block">
         <button
           onClick={handleReplayToggle}
@@ -183,6 +184,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
           REPLAY
         </button>
       </div>
+      )}
 
       {/* 재생바 - 페이지 중앙 하단 */}
       {isReplayMode && (

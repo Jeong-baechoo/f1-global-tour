@@ -40,20 +40,31 @@ export class TrackPositionService {
   ): [number, number] | null {
     const circuitData = this.circuitCoordinates.get(circuitId);
     if (!circuitData) {
-      console.warn(`Circuit data not loaded for ${circuitId}`);
+      console.warn(`🔴 [TrackPositionService] Circuit data not loaded for ${circuitId}`);
+      console.log('🔍 [TrackPositionService] Available circuits:', Array.from(this.circuitCoordinates.keys()));
       return null;
     }
 
     // 진행률을 0-1 범위로 제한
     const clampedProgress = Math.max(0, Math.min(1, lapProgress));
-    
+
     // 타겟 거리 계산
     const targetDistance = clampedProgress * circuitData.totalDistance;
-    
-    return this.interpolateCoordinateAtDistance(
+
+    const position = this.interpolateCoordinateAtDistance(
       circuitData.trackCoordinates,
       targetDistance
     );
+
+    if (process.env.NODE_ENV === 'development' && lapProgress === 0) {
+      console.log(`🎯 [TrackPositionService] Start position for ${circuitId}:`, position);
+      console.log(`🎯 [TrackPositionService] Circuit data:`, {
+        totalDistance: circuitData.totalDistance,
+        coordinatesCount: circuitData.trackCoordinates.length
+      });
+    }
+
+    return position;
   }
 
   private calculateTotalDistance(coordinates: [number, number][]): number {

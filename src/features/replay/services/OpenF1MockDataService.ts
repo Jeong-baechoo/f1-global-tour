@@ -243,13 +243,26 @@ export class OpenF1MockDataService {
       });
     });
 
-    // 리타이어한 드라이버들을 맨 뒤에 추가 (순위 표시용)
-    retiredDrivers.forEach((data) => {
+    // 리타이어한 드라이버들을 맨 뒤에 추가
+    // 리타이어한 드라이버는 마지막 완주 드라이버와의 간격을 표시
+    retiredDrivers.forEach((data, index) => {
+      let intervalToAhead = null;
+
+      if (index === 0 && completedDrivers.length > 0) {
+        // 첫 번째 리타이어 드라이버는 마지막 완주 드라이버와의 간격
+        const lastCompletedDriver = completedDrivers[completedDrivers.length - 1];
+        intervalToAhead = data.totalTime - lastCompletedDriver.totalTime;
+      } else if (index > 0) {
+        // 이후 리타이어 드라이버들은 바로 앞 리타이어 드라이버와의 간격
+        const previousRetiredDriver = retiredDrivers[index - 1];
+        intervalToAhead = data.totalTime - previousRetiredDriver.totalTime;
+      }
+
       intervals.push({
         date: new Date().toISOString(),
         driver_number: data.driver_number,
-        gap_to_leader: null, // 리타이어는 간격 없음
-        interval: null,
+        gap_to_leader: null, // 리타이어는 리더와의 간격 표시 안 함
+        interval: intervalToAhead, // 앞 차와의 간격 (부분 완주 시간 기반)
         meeting_key: this.meetingKey,
         session_key: this.sessionKey
       });
@@ -430,29 +443,52 @@ export class OpenF1MockDataService {
   // DriverTiming 형식으로 변환
   convertToDriverTimings(): DriverTiming[] {
     const realtimeData = this.generateRealtimeDriverData();
-    
+
     return realtimeData
       .sort((a, b) => a.position - b.position)
-      .map(data => {
+      .slice(0, 20) // 최대 20명으로 제한
+      .map((data, index) => {
         const isRetired = this.retiredDrivers.has(data.driver_number);
-        
+        const isLeader = index === 0;
+
+        // Interval (gap to leader) 계산
+        let intervalDisplay: string;
+        if (isLeader) {
+          intervalDisplay = '--'; // 리더는 간격 없음
+        } else if (isRetired) {
+          intervalDisplay = 'DNF'; // 리타이어는 DNF 표시
+        } else if (data.current_interval?.gap_to_leader != null) {
+          intervalDisplay = `+${data.current_interval.gap_to_leader.toFixed(3)}`;
+        } else {
+          intervalDisplay = '--'; // 데이터 없음
+        }
+
+        // Interval to ahead (바로 앞 차와의 간격) 계산
+        let intervalToAheadDisplay: string;
+        if (isLeader) {
+          intervalToAheadDisplay = ''; // 리더는 빈 문자열
+        } else if (isRetired) {
+          // 리타이어 드라이버도 앞 차와의 간격 표시 (부분 완주 시간 기반)
+          if (data.current_interval?.interval != null) {
+            intervalToAheadDisplay = `+${data.current_interval.interval.toFixed(3)}`;
+          } else {
+            intervalToAheadDisplay = 'DNF';
+          }
+        } else if (data.current_interval?.interval != null) {
+          intervalToAheadDisplay = `+${data.current_interval.interval.toFixed(3)}`;
+        } else {
+          intervalToAheadDisplay = ''; // 데이터 없음
+        }
+
         return {
           position: data.position,
           driverCode: data.name_acronym,
           teamColor: `#${data.team_colour}`,
-          interval: isRetired 
-            ? 'DNF' // Did Not Finish
-            : (data.current_interval?.gap_to_leader == null 
-                ? '--' 
-                : `+${data.current_interval.gap_to_leader.toFixed(3)}`),
-          intervalToAhead: isRetired 
-            ? 'DNF'
-            : (data.current_interval?.interval == null
-                ? ''
-                : `+${data.current_interval.interval.toFixed(3)}`),
+          interval: intervalDisplay,
+          intervalToAhead: intervalToAheadDisplay,
           currentLapTime: isRetired
             ? 'DNF'
-            : (data.latest_lap?.lap_duration 
+            : (data.latest_lap?.lap_duration
                 ? this.formatTime(data.latest_lap.lap_duration)
                 : '--:--:---'),
           bestLapTime: data.best_lap?.lap_duration
@@ -470,6 +506,32 @@ export class OpenF1MockDataService {
           }
         };
       });
+  }
+
+  // BackendReplayApiService에서 fallback으로 사용할 수 있는 public 메서드들
+  generateIntervals(): OpenF1Interval[] {
+    return this.intervalData.get(this.currentLap) || [];
+  }
+
+  generateLaps(): OpenF1Lap[] {
+    return this.lapData.get(this.currentLap) || [];
+  }
+
+  generateDrivers(): OpenF1Driver[] {
+    return this.drivers.map(driver => ({
+      driver_number: driver.driver_number,
+      broadcast_name: driver.name_acronym,
+      full_name: driver.name_acronym,
+      name_acronym: driver.name_acronym,
+      team_name: 'Unknown Team',
+      team_colour: driver.team_colour,
+      first_name: driver.name_acronym.substring(0, 3),
+      last_name: driver.name_acronym.substring(3),
+      headshot_url: null,
+      country_code: 'UNK',
+      session_key: this.sessionKey,
+      meeting_key: this.meetingKey
+    }));
   }
 
   private formatTime(seconds: number): string {

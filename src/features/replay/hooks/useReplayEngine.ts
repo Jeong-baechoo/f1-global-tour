@@ -78,7 +78,6 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
   const loadSession = useCallback(async (session: ReplaySessionData): Promise<boolean> => {
     if (!engineRef.current || !map) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('⚠️ Animation engine or map not ready yet, skipping session load');
       }
       return false;
     }
@@ -89,15 +88,12 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
       if (success) {
         setTotalDuration(5400);
         if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Session loaded successfully:', session.sessionName);
         }
       } else {
-        console.error('❌ Failed to load session:', session.sessionName);
       }
       
       return success;
     } catch (error) {
-      console.error('❌ Error loading session:', error);
       return false;
     }
   }, [setTotalDuration, map]);

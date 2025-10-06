@@ -174,29 +174,6 @@ export interface ReplayError {
   details?: unknown;
 }
 
-// FastF1 API 응답 타입
-export interface FastF1TelemetryPoint {
-  time: number;
-  longitude?: number;
-  latitude?: number;
-  distance?: number;
-  speed?: number;
-  rpm?: number;
-  gear?: number;
-  throttle?: number;
-  brake?: number;
-  drs?: number;
-}
-
-export interface FastF1Data {
-  driver_number: number;
-  full_name: string;
-  driver: string;
-  team: string;
-  team_name: string;
-  team_color: string;
-  telemetry: FastF1TelemetryPoint[];
-}
 
 // API 응답 타입
 export interface ApiResponse<T> {
