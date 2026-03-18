@@ -352,7 +352,7 @@ export class DriverTimingService {
       await this.backendService.convertToDriverTimings();
       this.isUsingBackend = true;
       return true;
-    } catch (error) {
+    } catch {
       this.isUsingBackend = false;
       return false;
     }
@@ -373,7 +373,7 @@ export class DriverTimingService {
     if (this.preferredServiceType === 'backend') {
       try {
         await this.backendService.startReplaySession(sessionKey);
-      } catch (error) {
+      } catch {
       }
     }
   }

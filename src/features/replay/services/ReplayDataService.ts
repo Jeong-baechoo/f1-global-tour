@@ -7,6 +7,41 @@ import {
 } from '../types';
 import { mockSessions, mockDrivers, mockLaps, checkShouldForceMockData } from '../data/mockData';
 
+interface BackendSession {
+  session_key: number;
+  session_name: string;
+  session_type: string;
+  circuit_short_name: string;
+  country_name: string;
+  year: number;
+  date_start: string;
+  date_end: string;
+}
+
+interface BackendDriver {
+  number: number;
+  name: string;
+  fullName: string;
+  team: string;
+  teamColor: string;
+  countryCode: string;
+}
+
+interface BackendLapSectors {
+  sector1?: number;
+  sector2?: number;
+  sector3?: number;
+}
+
+interface BackendLap {
+  driverNumber: number;
+  lapNumber: number;
+  lapTime: number | null;
+  timestamp: string;
+  sectors?: BackendLapSectors;
+  isPitOutLap?: boolean;
+}
+
 export class ReplayDataService {
   private backendApiUrl = 'http://localhost:4000/api/v1';
 
@@ -94,7 +129,7 @@ export class ReplayDataService {
     }
   }
 
-  private getMockDrivers(sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
+  private getMockDrivers(_sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -244,7 +279,7 @@ export class ReplayDataService {
     }
   }
 
-  private transformBackendSessions(backendSessions: any[]): ReplaySessionData[] {
+  private transformBackendSessions(backendSessions: BackendSession[]): ReplaySessionData[] {
     return backendSessions.map(session => ({
       sessionKey: session.session_key,
       sessionName: session.session_name,
@@ -257,7 +292,7 @@ export class ReplayDataService {
     }));
   }
 
-  private transformBackendDrivers(backendDrivers: any[]): ReplayDriverData[] {
+  private transformBackendDrivers(backendDrivers: BackendDriver[]): ReplayDriverData[] {
     return backendDrivers.map(driver => ({
       driverNumber: driver.number,
       name: driver.fullName,
@@ -269,7 +304,7 @@ export class ReplayDataService {
     }));
   }
 
-  private transformBackendLaps(backendLaps: any[]): ReplayLapData[] {
+  private transformBackendLaps(backendLaps: BackendLap[]): ReplayLapData[] {
     console.log('🔍 [ReplayDataService] Transforming backend laps:', {
       totalLaps: backendLaps.length,
       sampleLap: backendLaps[0]
@@ -294,7 +329,7 @@ export class ReplayDataService {
         return {
           driverNumber: lap.driverNumber,
           lapNumber: lap.lapNumber,
-          lapDuration: lap.lapTime, // 백엔드는 lapTime 필드 사용
+          lapDuration: lap.lapTime as number, // 백엔드는 lapTime 필드 사용 (filter에서 null 제거됨)
           lapStartTime: lapStartTimestamp,
           sectorTimes: [
             lap.sectors?.sector1,

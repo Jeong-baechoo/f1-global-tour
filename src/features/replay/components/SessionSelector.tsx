@@ -3,7 +3,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Calendar, ChevronDown, Clock, MapPin} from 'lucide-react';
 import {useReplayActions} from '@/src/features/replay';
-import {replayDataService, BackendReplayApiService} from '../services';
+import {replayDataService} from '../services';
 import {ReplaySessionData} from '../types';
 import {OpenF1MockDataService} from '@/src/features/replay/services/OpenF1MockDataService';
 import ReplayErrorHandler from '../services/ReplayErrorHandler';

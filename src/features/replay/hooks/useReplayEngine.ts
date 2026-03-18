@@ -93,7 +93,7 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
       }
       
       return success;
-    } catch (error) {
+    } catch {
       return false;
     }
   }, [setTotalDuration, map]);
