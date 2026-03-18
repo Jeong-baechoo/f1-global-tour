@@ -41,6 +41,20 @@ const Map = dynamic(
   }
 );
 
+// 현재 시즌의 레이스 날짜를 반환하는 헬퍼
+function getSeasonRaceDate(circuit: { raceDate2025: string | null; raceDate2026?: string | null }): string | null {
+  const year = new Date().getFullYear();
+  if (year >= 2026) return circuit.raceDate2026 ?? null;
+  return circuit.raceDate2025;
+}
+
+// 현재 시즌 취소 여부 반환
+function isCancelledInSeason(circuit: { cancelled2026?: boolean }): boolean {
+  const year = new Date().getFullYear();
+  if (year >= 2026) return circuit.cancelled2026 === true;
+  return false;
+}
+
 export default function Home() {
   const { language, setLanguage } = useLanguage();
   const [panelOpen, setPanelOpen] = useState(true); // 초기값을 true로 변경하여 패널이 처음부터 열리도록 함
@@ -186,7 +200,7 @@ export default function Home() {
       length: circuit.length,
       corners: circuit.corners,
       laps: circuit.laps,
-      raceDate: circuit.raceDate2025 || undefined,
+      raceDate: getSeasonRaceDate(circuit) || undefined,
       lapRecord: circuit.lapRecord ? {
         time: circuit.lapRecord.time,
         driver: circuit.lapRecord.driver,
@@ -221,14 +235,14 @@ export default function Home() {
       length: circuit.length,
       corners: circuit.corners,
       laps: circuit.laps,
-      raceDate: circuit.raceDate2025 || undefined,
+      raceDate: getSeasonRaceDate(circuit) || undefined,
       lapRecord: circuit.lapRecord ? {
         time: circuit.lapRecord.time,
         driver: circuit.lapRecord.driver,
         year: circuit.lapRecord.year.toString()
       } : undefined
     });
-    
+
     setPanelOpen(true);
     
     // 맵에서 서킷으로 이동
@@ -651,7 +665,7 @@ export default function Home() {
                     length: circuit.length,
                     corners: circuit.corners,
                     laps: circuit.laps,
-                    raceDate: circuit.raceDate2025 || undefined,
+                    raceDate: getSeasonRaceDate(circuit) || undefined,
                     totalDistance: circuit.totalDistance,
                     lapRecord: circuit.lapRecord ? {
                       time: circuit.lapRecord.time,
@@ -665,9 +679,9 @@ export default function Home() {
               >
                 {/* 날짜 표시 */}
                 <span className="text-[#C0C0C0]/80 text-xs font-medium mb-1 group-hover:text-white/90 transition-colors">
-                  {circuit.raceDate2025 ? (() => {
+                  {isCancelledInSeason(circuit) ? 'CANCELLED' : getSeasonRaceDate(circuit) ? (() => {
                     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-                    const date = new Date(circuit.raceDate2025 + 'T00:00:00Z');
+                    const date = new Date(getSeasonRaceDate(circuit)! + 'T00:00:00Z');
                     return `${months[date.getUTCMonth()]} ${date.getUTCDate()}`;
                   })() : 'TBD'}
                 </span>

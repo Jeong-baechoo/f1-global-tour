@@ -29,33 +29,55 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
   const [selectedRaceId, setSelectedRaceId] = useState<string>();
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
+
+  // 현재 시즌 레이스 날짜 반환
+  const getRaceDateForSeason = (circuit: Circuit): string | null => {
+    const year = new Date().getFullYear();
+    if (year >= 2026) return circuit.raceDate2026 ?? null;
+    return circuit.raceDate2025 ?? null;
+  };
+
+  // 현재 시즌 취소 여부 반환
+  const isCancelledInSeason = (circuit: Circuit): boolean => {
+    const year = new Date().getFullYear();
+    if (year >= 2026) return circuit.cancelled2026 === true;
+    return false;
+  };
+
   // circuits 데이터를 round 순서로 정렬 (null 값 제외)
   const raceSchedule = circuits
-    .filter(circuit => circuit.round !== null && circuit.raceDate2025)
-    .sort((a, b) => (a.round || 0) - (b.round || 0));
+    .filter(circuit => {
+      const raceDate = getRaceDateForSeason(circuit);
+      const year = new Date().getFullYear();
+      const round = year >= 2026 ? circuit.round2026 : circuit.round;
+      return round !== null && (raceDate || isCancelledInSeason(circuit));
+    })
+    .sort((a, b) => {
+      const year = new Date().getFullYear();
+      const roundA = year >= 2026 ? (a.round2026 || 0) : (a.round || 0);
+      const roundB = year >= 2026 ? (b.round2026 || 0) : (b.round || 0);
+      return roundA - roundB;
+    });
 
-  // 다음 레이스 찾기 함수 (CircuitService 로직 활용)
+  // 다음 레이스 찾기 함수
   const findNextRaceCircuit = useCallback((): Circuit | null => {
     const today = new Date();
-    
-    // 날짜가 있는 서킷들만 필터링하고 날짜순 정렬
+
     const circuitsWithDates = circuits
-      .filter(circuit => circuit.raceDate2025)
+      .filter(circuit => getRaceDateForSeason(circuit) && !isCancelledInSeason(circuit))
       .sort((a, b) => {
-        const dateA = new Date(a.raceDate2025!);
-        const dateB = new Date(b.raceDate2025!);
+        const dateA = new Date(getRaceDateForSeason(a)!);
+        const dateB = new Date(getRaceDateForSeason(b)!);
         return dateA.getTime() - dateB.getTime();
       });
-    
-    // 다음 레이스 찾기
+
     const nextRace = circuitsWithDates.find(circuit => {
-      const raceDate = new Date(circuit.raceDate2025!);
+      const raceDate = new Date(getRaceDateForSeason(circuit)!);
       return raceDate > today;
     });
-    
-    // 미래 레이스가 없으면 시즌 첫 번째 레이스 반환
+
     return nextRace || circuitsWithDates[0] || null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [circuits]);
 
   // 모바일 체크 및 초기 다음 레이스 선택
@@ -66,7 +88,7 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     // 초기 로딩 시 다음 레이스 자동 선택 (모바일에서만, 사용자 상호작용이 없을 때만)
     if (window.innerWidth < 640 && !selectedCircuitId && !hasUserInteracted) {
       const nextRaceCircuit = findNextRaceCircuit();
@@ -75,23 +97,20 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
         onSelectCircuitAction(nextRaceCircuit);
       }
     }
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, [circuits, selectedCircuitId, onSelectCircuitAction, findNextRaceCircuit, hasUserInteracted]);
-
 
   // 패널 상태에 따른 RaceTimelinePanel 높이 계산
   const getPanelMaxHeight = () => {
     if (!panelState?.isOpen) return '100vh';
-    
+
     if (panelState.isMinimized) return '100vh';
-    
+
     // 패널이 열려있을 때는 패널 높이만큼 뺀 높이 사용
     const windowHeight = window.innerHeight;
     const peekHeight = 80;
-    // const halfHeight = windowHeight * 0.5;
-    // const fullHeight = windowHeight * 0.9;
-    
+
     // 패널 높이에 따라 사용 가능한 높이 계산
     const usableHeight = windowHeight - peekHeight - 20; // 20px는 여유 공간
     return `${Math.max(usableHeight, 300)}px`; // 최소 300px는 보장
@@ -100,10 +119,10 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
   // 레이스 선택 핸들러
   const handleRaceSelect = (circuit: Circuit) => {
     setSelectedRaceId(circuit.id);
-    
+
     // 서킷을 지도에서 선택
     onSelectCircuitAction(circuit);
-    
+
     // 패널 닫기
     setIsTimelineOpen(false);
   };

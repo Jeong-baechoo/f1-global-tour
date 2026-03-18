@@ -31,6 +31,56 @@ interface BackendConfig {
   fallbackEnabled: boolean;
 }
 
+interface SessionCacheEntry {
+  intervals: BackendInterval[];
+  laps: BackendLap[];
+  drivers: BackendDriver[];
+  loadedAt: number;
+}
+
+interface BackendInterval {
+  timestamp: string;
+  driverNumber: number;
+  gapToLeader: number | null;
+  interval: number | null;
+  meetingKey: number;
+  sessionKey: number;
+}
+
+interface BackendLap {
+  timestamp: string;
+  driverNumber: number;
+  lapNumber: number;
+  lapTime: number | null;
+  sectors?: {
+    sector1?: number;
+    sector2?: number;
+    sector3?: number;
+  };
+  speeds?: {
+    i1Speed?: number;
+    i2Speed?: number;
+  };
+  segments?: {
+    sector1?: (number | { value: number })[];
+    sector2?: (number | { value: number })[];
+    sector3?: (number | { value: number })[];
+  };
+  isPitOutLap?: boolean;
+  meetingKey: number;
+  sessionKey: number;
+}
+
+interface BackendDriver {
+  number: number;
+  name: string;
+  fullName?: string;
+  team?: string;
+  teamColor?: string;
+  sessionKey: number;
+  meetingKey: number;
+}
+
 export class BackendReplayApiService {
   private static instance: BackendReplayApiService;
   private config: BackendConfig;
@@ -44,16 +94,11 @@ export class BackendReplayApiService {
   private healthCheckInterval: number = 30000; // 30초마다 헬스 체크
 
   // 클라이언트 측 캐싱 (API 요청용)
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
+  private cache: Map<string, { data: unknown; timestamp: number }> = new Map();
   private cacheExpiry: number = 60000; // 60초 캐시 유효기간
 
   // 세션별 전체 데이터 캐싱 (세션당 한 번만 로드)
-  private sessionDataCache: Map<number, {
-    intervals: any[];
-    laps: any[];
-    drivers: any[];
-    loadedAt: number;
-  }> = new Map();
+  private sessionDataCache: Map<number, SessionCacheEntry> = new Map();
 
   static getInstance(): BackendReplayApiService {
     if (!BackendReplayApiService.instance) {
@@ -120,7 +165,7 @@ export class BackendReplayApiService {
     const cached = this.cache.get(cacheKey);
     if (cached && (now - cached.timestamp) < this.cacheExpiry) {
       console.log(`💾 [Backend API] Using cached data for ${endpoint}`);
-      return cached.data;
+      return cached.data as T;
     }
 
     try {
@@ -150,7 +195,7 @@ export class BackendReplayApiService {
     }
   }
 
-  private handleApiError(error: unknown, endpoint: string): void {
+  private handleApiError(error: unknown, _endpoint: string): void {
     this.retryCount++;
     
     if (this.retryCount >= this.config.maxRetries) {
@@ -193,16 +238,16 @@ export class BackendReplayApiService {
     try {
       // 모든 데이터를 병렬로 가져오기
       const [backendIntervals, backendLaps, backendDrivers] = await Promise.all([
-        this.makeApiRequest<any[]>(`/intervals/session/${sessionKey}`),
-        this.makeApiRequest<any[]>(`/laps/session/${sessionKey}`),
-        this.makeApiRequest<any[]>(`/sessions/${sessionKey}/drivers`)
+        this.makeApiRequest<unknown[]>(`/intervals/session/${sessionKey}`),
+        this.makeApiRequest<unknown[]>(`/laps/session/${sessionKey}`),
+        this.makeApiRequest<unknown[]>(`/sessions/${sessionKey}/drivers`)
       ]);
 
       // 캐시에 저장
       this.sessionDataCache.set(sessionKey, {
-        intervals: backendIntervals,
-        laps: backendLaps,
-        drivers: backendDrivers,
+        intervals: backendIntervals as BackendInterval[],
+        laps: backendLaps as BackendLap[],
+        drivers: backendDrivers as BackendDriver[],
         loadedAt: Date.now()
       });
 
@@ -235,7 +280,7 @@ export class BackendReplayApiService {
       
       // DriverTiming을 RealtimeDriverData로 변환
       return this.convertDriverTimingsToRealtimeData(timings);
-    } catch (error) {
+    } catch {
       return this.fallbackService.generateRealtimeDriverData();
     }
   }
@@ -244,7 +289,7 @@ export class BackendReplayApiService {
   async convertToDriverTimings(): Promise<DriverTiming[]> {
     try {
       return await this.getDriverTimings(this.sessionKey);
-    } catch (error) {
+    } catch {
       return this.fallbackService.convertToDriverTimings();
     }
   }
@@ -291,12 +336,12 @@ export class BackendReplayApiService {
     try {
       const timings = await this.convertToDriverTimings();
       this.intervalCallbacks.forEach(callback => callback(timings));
-    } catch (error) {
+    } catch {
       // 백엔드 실패 시 fallback 서비스 사용
       try {
         const fallbackTimings = this.fallbackService.convertToDriverTimings();
         this.intervalCallbacks.forEach(callback => callback(fallbackTimings));
-      } catch (fallbackError) {
+      } catch {
         this.intervalCallbacks.forEach(callback => callback([]));
       }
     }
@@ -307,7 +352,7 @@ export class BackendReplayApiService {
   // ===============================
 
   // 드라이버 타이밍 데이터 가져오기 (캐시된 전체 데이터 활용)
-  async getDriverTimings(sessionKey: number, date?: string): Promise<DriverTiming[]> {
+  async getDriverTimings(sessionKey: number, _date?: string): Promise<DriverTiming[]> {
     try {
       // 캐시된 세션 데이터가 없으면 로드
       if (!this.sessionDataCache.has(sessionKey)) {
@@ -338,7 +383,7 @@ export class BackendReplayApiService {
       });
 
       // 현재 랩에 해당하는 데이터만 필터링
-      const currentLapIntervals = this.filterIntervalsByLap(allIntervals, allLaps, this.currentLap);
+      const currentLapIntervals = this.filterIntervalsByLap(allIntervals);
       const currentLapLaps = allLaps.filter(lap => lap.lap_number <= this.currentLap);
 
       console.log('📊 [Backend API] Filtered data for current lap:', {
@@ -369,7 +414,7 @@ export class BackendReplayApiService {
   }
 
   // 현재 랩에 해당하는 인터벌 데이터 필터링
-  private filterIntervalsByLap(intervals: OpenF1Interval[], laps: OpenF1Lap[], currentLap: number): OpenF1Interval[] {
+  private filterIntervalsByLap(intervals: OpenF1Interval[]): OpenF1Interval[] {
     // 각 드라이버의 가장 최근 인터벌 데이터 찾기 (간단한 방법)
     const driverLatestIntervals = new Map<number, OpenF1Interval>();
 
@@ -399,7 +444,7 @@ export class BackendReplayApiService {
   async getSessionDrivers(sessionKey: number): Promise<OpenF1Driver[]> {
     try {
       return await this.makeApiRequest<OpenF1Driver[]>(`/sessions/${sessionKey}/drivers`);
-    } catch (error) {
+    } catch {
       // Mock 서비스에서 드라이버 데이터 변환
       const mockData = this.fallbackService.generateRealtimeDriverData();
       return mockData.map(driver => ({
@@ -431,7 +476,7 @@ export class BackendReplayApiService {
       });
       
       return response.data;
-    } catch (error) {
+    } catch {
       // 리플레이 시작 실패해도 Mock 서비스로 계속 진행
       return { success: true, fallback: true };
     }
@@ -443,11 +488,11 @@ export class BackendReplayApiService {
 
   async getCurrentFlag(): Promise<FlagStatus | null> {
     try {
-      await this.makeApiRequest<unknown[]>(`/race-control/${this.sessionKey}`, { category: 'Flag' });
+      await this.makeApiRequest<unknown[]>(`/race-control/session/${this.sessionKey}`, { category: 'Flag' });
       // 최신 플래그 상태를 파싱하여 반환
       // TODO: 실제 백엔드 API 응답 형식에 따라 구현
       return null; // 임시로 null 반환
-    } catch (error) {
+    } catch {
       return this.fallbackService.getCurrentFlag();
     }
   }
@@ -466,7 +511,7 @@ export class BackendReplayApiService {
         totalMinutes: 90,
         minuteFlags: Array(90).fill('NONE')
       };
-    } catch (error) {
+    } catch {
       return this.fallbackService.getRaceStatus();
     }
   }
@@ -507,7 +552,7 @@ export class BackendReplayApiService {
         } else if (isRetired) {
           intervalDisplay = 'DNF'; // 리타이어는 DNF 표시
         } else if (interval.gap_to_leader !== null) {
-          intervalDisplay = `+${interval.gap_to_leader.toFixed(3)}`;
+          intervalDisplay = `+${Number(interval.gap_to_leader).toFixed(3)}`;
         } else {
           intervalDisplay = '--'; // 데이터 없음
         }
@@ -519,12 +564,12 @@ export class BackendReplayApiService {
         } else if (isRetired) {
           // 리타이어 드라이버도 앞 차와의 간격 표시 (부분 완주 시간 기반)
           if (interval.interval !== null) {
-            intervalToAheadDisplay = `+${interval.interval.toFixed(3)}`;
+            intervalToAheadDisplay = `+${Number(interval.interval).toFixed(3)}`;
           } else {
             intervalToAheadDisplay = 'DNF';
           }
         } else if (interval.interval !== null) {
-          intervalToAheadDisplay = `+${interval.interval.toFixed(3)}`;
+          intervalToAheadDisplay = `+${Number(interval.interval).toFixed(3)}`;
         } else {
           intervalToAheadDisplay = ''; // 데이터 없음
         }
@@ -682,7 +727,7 @@ export class BackendReplayApiService {
   // 백엔드 응답을 OpenF1 형식으로 변환하는 어댑터 메서드들
   // ===============================
 
-  private convertBackendToOpenF1Interval(backendInterval: any): OpenF1Interval {
+  private convertBackendToOpenF1Interval(backendInterval: BackendInterval): OpenF1Interval {
     return {
       date: backendInterval.timestamp,
       driver_number: backendInterval.driverNumber,
@@ -693,24 +738,24 @@ export class BackendReplayApiService {
     };
   }
 
-  private convertBackendToOpenF1Lap(backendLap: any): OpenF1Lap {
+  private convertBackendToOpenF1Lap(backendLap: BackendLap): OpenF1Lap {
     // 백엔드 변환 형식:
     // {lapNumber, lapTime, sectors, speeds, segments, timestamp, driverNumber, sessionKey, meetingKey, ...}
 
     // segments가 객체 형식인 경우 배열로 추출
-    const segments_sector_1 = backendLap.segments?.sector1?.map((s: any) => s.value || s) || [];
-    const segments_sector_2 = backendLap.segments?.sector2?.map((s: any) => s.value || s) || [];
-    const segments_sector_3 = backendLap.segments?.sector3?.map((s: any) => s.value || s) || [];
+    const segments_sector_1 = backendLap.segments?.sector1?.map((s: number | { value: number }) => typeof s === 'object' ? s.value : s) || [];
+    const segments_sector_2 = backendLap.segments?.sector2?.map((s: number | { value: number }) => typeof s === 'object' ? s.value : s) || [];
+    const segments_sector_3 = backendLap.segments?.sector3?.map((s: number | { value: number }) => typeof s === 'object' ? s.value : s) || [];
 
     return {
       date_start: backendLap.timestamp,
       driver_number: backendLap.driverNumber,
-      duration_sector_1: backendLap.sectors?.sector1,
-      duration_sector_2: backendLap.sectors?.sector2,
-      duration_sector_3: backendLap.sectors?.sector3,
-      i1_speed: backendLap.speeds?.i1Speed,
-      i2_speed: backendLap.speeds?.i2Speed,
-      is_pit_out_lap: backendLap.isPitOutLap,
+      duration_sector_1: backendLap.sectors?.sector1 ?? null,
+      duration_sector_2: backendLap.sectors?.sector2 ?? null,
+      duration_sector_3: backendLap.sectors?.sector3 ?? null,
+      i1_speed: backendLap.speeds?.i1Speed ?? null,
+      i2_speed: backendLap.speeds?.i2Speed ?? null,
+      is_pit_out_lap: backendLap.isPitOutLap ?? false,
       lap_duration: backendLap.lapTime, // ← 백엔드는 lapTime으로 변환함
       lap_number: backendLap.lapNumber,
       meeting_key: backendLap.meetingKey,
@@ -722,7 +767,7 @@ export class BackendReplayApiService {
     };
   }
 
-  private convertBackendToOpenF1Driver(backendDriver: any): OpenF1Driver {
+  private convertBackendToOpenF1Driver(backendDriver: BackendDriver): OpenF1Driver {
     // 백엔드 변환 형식:
     // {number, name, fullName, team, teamColor, sessionKey, meetingKey}
 

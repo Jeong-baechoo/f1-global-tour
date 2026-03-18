@@ -1,8 +1,5 @@
 import axios from 'axios';
 import {
-  OpenF1Session,
-  OpenF1Driver,
-  OpenF1Lap,
   ReplaySessionData,
   ReplayDriverData,
   ReplayLapData,
@@ -11,43 +8,17 @@ import {
 import { mockSessions, mockDrivers, mockLaps, checkShouldForceMockData } from '../data/mockData';
 
 export class ReplayDataService {
-  private openF1BaseUrl = 'https://api.openf1.org/v1';
   private backendApiUrl = 'http://localhost:4000/api/v1';
 
   async getSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
-    // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
     if (checkShouldForceMockData()) {
       return this.getMockSessions(year, countryName);
     }
 
-    // 백엔드 API 먼저 시도
     try {
       return await this.getSessionsFromBackend(year, countryName);
-    } catch (backendError) {
-
-      // OpenF1 API로 fallback
-      try {
-        const params = new URLSearchParams();
-        params.append('year', year.toString());
-        if (countryName) {
-          params.append('country_name', countryName);
-        }
-
-        const response = await axios.get(`${this.openF1BaseUrl}/sessions?${params.toString()}`, {
-          timeout: 10000,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        const sessions = this.transformSessions(response.data);
-
-        return {
-          data: sessions,
-          success: true
-        };
-      } catch (openF1Error) {
-        return this.getMockSessions(year, countryName);
-      }
+    } catch {
+      return this.getMockSessions(year, countryName);
     }
   }
 
@@ -99,12 +70,10 @@ export class ReplayDataService {
   }
 
   async getDrivers(sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
-    // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
     if (checkShouldForceMockData()) {
       return this.getMockDrivers(sessionKey);
     }
 
-    // 백엔드 API 먼저 시도
     try {
       const response = await axios.get(`${this.backendApiUrl}/sessions/${sessionKey}/drivers`, {
         timeout: 30000,
@@ -116,32 +85,12 @@ export class ReplayDataService {
 
       if (response.data.success) {
         const drivers = this.transformBackendDrivers(response.data.data);
-        return {
-          data: drivers,
-          success: true
-        };
+        return { data: drivers, success: true };
       } else {
         throw new Error('Backend API returned unsuccessful response');
       }
-    } catch (backendError) {
-
-      // OpenF1 API로 fallback
-      try {
-        const response = await axios.get(`${this.openF1BaseUrl}/drivers?session_key=${sessionKey}`, {
-          timeout: 10000,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        const drivers = this.transformDrivers(response.data);
-
-        return {
-          data: drivers,
-          success: true
-        };
-      } catch (openF1Error) {
-        return this.getMockDrivers(sessionKey);
-      }
+    } catch {
+      return this.getMockDrivers(sessionKey);
     }
   }
 
@@ -195,39 +144,8 @@ export class ReplayDataService {
       } else {
         throw new Error('Backend API returned unsuccessful response');
       }
-    } catch (backendError) {
-      console.warn('⚠️ [ReplayDataService] Backend laps API failed, trying OpenF1:', backendError);
-
-      // OpenF1 API로 fallback
-      try {
-        const params = new URLSearchParams();
-        params.append('session_key', sessionKey.toString());
-
-        if (driverNumber !== undefined) {
-          params.append('driver_number', driverNumber.toString());
-        }
-
-        if (lapNumber !== undefined) {
-          params.append('lap_number', lapNumber.toString());
-        }
-
-        const response = await axios.get(`${this.openF1BaseUrl}/laps?${params.toString()}`, {
-          timeout: 10000,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        const laps = this.transformLaps(response.data);
-        console.log('✅ [ReplayDataService] Laps loaded from OpenF1:', laps.length);
-
-        return {
-          data: laps,
-          success: true
-        };
-      } catch (openF1Error) {
-        console.warn('⚠️ [ReplayDataService] OpenF1 laps API also failed, using mock data');
-        return this.getMockLaps(sessionKey, driverNumber, lapNumber);
-      }
+    } catch {
+      return this.getMockLaps(sessionKey, driverNumber, lapNumber);
     }
   }
 
@@ -339,19 +257,6 @@ export class ReplayDataService {
     }));
   }
 
-  private transformSessions(openF1Sessions: OpenF1Session[]): ReplaySessionData[] {
-    return openF1Sessions.map(session => ({
-      sessionKey: session.session_key,
-      sessionName: session.session_name,
-      sessionType: session.session_type,
-      circuitShortName: session.circuit_short_name,
-      countryName: session.country_name,
-      year: session.year,
-      dateStart: session.date_start,
-      dateEnd: session.date_end
-    }));
-  }
-
   private transformBackendDrivers(backendDrivers: any[]): ReplayDriverData[] {
     return backendDrivers.map(driver => ({
       driverNumber: driver.number,
@@ -361,18 +266,6 @@ export class ReplayDataService {
       teamColor: driver.teamColor,
       broadcastName: driver.fullName,
       countryCode: driver.countryCode
-    }));
-  }
-
-  private transformDrivers(openF1Drivers: OpenF1Driver[]): ReplayDriverData[] {
-    return openF1Drivers.map(driver => ({
-      driverNumber: driver.driver_number,
-      name: driver.full_name,
-      nameAcronym: driver.name_acronym,
-      teamName: driver.team_name,
-      teamColor: driver.team_colour,
-      broadcastName: driver.broadcast_name,
-      countryCode: driver.country_code
     }));
   }
 
@@ -409,28 +302,6 @@ export class ReplayDataService {
             lap.sectors?.sector3
           ] as [number | null, number | null, number | null],
           isPitOutLap: lap.isPitOutLap || false
-        };
-      });
-  }
-
-  private transformLaps(openF1Laps: OpenF1Lap[]): ReplayLapData[] {
-    return openF1Laps
-      .filter(lap => lap.lap_duration !== null) // 유효한 랩타임만 필터링
-      .map(lap => {
-        // 랩 시작 시간을 ISO 문자열에서 타임스탬프로 변환
-        const lapStartTimestamp = new Date(lap.date_start).getTime();
-        
-        return {
-          driverNumber: lap.driver_number,
-          lapNumber: lap.lap_number,
-          lapDuration: lap.lap_duration || 0,
-          lapStartTime: lapStartTimestamp,
-          sectorTimes: [
-            lap.duration_sector_1,
-            lap.duration_sector_2,
-            lap.duration_sector_3
-          ] as [number | null, number | null, number | null],
-          isPitOutLap: lap.is_pit_out_lap
         };
       });
   }

@@ -286,21 +286,20 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
   ) => {
     // Find next race circuit using the same logic as F1ApiService
     const today = new Date();
-    
-    // Helper function to check if race is completed (same as F1ApiService)
+    const year = today.getFullYear();
+    const getRaceDate = (c: Circuit) => year >= 2026 ? c.raceDate2026 : c.raceDate2025;
+
     const isRaceCompleted = (circuit: Circuit): boolean => {
-      if (!circuit.raceDate2025) return false;
-      
-      const raceDate = new Date(circuit.raceDate2025);
-      const raceEndTime = new Date(raceDate.getTime() + (2 * 60 * 60 * 1000)); // 레이스 시작 + 2시간
-      const switchTime = new Date(raceEndTime.getTime() + (12 * 60 * 60 * 1000)); // 종료 후 12시간
-      
+      const raceDate = getRaceDate(circuit);
+      if (!raceDate) return false;
+      const raceDateObj = new Date(raceDate);
+      const switchTime = new Date(raceDateObj.getTime() + (14 * 60 * 60 * 1000));
       return today >= switchTime;
     };
-    
+
     const nextRaceCircuit = circuits
-      .filter(c => c.raceDate2025)
-      .sort((a, b) => new Date(a.raceDate2025!).getTime() - new Date(b.raceDate2025!).getTime())
+      .filter(c => getRaceDate(c))
+      .sort((a, b) => new Date(getRaceDate(a)!).getTime() - new Date(getRaceDate(b)!).getTime())
       .find(c => !isRaceCompleted(c)) || circuits[0];
     
     circuits.forEach(circuit => {

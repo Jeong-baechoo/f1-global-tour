@@ -35,7 +35,9 @@
       "raceDate2025": "2025-03-16",
       "round": 1,
       "corners": 14,
-      "totalDistance": 306.124
+      "totalDistance": 306.124,
+      "raceDate2026": "2026-03-06",
+      "round2026": 1
     },
     {
       "id": "china",
@@ -73,7 +75,10 @@
       "round": 2,
       "sprint": true,
       "corners": 16,
-      "totalDistance": 305.256
+      "totalDistance": 305.256,
+      "raceDate2026": "2026-03-13",
+      "round2026": 2,
+      "sprint2026": true
     },
     {
       "id": "japan",
@@ -110,7 +115,9 @@
       "raceDate2025": "2025-04-06",
       "round": 3,
       "corners": 18,
-      "totalDistance": 307.771
+      "totalDistance": 307.771,
+      "raceDate2026": "2026-03-27",
+      "round2026": 3
     },
     {
       "id": "bahrain",
@@ -147,7 +154,10 @@
       "raceDate2025": "2025-04-13",
       "round": 4,
       "corners": 15,
-      "totalDistance": 308.484
+      "totalDistance": 308.484,
+      "raceDate2026": null,
+      "round2026": null,
+      "cancelled2026": true
     },
     {
       "id": "saudi-arabia",
@@ -184,7 +194,10 @@
       "raceDate2025": "2025-04-20",
       "round": 5,
       "corners": 27,
-      "totalDistance": 308.7
+      "totalDistance": 308.7,
+      "raceDate2026": null,
+      "round2026": null,
+      "cancelled2026": true
     },
     {
       "id": "miami",
@@ -222,44 +235,10 @@
       "round": 6,
       "sprint": true,
       "corners": 19,
-      "totalDistance": 308.484
-    },
-    {
-      "id": "imola",
-      "name": {
-        "en": "Autodromo Enzo e Dino Ferrari",
-        "ko": "엔초 디노 페라리 서킷"
-      },
-      "officialName": "Autodromo Enzo e Dino Ferrari",
-      "grandPrix": {
-        "en": "Emilia Romagna Grand Prix",
-        "ko": "에밀리아 로마냐 그랑프리"
-      },
-      "country": "Italy",
-      "city": "Imola",
-      "location": {
-        "lat": 44.3469,
-        "lng": 11.719,
-        "city": {
-          "en": "Imola",
-          "ko": "이몰라"
-        },
-        "country": {
-          "en": "Italy",
-          "ko": "이탈리아"
-        }
-      },
-      "length": 4.909,
-      "laps": 63,
-      "lapRecord": {
-        "time": "1:15.484",
-        "driver": "Lewis Hamilton",
-        "year": 2020
-      },
-      "raceDate2025": "2025-05-18",
-      "round": 7,
-      "corners": 19,
-      "totalDistance": 309.267
+      "totalDistance": 308.484,
+      "raceDate2026": "2026-05-01",
+      "round2026": 4,
+      "sprint2026": true
     },
     {
       "id": "monaco",
@@ -296,7 +275,9 @@
       "raceDate2025": "2025-05-25",
       "round": 8,
       "corners": 19,
-      "totalDistance": 260.286
+      "totalDistance": 260.286,
+      "raceDate2026": "2026-06-05",
+      "round2026": 6
     },
     {
       "id": "spain",
@@ -333,7 +314,9 @@
       "raceDate2025": "2025-06-01",
       "round": 9,
       "corners": 16,
-      "totalDistance": 307.362
+      "totalDistance": 307.362,
+      "raceDate2026": "2026-06-12",
+      "round2026": 7
     },
     {
       "id": "canada",
@@ -370,7 +353,10 @@
       "raceDate2025": "2025-06-15",
       "round": 10,
       "corners": 14,
-      "totalDistance": 305.27
+      "totalDistance": 305.27,
+      "raceDate2026": "2026-05-22",
+      "round2026": 5,
+      "sprint2026": true
     },
     {
       "id": "austria",
@@ -407,7 +393,9 @@
       "raceDate2025": "2025-06-29",
       "round": 11,
       "corners": 10,
-      "totalDistance": 306.578
+      "totalDistance": 306.578,
+      "raceDate2026": "2026-06-26",
+      "round2026": 8
     },
     {
       "id": "britain",
@@ -444,7 +432,10 @@
       "raceDate2025": "2025-07-06",
       "round": 12,
       "corners": 18,
-      "totalDistance": 306.332
+      "totalDistance": 306.332,
+      "raceDate2026": "2026-07-03",
+      "round2026": 9,
+      "sprint2026": true
     },
     {
       "id": "belgium",
@@ -482,7 +473,9 @@
       "round": 13,
       "sprint": true,
       "corners": 19,
-      "totalDistance": 308.176
+      "totalDistance": 308.176,
+      "raceDate2026": "2026-07-17",
+      "round2026": 10
     },
     {
       "id": "hungary",
@@ -519,7 +512,9 @@
       "raceDate2025": "2025-08-03",
       "round": 14,
       "corners": 14,
-      "totalDistance": 306.67
+      "totalDistance": 306.67,
+      "raceDate2026": "2026-07-24",
+      "round2026": 11
     },
     {
       "id": "netherlands",
@@ -556,7 +551,10 @@
       "raceDate2025": "2025-08-31",
       "round": 15,
       "corners": 14,
-      "totalDistance": 306.648
+      "totalDistance": 306.648,
+      "raceDate2026": "2026-08-21",
+      "round2026": 12,
+      "sprint2026": true
     },
     {
       "id": "italy",
@@ -593,7 +591,9 @@
       "raceDate2025": "2025-09-07",
       "round": 16,
       "corners": 11,
-      "totalDistance": 307.029
+      "totalDistance": 307.029,
+      "raceDate2026": "2026-09-04",
+      "round2026": 13
     },
     {
       "id": "azerbaijan",
@@ -630,7 +630,9 @@
       "raceDate2025": "2025-09-21",
       "round": 17,
       "corners": 20,
-      "totalDistance": 306.153
+      "totalDistance": 306.153,
+      "raceDate2026": "2026-09-24",
+      "round2026": 15
     },
     {
       "id": "singapore",
@@ -667,7 +669,10 @@
       "raceDate2025": "2025-10-05",
       "round": 18,
       "corners": 19,
-      "totalDistance": 306.28
+      "totalDistance": 306.28,
+      "raceDate2026": "2026-10-09",
+      "round2026": 16,
+      "sprint2026": true
     },
     {
       "id": "usa",
@@ -705,7 +710,9 @@
       "round": 19,
       "sprint": true,
       "corners": 20,
-      "totalDistance": 308.728
+      "totalDistance": 308.728,
+      "raceDate2026": "2026-10-23",
+      "round2026": 17
     },
     {
       "id": "mexico",
@@ -742,7 +749,9 @@
       "raceDate2025": "2025-10-26",
       "round": 20,
       "corners": 17,
-      "totalDistance": 305.584
+      "totalDistance": 305.584,
+      "raceDate2026": "2026-10-30",
+      "round2026": 18
     },
     {
       "id": "brazil",
@@ -780,7 +789,9 @@
       "round": 21,
       "sprint": true,
       "corners": 15,
-      "totalDistance": 305.939
+      "totalDistance": 305.939,
+      "raceDate2026": "2026-11-06",
+      "round2026": 19
     },
     {
       "id": "las-vegas",
@@ -817,7 +828,9 @@
       "raceDate2025": "2025-11-22",
       "round": 22,
       "corners": 17,
-      "totalDistance": 310.05
+      "totalDistance": 310.05,
+      "raceDate2026": "2026-11-19",
+      "round2026": 20
     },
     {
       "id": "qatar",
@@ -855,7 +868,9 @@
       "round": 23,
       "sprint": true,
       "corners": 16,
-      "totalDistance": 306.66
+      "totalDistance": 306.66,
+      "raceDate2026": "2026-11-27",
+      "round2026": 21
     },
     {
       "id": "abu-dhabi",
@@ -892,7 +907,48 @@
       "raceDate2025": "2025-12-07",
       "round": 24,
       "corners": 16,
-      "totalDistance": 306.298
+      "totalDistance": 306.298,
+      "raceDate2026": "2026-12-04",
+      "round2026": 22
+    },
+    {
+      "id": "madrid",
+      "name": {
+        "en": "Madring Circuit",
+        "ko": "마드링 서킷"
+      },
+      "officialName": "Madring Madrid Circuit",
+      "grandPrix": {
+        "en": "Madrid Grand Prix",
+        "ko": "마드리드 그랑프리"
+      },
+      "country": "Spain",
+      "city": "Madrid",
+      "location": {
+        "lat": 40.4724,
+        "lng": -3.6186,
+        "city": {
+          "en": "Madrid",
+          "ko": "마드리드"
+        },
+        "country": {
+          "en": "Spain",
+          "ko": "스페인"
+        }
+      },
+      "length": 5.47,
+      "laps": 55,
+      "lapRecord": {
+        "time": "-",
+        "driver": "-",
+        "year": 2026
+      },
+      "raceDate2025": null,
+      "round": null,
+      "corners": 20,
+      "totalDistance": 300.85,
+      "raceDate2026": "2026-09-11",
+      "round2026": 14
     },
     {
       "id": "nurburgring",
@@ -934,7 +990,48 @@
       "raceDate2025": null,
       "round": null,
       "corners": 15,
-      "totalDistance": 308.88
+      "totalDistance": 308.88,
+      "raceDate2026": null,
+      "round2026": null
+    },
+    {
+      "id": "imola",
+      "name": {
+        "en": "Autodromo Enzo e Dino Ferrari",
+        "ko": "엔초 디노 페라리 서킷"
+      },
+      "officialName": "Autodromo Enzo e Dino Ferrari",
+      "grandPrix": {
+        "en": "Emilia Romagna Grand Prix",
+        "ko": "에밀리아 로마냐 그랑프리"
+      },
+      "country": "Italy",
+      "city": "Imola",
+      "location": {
+        "lat": 44.3469,
+        "lng": 11.719,
+        "city": {
+          "en": "Imola",
+          "ko": "이몰라"
+        },
+        "country": {
+          "en": "Italy",
+          "ko": "이탈리아"
+        }
+      },
+      "length": 4.909,
+      "laps": 63,
+      "lapRecord": {
+        "time": "1:15.484",
+        "driver": "Lewis Hamilton",
+        "year": 2020
+      },
+      "raceDate2025": "2025-05-18",
+      "round": 7,
+      "corners": 19,
+      "totalDistance": 309.267,
+      "raceDate2026": null,
+      "round2026": null
     }
   ]
 }

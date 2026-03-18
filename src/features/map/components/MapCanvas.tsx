@@ -8,8 +8,7 @@ import { circuitTrackManager } from '@/src/features/circuits/services/CircuitTra
 import { createGlobeSpinner } from '@/src/shared/utils/animations/globeAnimation';
 
 // Mapbox 토큰
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 
-  'pk.eyJ1IjoiYmFlY2hvb2tpbmciLCJhIjoiY21iajAwaTd1MGJrZjJqb2g3M3RsZ2hhaiJ9.B1BuVoKpl3Xt1HSZq6ugeA';
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 interface MapCanvasProps {
   onLoad?: (map: mapboxgl.Map) => void;
