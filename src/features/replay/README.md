@@ -1,142 +1,141 @@
 # F1 Race Replay System
 
-F1 Global Tour의 실시간 레이스 리플레이 기능입니다. 과거 F1 레이스 데이터를 3D 지도 위에서 시각화하여 드라이버들의 움직임을 애니메이션으로 재현합니다.
+F1 Global Tour의 실시간 레이스 리플레이 기능입니다. 백엔드 API(NestJS)를 통해 OpenF1 데이터를 가져와 3D 지도 위에서 드라이버들의 움직임을 애니메이션으로 재현합니다.
 
 ## 📋 목차
 
 - [기능 개요](#기능-개요)
 - [시스템 아키텍처](#시스템-아키텍처)
 - [주요 컴포넌트](#주요-컴포넌트)
-- [데이터 소스](#데이터-소스)
+- [데이터 흐름](#데이터-흐름)
 - [사용법](#사용법)
 - [개발 가이드](#개발-가이드)
 - [API 참조](#api-참조)
+- [엣지 케이스 처리](#엣지-케이스-처리)
 
 ## 🏁 기능 개요
 
 ### 핵심 기능
-- **📅 세션 선택**: 과거 F1 레이스, 퀄리파잉, 연습 세션 선택
-- **🏎️ 드라이버 추적**: 특정 드라이버들의 실시간 위치 추적
-- **⏯️ 재생 컨트롤**: 재생/일시정지/속도 조절/특정 시점 이동
-- **🗺️ 3D 시각화**: Mapbox를 활용한 실제 서킷에서의 드라이버 애니메이션
-- **📊 텔레메트리**: 랩 타임, 섹터 타임, 피트 스톱 등 상세 데이터
+- **세션 선택**: 연도/국가별 F1 레이스, 퀄리파잉, 연습 세션 선택
+- **드라이버 추적**: Mapbox GL 위 실시간 드라이버 마커 위치 추적
+- **재생 컨트롤**: 재생/일시정지/속도 조절(0.5x~5x)/시점 이동/랩 점프
+- **드라이버 타이밍 패널**: 백엔드 사전 계산 프레임 기반 순위/인터벌/랩타임/섹터/타이어 표시
+- **DNF 처리**: 리타이어 드라이버 마커 자동 숨김 및 패널 DNF 표시
+- **레드플래그 대응**: 비정상 랩타임 필터링 및 타임라인 gap 압축
 
-### 지원 데이터
-- **2024 시즌 데이터**: OpenF1 API를 통한 실제 레이스 데이터
-- **FastF1 텔레메트리**: 상세한 차량 텔레메트리 데이터
-- **Mock 데이터**: 개발 및 테스트용 샘플 데이터 (모나코 2024)
+### 데이터 소스
+- **백엔드 API** (`localhost:4000/api/v1`): NestJS 서버가 OpenF1 API를 프록시하며 사전 계산된 `DriverDisplayFrame[]` 제공
+- **Mock 데이터**: `checkShouldForceMockData()` 플래그로 활성화 가능 (기본 비활성)
 
 ## 🏗️ 시스템 아키텍처
 
 ```
 src/features/replay/
-├── components/          # UI 컴포넌트
-│   ├── ReplayPanel.tsx     # 메인 패널 UI
-│   ├── ReplayControls.tsx  # 재생 컨트롤
-│   ├── DriverSelector.tsx  # 드라이버 선택
-│   ├── SessionSelector.tsx # 세션 선택
-│   └── ExitReplayButton.tsx # 리플레이 종료 버튼
-├── services/           # 비즈니스 로직
-│   ├── ReplayDataService.ts        # 데이터 관리 (API 통합)
-│   ├── ReplayAnimationEngine.ts    # 애니메이션 엔진
-│   ├── CircuitTrackManager.ts      # 서킷 트랙 렌더링
-│   ├── DriverMarkerManager.ts      # 드라이버 마커 관리
-│   ├── TrackPositionService.ts     # 트랙 위치 계산
-│   ├── PositionCalculator.ts       # 위치 보간 계산
-│   ├── MockDataProvider.ts         # 개발용 데이터 제공
-│   └── DataCacheManager.ts         # 데이터 캐싱
-├── store/             # 상태 관리
-│   ├── useReplayStore.ts    # 메인 Zustand 스토어
-│   └── replaySelectors.ts   # 스토어 셀렉터
-├── hooks/             # 커스텀 훅
-│   └── useReplayEngine.ts # 리플레이 엔진 훅
-├── types/             # TypeScript 타입
-│   └── index.ts       # 모든 타입 정의
-└── data/              # 데이터
-    └── mockData.ts    # 개발용 Mock 데이터
+├── components/              # UI 컴포넌트
+│   ├── ReplayPanel.tsx         # 메인 패널 UI (탭 네비게이션)
+│   ├── ReplayProgressBar.tsx   # 재생 진행바 (시간/랩 표시)
+│   ├── SessionSelector.tsx     # 세션 선택 (연도/국가 필터)
+│   ├── ExitReplayButton.tsx    # 리플레이 종료
+│   └── ui/
+│       ├── DriverTimingPanel/  # 드라이버 순위/타이밍 패널
+│       ├── DriverInfoPanel/    # 드라이버 상세 정보 (속도/기어/DRS)
+│       └── TrackInfoTogglePanel/ # 섹터/DRS존 토글
+├── services/                # 비즈니스 로직
+│   ├── ReplayDataService.ts          # 백엔드 API 통신 + 랩 데이터 전처리
+│   ├── ReplayAnimationEngine.ts      # 메인 애니메이션 엔진 (RAF 루프)
+│   ├── BackendReplayApiService.ts    # 사전 계산 프레임 로드 (이진탐색)
+│   ├── DriverTimingService.ts        # 타이밍 패널 데이터 조율
+│   ├── CircuitTrackManager.ts        # 서킷 트랙 렌더링
+│   ├── DriverMarkerManager.ts        # 드라이버 마커 관리
+│   ├── TrackPositionService.ts       # 트랙 좌표 보간
+│   ├── PositionCalculator.ts         # 드라이버 위치/순위 계산
+│   ├── OpenF1MockDataService.ts      # Mock 데이터 서비스 (개발용)
+│   └── ReplayTrackInfoManager.ts     # 섹터/DRS 표시 관리
+├── store/                   # 상태 관리
+│   └── useReplayStore.ts      # Zustand 스토어 (상태 + 액션 + 셀렉터)
+├── hooks/                   # 커스텀 훅
+│   └── useReplayEngine.ts     # 엔진-스토어 연결 훅
+├── types/                   # TypeScript 타입
+│   ├── index.ts               # 주요 타입 정의
+│   └── openF1Types.ts         # OpenF1 API 타입
+├── data/                    # 데이터
+│   └── mockData.ts            # Mock 데이터 (모나코/스파)
+└── utils/
+    └── ReplayServiceSwitcher.ts # 서비스 전환 유틸
 ```
 
 ## 🔧 주요 컴포넌트
 
-### ReplayPanel
-메인 리플레이 인터페이스로, 탭 기반 네비게이션을 제공합니다.
-
-**주요 탭:**
-- **Session**: 레이스 세션 선택
-- **Drivers**: 추적할 드라이버 선택  
-- **Controls**: 재생 컨트롤 및 옵션
-
-### 서비스 레이어
+### 데이터 레이어
 
 #### ReplayDataService
-데이터 소스와의 통신을 담당하는 메인 서비스 클래스입니다.
+백엔드 API와 통신하고 랩 데이터를 전처리하는 핵심 서비스입니다.
 
-**주요 기능:**
-- OpenF1 API 및 FastF1 API 통합
-- 자동 fallback 시스템 (API → Mock 데이터)
-- 응답 캐싱 및 최적화
-- 에러 핸들링 및 재시도 로직
+**주요 역할:**
+- 백엔드 API에서 세션/드라이버/랩 데이터 fetch
+- 랩 데이터 변환: 백엔드 형식 → 프런트 `ReplayLapData` 형식
+- **레드플래그 랩 필터링**: `lapDuration > 300초` 인 비정상 랩 자동 제거
+- **타임라인 전처리** (`sortAndProcessLaps`):
+  - 타임스탬프 기준 정렬 (레드플래그로 랩 번호/시간순 불일치 대응)
+  - 클러스터 기반 `raceStartTime` 결정 (레드플래그 전 랩의 이른 timestamp 무시)
+  - 드라이버별 누적 시간 + 실제 오프셋으로 gap 없는 연속 타임라인 생성
+  - 드라이버 간 상대적 시간차 보존
 
-**주요 메서드:**
-- `getSessions(year, countryName)`: 세션 목록 조회 (다중 API 지원)
-- `getDrivers(sessionKey)`: 드라이버 정보 조회
-- `getLaps(sessionKey, driverNumber, lapNumber)`: 랩 데이터 조회
-- `getFullRaceData(sessionKey)`: 전체 레이스 데이터 조회
-- `getFastF1TelemetryData(year, round, driver)`: FastF1 텔레메트리 조회
+#### BackendReplayApiService
+백엔드의 `GET /sessions/:key/driver-timings` 엔드포인트에서 사전 계산된 `DriverDisplayFrame[]`을 로드합니다.
 
-#### CircuitTrackManager
-서킷 트랙 렌더링 및 관리를 담당하는 서비스입니다.
+**핵심 동작:**
+- 세션 변경 시 전체 프레임 일괄 로드
+- `getFrameAtTime(timeOffset)`: 이진탐색으로 현재 시점 프레임 반환
+- 프레임에는 position, interval, lapTime, sector, tireInfo 등 타이밍 패널에 필요한 모든 정보 포함
 
-**주요 기능:**
-- 서킷별 트랙 좌표 로딩 및 렌더링
-- 트랙 시각화 스타일 관리
-- 카메라 자동 이동 (flyToCircuit)
-- 트랙 가시성 제어
+#### DriverTimingService
+타이밍 패널 데이터를 조율하는 싱글턴 서비스입니다.
 
-#### DriverMarkerManager  
-드라이버 마커의 생성, 업데이트, 제거를 관리합니다.
+**핵심 동작:**
+- `getTimingsForDisplay(currentTime)`: 백엔드 프레임을 `DriverTiming[]`으로 변환
+- `getCurrentLapFromFrame(currentTime)`: 프레임의 currentLap 반환 (스토어 동기화용)
 
-**주요 기능:**
-- 드라이버별 마커 생성 및 스타일링
-- 실시간 위치 업데이트
-- 팀 컬러 기반 마커 디자인
-- 마커 애니메이션 및 최적화
+### 애니메이션 레이어
 
-#### TrackPositionService
-트랙 좌표와 드라이버 위치 간의 매핑을 처리합니다.
+#### ReplayAnimationEngine
+전체 리플레이 애니메이션을 조율하는 메인 엔진입니다.
 
-**주요 기능:**
-- 랩 진행률 기반 위치 계산
-- 트랙 좌표 보간 (interpolation)
-- 서킷별 좌표 시스템 지원
+**핵심 동작:**
+- `loadReplayData(session)`: 데이터 로드 → 트랙/마커 초기화
+- `play()/pause()/stop()`: 재생 제어
+- `animate()`: `requestAnimationFrame` 기반 60fps 루프
+  - 50ms 간격으로 위치 업데이트 (throttle)
+  - `onTimeUpdate` 콜백으로 스토어에 시간 전달
+  - `onDriverPositionsUpdate` 콜백으로 드라이버 위치 전달
+- **DNF 마커 처리**: 매 프레임 활성/비활성 드라이버를 구분하여 마커 표시/숨김
+- `getLapsData()` / `getTotalDuration()`: 로드된 데이터 조회 (스토어 동기화용)
 
 #### PositionCalculator
-드라이버 위치의 부드러운 애니메이션을 위한 계산을 담당합니다.
+현재 시간 기준 드라이버의 트랙 위치를 계산합니다.
 
-**주요 기능:**
-- 위치 보간 알고리즘 (선형, 베지어 곡선)
-- 애니메이션 프레임 최적화
-- 속도 기반 위치 예측
+**핵심 동작:**
+- `calculateAllDriverPositions(currentTime)`: 전체 드라이버 위치 계산
+- 랩 데이터의 `lapStartTime`과 `lapDuration`으로 현재 랩/진행률 결정
+- `trackPositionService.getPositionAtProgress(circuitId, progress)` → 실제 좌표
+- **DNF 감지**: 마지막 랩 종료 이후 `currentTime` → `null` 반환 (마커 숨김)
+- `calculateRacePosition()`: 전체 드라이버 누적 진행률로 순위 계산
 
-### ReplayAnimationEngine
-전체 애니메이션 시스템을 조율하는 메인 엔진입니다.
+### 훅 / 스토어 레이어
 
-**핵심 기능:**
-- 애니메이션 루프 관리 (RequestAnimationFrame)
-- 재생 상태 제어 (재생/일시정지/속도 조절)
-- 드라이버 마커 및 트랙 동기화
-- 메모리 관리 및 성능 최적화
+#### useReplayEngine
+엔진과 Zustand 스토어를 연결하는 React 훅입니다.
 
-**주요 메서드:**
-- `startReplay()`: 리플레이 시작
-- `pauseReplay()`: 일시정지
-- `setPlaybackSpeed(speed)`: 재생 속도 조절
-- `seekTo(time)`: 특정 시점으로 이동
+**핵심 동작:**
+- 맵 인스턴스에서 `ReplayAnimationEngine` 생성/관리
+- 콜백 설정: `setOnTimeUpdate(setCurrentTime)`, `setOnDriverPositionsUpdate(updateDriverPositions)`
+- `loadSession` 성공 시: **콜백 재등록** + `lapsData`/`totalDuration` 스토어 동기화
+- `isPlaying`/`playbackSpeed` 상태 변경 → 엔진 동기화
 
-### useReplayStore
-Zustand를 사용한 전역 상태 관리입니다.
+#### useReplayStore
+Zustand 기반 전역 상태 관리입니다.
 
-**상태 항목:**
+**주요 상태:**
 ```typescript
 interface ReplayState {
   currentSession: ReplaySessionData | null;
@@ -149,137 +148,139 @@ interface ReplayState {
   playbackSpeed: number;
   currentLap: number;
   selectedDrivers: number[];
-  showControls: boolean;
-  showDriverInfo: boolean;
 }
 ```
 
-## 📡 데이터 소스
+**주요 액션:**
+- `setCurrentTime(time)`: 시간 업데이트 + 현재 랩 자동 계산 (lapsData 기반)
+  - `totalDuration`이 0일 때 (로드 전) clamp하지 않음
+- `setCurrentSession(session)`: 세션 전환 시 스토어를 `initialState`로 리셋
+- `setLapsData(laps)`: 랩 데이터 설정 + `totalDuration` 자동 계산
+- `cleanup()`: 엔진 정리 이벤트(`replayEngineCleanup`) 발송 + 스토어 완전 초기화
 
-### OpenF1 API
-공식 F1 데이터를 제공하는 무료 API입니다.
+## 📡 데이터 흐름
 
-**지원 데이터:**
-- 세션 정보 (레이스, 퀄리파잉, 연습)
-- 드라이버 정보 (이름, 팀, 국가)
-- 랩 데이터 (랩 타임, 섹터 타임)
+### 리플레이 시작 흐름
+```
+SessionSelector
+  → setCurrentSession(session)        [store reset]
+  → useEffect([currentSession])
+    → loadSession(session)
+      → engine.loadReplayData(session)
+        → cleanupPreviousData()        [이전 데이터 정리]
+        → replayDataService.getFullRaceData(sessionKey)
+          → getDrivers() + getLaps()   [백엔드 API 호출]
+          → transformBackendLaps()     [null/레드플래그 랩 필터]
+          → sortAndProcessLaps()       [타임라인 전처리]
+        → positionCalculator.setData() [위치 계산기 초기화]
+        → createDriverMarkers()        [마커 생성]
+        → drawCircuitTrack()           [트랙 렌더링]
+      → 콜백 재등록 (onTimeUpdate, onDriverPositionsUpdate)
+      → setLapsData(laps)             [스토어 동기화]
+      → setTotalDuration(duration)    [스토어 동기화]
+```
 
-**API 엔드포인트:**
-- `https://api.openf1.org/v1/sessions`
-- `https://api.openf1.org/v1/drivers`
-- `https://api.openf1.org/v1/laps`
+### 재생 중 데이터 흐름
+```
+animate() [매 프레임, RAF]
+  ├→ currentTime 계산 (performance.now 기반)
+  ├→ positionCalculator.calculateAllDriverPositions(currentTime)
+  │   ├→ 각 드라이버: 현재 랩 찾기 → progress 계산 → 트랙 좌표 변환
+  │   └→ 마지막 랩 이후 → null (DNF)
+  ├→ markerManager.updateMarkerPosition()   [활성 드라이버]
+  ├→ markerManager.hideDriverMarker()       [DNF 드라이버]
+  ├→ onTimeUpdate(currentTime) → store.setCurrentTime()
+  │   → currentLap 자동 계산 (lapsData 기반)
+  │   → ReplayProgressBar 업데이트
+  └→ onDriverPositionsUpdate(positions) → store.updateDriverPositions()
 
-### FastF1 API
-더 상세한 텔레메트리 데이터를 제공합니다.
+DriverTimingPanel [별도 렌더 사이클]
+  → driverTimingService.getTimingsForDisplay(currentTime)
+    → backendReplayApiService.getFrameAtTime(currentTime)
+      → 이진탐색으로 프레임 조회 (2초 윈도우)
+    → DriverDisplayRow[] → DriverTiming[] 변환
+```
 
-**지원 데이터:**
-- 차량 위치 데이터
-- 속도, RPM, 기어 정보
-- 타이어 데이터
-- 피트 스톱 정보
+### 세션 전환 흐름
+```
+Exit Replay
+  → store.cleanup()
+    → replayEngineCleanup 이벤트 발송
+    → engine.cleanup()              [콜백 undefined로 설정!]
 
-### Mock 데이터
-개발 및 테스트용 샘플 데이터입니다.
-
-**포함 내용:**
-- 모나코 2024 레이스 세션
-- 8명 드라이버 정보 (VER, PER, LEC, SAI, HAM, RUS, NOR, PIA)
-- 각 드라이버별 3랩 데이터
+새 세션 선택
+  → setCurrentSession(newSession)   [store initialState로 reset]
+  → loadSession(newSession)
+    → engine.loadReplayData()       [데이터 로드]
+    → 콜백 재등록 ★                  [cleanup에서 제거된 콜백 복구]
+    → lapsData/totalDuration 동기화
+```
 
 ## 🎮 사용법
 
-### 1. 리플레이 패널 열기
-지도 우측 상단의 컨트롤 버튼에서 리플레이 버튼을 클릭합니다.
+### 1. 리플레이 시작
+지도 UI에서 리플레이 모드 진입 → Session 탭에서 연도/국가 선택 → 세션 클릭
 
-### 2. 세션 선택
-**Session 탭**에서 원하는 레이스 세션을 선택합니다:
-- 연도별 필터링
-- 국가별 필터링
-- 세션 타입별 필터링 (레이스/퀄리파잉/연습)
+### 2. 재생 컨트롤
+- **재생/일시정지**: 하단 프로그레스바의 Play/Pause 버튼
+- **재생 속도**: 0.5x, 1x, 1.5x, 2x, 5x 선택
+- **시점 이동**: 프로그레스바 드래그 또는 랩 점프 버튼
 
-### 3. 드라이버 선택
-**Drivers 탭**에서 추적할 드라이버들을 선택합니다:
-- 개별 드라이버 선택/해제
-- 팀별 일괄 선택
-- 드라이버 정보 확인
+### 3. 타이밍 정보
+- 우측 패널: 순위, 인터벌, 랩타임, 섹터 퍼포먼스, 타이어 정보
+- 좌측 패널: 선택된 드라이버의 속도, 기어, DRS 상태
 
-### 4. 재생 시작
-**Controls 탭**에서 리플레이를 제어합니다:
-- ▶️ 재생/일시정지
-- ⏩ 재생 속도 조절 (0.5x ~ 10x)
-- 🔍 특정 시점으로 이동
-- 🏁 랩 단위 점프
+### 4. 리플레이 종료
+좌상단 "Exit Replay" 버튼 → 엔진 정리 + 스토어 초기화 + 메인 지도 복귀
 
-### 5. 추가 옵션
-- **Show driver trajectories**: 드라이버 궤적 표시
-- **Follow selected driver**: 선택된 드라이버 자동 추적
-- **Show lap information**: 랩 정보 표시
+## 🔧 엣지 케이스 처리
 
-## 👨‍💻 개발 가이드
+### 레드플래그 (예: 2024 일본 GP)
+OpenF1 데이터에서 레드플래그 발생 시 비정상적인 랩 데이터가 포함됩니다.
 
-### 환경 설정
-```bash
-# 개발 서버 실행
-npm run dev
+**문제**: 레드플래그 중단 시간이 랩 duration에 포함 (~1711초), 랩 번호와 timestamp 순서 불일치
 
-# Mock 데이터 강제 사용 (선택사항)
-NEXT_PUBLIC_FORCE_MOCK_DATA=true npm run dev
-```
+**처리 방식:**
+1. `transformBackendLaps`: `lapDuration > 300초` 인 랩 자동 필터링
+2. `sortAndProcessLaps`:
+   - 타임스탬프 기준 정렬 (랩 번호 아닌 실제 시간순)
+   - `findMostCommonTimestamp`로 대다수 드라이버가 공유하는 레이스 시작 시점 결정
+   - 레드플래그 전 랩 (raceStartTime - 60초 이전) 자동 제외
+   - 드라이버별 누적 시간으로 gap 없는 타임라인 생성
 
-### 새 데이터 소스 추가
-1. `ReplayDataService.ts`에 새 메서드 추가
-2. `types/index.ts`에 타입 정의 추가
-3. `ReplayAnimationEngine.ts`에서 데이터 처리 로직 구현
+**특수 케이스**: 일부 드라이버(예: TSU)의 레드플래그 랩이 300초 미만일 수 있음 → timestamp 기반 필터로 처리
 
-### 새 UI 컴포넌트 추가
-1. `components/` 폴더에 컴포넌트 생성
-2. `components/index.ts`에 export 추가
-3. `ReplayPanel.tsx`에서 통합
+### DNF (Did Not Finish)
+**마커 처리**: `PositionCalculator`에서 마지막 유효 랩 종료 이후 `null` 반환 → `ReplayAnimationEngine`이 해당 마커를 `hideDriverMarker()`로 숨김
 
-### 상태 관리 확장
-1. `useReplayStore.ts`에 새 상태 추가
-2. 액션 메서드 구현
-3. 컴포넌트에서 상태 사용
+**타이밍 패널 처리**: 백엔드에서 DNF 감지 후 `currentLapTime = 'DNF'`, `interval = 'DNF'`로 표시, 순위 맨 뒤로 정렬
+
+**DNF 감지 로직 (백엔드)**:
+- Case 1: `lap_duration === null && !is_pit_out_lap && lapNum > 1` (명시적 DNF)
+- Case 2: 해당 랩 데이터 자체가 없고 `driverMaxLap < lapNum` (완전 리타이어)
+- 레드플래그 방어: `hasLaterValidLaps` 체크로 일시적 null과 진짜 DNF 구분
+
+### 데이터 누락
+일부 드라이버의 특정 랩 데이터가 `null`일 수 있습니다 (예: TSU의 lap 3).
+
+**현재 동작**: 해당 구간에서 마커가 마지막 유효 랩 끝 지점에 머무름. 이는 OpenF1 원본 데이터의 한계로, 해당 구간의 정확한 위치 계산이 불가능합니다.
+
+### 백엔드 timeOffset 이슈
+일부 세션에서 `date_start`가 `null`인 랩이 존재하면 `raceStartMs`가 0이 되어 `timeOffset`이 Unix timestamp 그 자체가 됩니다.
+
+**수정**: 백엔드에서 `lap1Rows`의 `date_start`가 `null`이거나 비정상인 값을 필터링 후 `raceStartMs` 계산
 
 ## 📚 API 참조
 
-### ReplayDataService
+### 백엔드 API 엔드포인트
 
-#### `getCachedSessions(year?: number, country?: string)`
-지정된 조건의 세션 목록을 조회합니다.
-
-**Parameters:**
-- `year` (optional): 연도 필터
-- `country` (optional): 국가 필터
-
-**Returns:** `Promise<ApiResponse<ReplaySessionData[]>>`
-
-#### `getDrivers(sessionKey: number)`
-특정 세션의 드라이버 정보를 조회합니다.
-
-**Parameters:**
-- `sessionKey`: 세션 키
-
-**Returns:** `Promise<ApiResponse<ReplayDriverData[]>>`
-
-#### `getFullRaceData(sessionKey: number)`
-전체 레이스 데이터를 조회합니다.
-
-**Parameters:**
-- `sessionKey`: 세션 키
-
-**Returns:** `Promise<ApiResponse<ReplayLapData[]>>`
-
-### useReplayStore
-
-#### Actions
-- `setCurrentSession(session: ReplaySessionData)`: 현재 세션 설정
-- `setDrivers(drivers: ReplayDriverData[])`: 드라이버 목록 설정
-- `setLapsData(laps: ReplayLapData[])`: 랩 데이터 설정
-- `togglePlayback()`: 재생/일시정지 토글
-- `setPlaybackSpeed(speed: number)`: 재생 속도 설정
-- `seekTo(time: number)`: 특정 시점으로 이동
-- `toggleDriverSelection(driverNumber: number)`: 드라이버 선택 토글
+```
+GET  /api/v1/sessions                               # 세션 목록 (?country, ?year)
+GET  /api/v1/sessions/:sessionKey/drivers           # 세션 드라이버
+GET  /api/v1/sessions/:sessionKey/driver-timings    # 사전 계산 프레임 (타이밍 패널용)
+POST /api/v1/sessions/:sessionKey/start-replay      # 데이터 프리로드
+GET  /api/v1/laps/session/:sessionKey               # 랩 데이터 (?lapNumber)
+```
 
 ### 타입 정의
 
@@ -315,116 +316,49 @@ interface ReplayDriverData {
 interface ReplayLapData {
   driverNumber: number;
   lapNumber: number;
-  lapDuration: number;
-  lapStartTime: number;
+  lapDuration: number;      // 초 단위
+  lapStartTime: number;     // 레이스 시작 기준 상대 초
   sectorTimes: [number | null, number | null, number | null];
   isPitOutLap: boolean;
 }
 ```
 
-## 📈 현재 개발 현황 (2025년 8월 기준)
+#### DriverDisplayFrame (백엔드)
+```typescript
+interface DriverDisplayFrame {
+  timeOffset: number;       // 레이스 시작 기준 경과 초
+  currentLap: number;
+  drivers: DriverDisplayRow[];
+}
 
-### ✅ 완료된 기능
-1. **핵심 아키텍처**
-   - 모듈식 서비스 레이어 구조 완성
-   - TypeScript 타입 시스템 구축
-   - Zustand 기반 상태 관리 구현
+interface DriverDisplayRow {
+  position: number;
+  driverCode: string;
+  teamColor: string;
+  interval: string;
+  intervalToAhead: string;
+  currentLapTime: string;
+  bestLapTime: string;
+  miniSector: { sector1, sector2, sector3 };  // 'fastest' | 'personal_best' | 'normal' | 'none'
+  tireInfo: { compound, lapCount, pitStops };
+}
+```
 
-2. **데이터 처리**
-   - OpenF1 API 통합 완료
-   - FastF1 API 기본 지원
-   - Mock 데이터 시스템 구축
-   - 자동 fallback 메커니즘 구현
+## 📈 현재 개발 현황
 
-3. **UI 컴포넌트**
-   - ReplayPanel 탭 기반 인터페이스
-   - SessionSelector, DriverSelector 구현
-   - ReplayControls 기본 컨트롤러
-   - ExitReplayButton 종료 기능
+### 완료된 기능
+1. **백엔드 연동**: NestJS 백엔드를 통한 OpenF1 데이터 프록시 및 사전 계산
+2. **애니메이션 엔진**: RAF 기반 60fps 드라이버 위치 애니메이션
+3. **타이밍 패널**: 백엔드 프레임 기반 실시간 순위/인터벌/랩타임/섹터/타이어
+4. **레드플래그 대응**: 비정상 랩 필터링 + 타임라인 gap 압축
+5. **DNF 처리**: 마커 자동 숨김 + 패널 DNF 표시 + 순위 맨 뒤 정렬
+6. **세션 전환**: 콜백 재등록 + 스토어 동기화로 안정적 세션 전환
 
-4. **렌더링 시스템**
-   - CircuitTrackManager 트랙 렌더링
-   - DriverMarkerManager 드라이버 마커
-   - 서킷별 카메라 자동 이동
-   - 트랙 가시성 제어
-
-### 🚧 진행 중인 작업
-1. **애니메이션 엔진**
-   - ReplayAnimationEngine 기본 구조 완성
-   - 위치 계산 알고리즘 개발 중
-   - 부드러운 애니메이션 최적화
-
-2. **성능 최적화**
-   - 메모리 관리 개선
-   - 애니메이션 프레임 최적화
-   - 데이터 캐싱 시스템 강화
-
-3. **사용자 경험**
-   - 리플레이 컨트롤 UX 개선
-   - 로딩 상태 관리
-   - 에러 핸들링 개선
-
-### 📋 다음 단계 계획
-1. **애니메이션 완성** (우선순위: 높음)
-   - 드라이버 위치 실시간 업데이트
-   - 재생 속도 제어 구현
-   - 시점 이동 (seek) 기능
-
-2. **데이터 확장** (우선순위: 중간)
-   - 더 많은 시즌 데이터 지원
-   - 텔레메트리 데이터 시각화
-   - 섹터 타임 표시
-
-3. **고급 기능** (우선순위: 낮음)
-   - 드라이버 궤적 표시
-   - 피트 스톱 애니메이션
-   - 랩 타임 비교 차트
-
-### 🔧 최근 기술적 개선사항
-- **2025.08.24**: 
-  - TypeScript 타입 에러 수정 (replayDataService 중복 선언)
-  - 로컬 예외 처리 최적화 (MockDataProvider, ReplayDataService)
-  - CircuitTrackManager의 불필요한 파라미터 제거
-  - 서비스 레이어 의존성 정리
-
-### 🐛 알려진 이슈 및 제한사항
-
-#### 현재 제한사항
-1. **애니메이션**: 드라이버 위치 애니메이션이 아직 완전히 구현되지 않음
-2. **서킷 매핑**: 일부 서킷의 정확한 좌표 매핑 필요
-3. **성능**: 대량 데이터 처리 시 최적화 여지 존재
-4. **실시간 데이터**: API 응답 지연 시 사용자 경험 개선 필요
-
-#### 기술 부채
-1. **코드 정리**: 일부 서비스 클래스의 책임 분리 필요
-2. **테스트**: 단위 테스트 및 통합 테스트 추가 필요
-3. **문서화**: 내부 API 문서화 보완 필요
-
-### 🎯 향후 개발 로드맵
-#### Phase 1: 기본 리플레이 완성 (2025.09)
-- 드라이버 애니메이션 완전 구현
-- 재생 컨트롤 모든 기능 완성
-- 성능 최적화 1차 완료
-
-#### Phase 2: 데이터 확장 (2025.10)
-- 더 많은 시즌 및 세션 지원
-- 텔레메트리 데이터 시각화
-- 고급 분석 기능 추가
-
-#### Phase 3: 사용자 경험 향상 (2025.11)
-- 실시간 라이브 타이밍
-- VR/AR 지원 검토
-- 모바일 최적화
-
-## 📄 라이선스 및 크레딧
-
-- **OpenF1 API**: MIT License
-- **FastF1**: GNU GPL v3.0
-- **Mapbox GL**: 상용 라이선스 필요
+### 알려진 제한사항
+1. **데이터 누락**: 일부 드라이버의 특정 랩 `lap_duration`이 null인 경우 해당 구간 위치 추정 불가
+2. **Lap 1 인플레이션**: 레이스 첫 랩에 formation lap 시간이 포함되어 초기 드라이버 간 gap이 실제보다 약간 큼
+3. **서킷 매핑**: `circuitShortName` → `circuitId` 매핑이 하드코딩 (새 서킷 추가 시 수동 등록 필요)
 
 ---
 
-**개발자**: F1 Global Tour Team  
-**마지막 업데이트**: 2025년 8월 24일  
-**버전**: v1.2.0 (Replay System)
-
+**마지막 업데이트**: 2026년 3월 20일

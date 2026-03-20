@@ -199,11 +199,12 @@ export class OpenF1MockDataService {
         if (lapData) {
           if (lapData.lap_duration) {
             totalTime += lapData.lap_duration;
-          } else if (this.retiredDrivers.has(driver.driver_number) && i === lapNumber) {
-            // 리타이어한 드라이버는 섹터 1 시간만 추가 (부분 완주)
+          } else {
+            // lap_duration이 null = 해당 랩 미완주 (retiredDrivers 여부 상관없이 리타이어 처리)
             totalTime += lapData.duration_sector_1 || 0;
             hasRetired = true;
             isPartialLap = true;
+            break; // 리타이어 후 더 이상 랩 누적 불필요
           }
         } else if (!this.retiredDrivers.has(driver.driver_number)) {
           totalTime += this.getBaselapTime(driver.driver_number);
@@ -448,7 +449,9 @@ export class OpenF1MockDataService {
       .sort((a, b) => a.position - b.position)
       .slice(0, 20) // 최대 20명으로 제한
       .map((data, index) => {
-        const isRetired = this.retiredDrivers.has(data.driver_number);
+        // lap_duration이 null이면 미완주(리타이어)로 판정
+        const isRetired = this.retiredDrivers.has(data.driver_number) ||
+          (data.latest_lap !== null && data.latest_lap?.lap_duration === null);
         const isLeader = index === 0;
 
         // Interval (gap to leader) 계산
@@ -458,7 +461,8 @@ export class OpenF1MockDataService {
         } else if (isRetired) {
           intervalDisplay = 'DNF'; // 리타이어는 DNF 표시
         } else if (data.current_interval?.gap_to_leader != null) {
-          intervalDisplay = `+${data.current_interval.gap_to_leader.toFixed(3)}`;
+          const gap = data.current_interval.gap_to_leader;
+          intervalDisplay = Number.isFinite(gap) && gap >= 0 ? `+${gap.toFixed(3)}` : '--';
         } else {
           intervalDisplay = '--'; // 데이터 없음
         }
@@ -468,14 +472,10 @@ export class OpenF1MockDataService {
         if (isLeader) {
           intervalToAheadDisplay = ''; // 리더는 빈 문자열
         } else if (isRetired) {
-          // 리타이어 드라이버도 앞 차와의 간격 표시 (부분 완주 시간 기반)
-          if (data.current_interval?.interval != null) {
-            intervalToAheadDisplay = `+${data.current_interval.interval.toFixed(3)}`;
-          } else {
-            intervalToAheadDisplay = 'DNF';
-          }
+          intervalToAheadDisplay = 'DNF';
         } else if (data.current_interval?.interval != null) {
-          intervalToAheadDisplay = `+${data.current_interval.interval.toFixed(3)}`;
+          const iv = data.current_interval.interval;
+          intervalToAheadDisplay = Number.isFinite(iv) && iv >= 0 ? `+${iv.toFixed(3)}` : '--';
         } else {
           intervalToAheadDisplay = ''; // 데이터 없음
         }
@@ -505,7 +505,38 @@ export class OpenF1MockDataService {
             compound: data.tire_info.compound,
           }
         };
-      });
+      })
+      // DNF 드라이버를 맨 뒤로 재정렬 후 포지션 재지정
+      .sort((a, b) => {
+        const aIsDnf = a.currentLapTime === 'DNF' ? 1 : 0;
+        const bIsDnf = b.currentLapTime === 'DNF' ? 1 : 0;
+        if (aIsDnf !== bIsDnf) return aIsDnf - bIsDnf;
+        return a.position - b.position;
+      })
+      .map((t, i) => ({ ...t, position: i + 1 }));
+  }
+
+  // 리플레이 시작 전 초기 빈값 드라이버 타이밍 반환
+  getInitialDriverTimings(): DriverTiming[] {
+    return this.drivers.map((driver, index) => ({
+      position: index + 1,
+      driverCode: driver.name_acronym,
+      teamColor: `#${driver.team_colour}`,
+      interval: '--',
+      intervalToAhead: '',
+      currentLapTime: '--:--:---',
+      bestLapTime: '--:--:---',
+      miniSector: {
+        sector1: 'none' as const,
+        sector2: 'none' as const,
+        sector3: 'none' as const,
+      },
+      tireInfo: {
+        pitStops: 0,
+        lapCount: 0,
+        compound: 'SOFT' as const,
+      }
+    }));
   }
 
   // BackendReplayApiService에서 fallback으로 사용할 수 있는 public 메서드들

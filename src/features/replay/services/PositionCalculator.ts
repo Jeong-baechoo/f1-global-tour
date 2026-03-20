@@ -37,7 +37,7 @@ export class PositionCalculator {
 
   private calculatePositionFromLapData(driverNumber: number, currentTime: number): DriverPosition | null {
     const driverLaps = this.lapsData.filter(lap => lap.driverNumber === driverNumber);
-    
+
     if (driverLaps.length === 0) {
       return null;
     }
@@ -56,10 +56,25 @@ export class PositionCalculator {
       }
     }
 
-    // 현재 랩이 없으면 마지막 완주 랩 사용
+    // 현재 랩이 없으면 현재 시간 이전에 시작한 가장 최근 랩 사용
     if (!currentLap && driverLaps.length > 0) {
-      currentLap = driverLaps[driverLaps.length - 1];
-      lapProgress = 1; // 100% 완주
+      const lastLap = driverLaps[driverLaps.length - 1];
+      const lastLapEnd = lastLap.lapStartTime + lastLap.lapDuration;
+
+      // 마지막 랩 종료 이후 → DNF/리타이어로 판단, null 반환하여 마커 숨김
+      if (currentTime > lastLapEnd) {
+        return null;
+      }
+
+      const pastLaps = driverLaps.filter(l => l.lapStartTime <= currentTime);
+      if (pastLaps.length > 0) {
+        currentLap = pastLaps[pastLaps.length - 1];
+        lapProgress = Math.min(1, (currentTime - currentLap.lapStartTime) / currentLap.lapDuration);
+      } else {
+        // 아직 레이스 시작 전이면 출발선에 배치
+        currentLap = driverLaps[0];
+        lapProgress = 0;
+      }
     }
 
     if (!currentLap) {

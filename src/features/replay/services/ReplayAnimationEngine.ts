@@ -7,6 +7,7 @@ import { CircuitTrackManager } from './CircuitTrackManager';
 import { PositionCalculator } from './PositionCalculator';
 import { TrackEventBus } from '@/src/features/circuits/services/track/events/TrackEventBus';
 
+
 export class ReplayAnimationEngine {
   private map: mapboxgl.Map | null = null;
   private animationFrameId: number | null = null;
@@ -63,10 +64,15 @@ export class ReplayAnimationEngine {
       return false;
     }
 
-    this.driversData = response.data.drivers;
     this.lapsData = response.data.laps;
     this.circuitId = this.mapCircuitName(session.circuitShortName);
-    
+
+    // 유효한 랩 데이터가 있는 드라이버만 포함 (DNF로 랩 데이터가 없는 드라이버 제외)
+    const driversWithLaps = new Set(this.lapsData.map(lap => lap.driverNumber));
+    this.driversData = response.data.drivers.filter(driver => driversWithLaps.has(driver.driverNumber));
+
+    console.log(`🏁 [ReplayAnimationEngine] Filtered drivers: ${this.driversData.length}/${response.data.drivers.length} (excluded ${response.data.drivers.length - this.driversData.length} DNF drivers with no lap data)`);
+
     await this.initializeReplay();
     return true;
   }
@@ -233,8 +239,19 @@ export class ReplayAnimationEngine {
   private updateDriverPositions(currentTime: number): void {
     const driverPositions = this.positionCalculator.calculateAllDriverPositions(currentTime);
 
+    // 위치가 반환된 드라이버 Set
+    const activeDrivers = new Set(driverPositions.map(p => p.driverNumber));
+
     driverPositions.forEach(position => {
       this.markerManager.updateMarkerPosition(position.driverNumber, position.coordinates);
+      this.markerManager.showDriverMarker(position.driverNumber);
+    });
+
+    // 위치가 없는 드라이버 (DNF/리타이어) 마커 숨김
+    this.driversData.forEach(driver => {
+      if (!activeDrivers.has(driver.driverNumber)) {
+        this.markerManager.hideDriverMarker(driver.driverNumber);
+      }
     });
 
     this.onDriverPositionsUpdate?.(driverPositions);
@@ -277,6 +294,15 @@ export class ReplayAnimationEngine {
   }
 
   // 상태 조회
+  getLapsData(): typeof this.lapsData {
+    return this.lapsData;
+  }
+
+  getTotalDuration(): number {
+    if (this.lapsData.length === 0) return 0;
+    return Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
+  }
+
   getCurrentTime(): number {
     return this.currentTime;
   }

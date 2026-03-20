@@ -202,16 +202,34 @@ export const useReplayStore = create<ReplayStoreState>((set, get) => ({
     
     setCurrentTime: (time) => {
       const state = get();
-      const clampedTime = Math.max(0, Math.min(time, state.totalDuration));
-      
-      // 현재 랩 계산
-      const currentLap = state.lapsData.length > 0 
-        ? Math.max(1, Math.floor(clampedTime / 90) + 1) // 평균 90초/랩 가정
-        : 1;
-      
-      set({ 
+      // totalDuration이 0이면 아직 로드 전이므로 clamp하지 않음 (엔진이 보내는 시간 그대로 사용)
+      const clampedTime = state.totalDuration > 0
+        ? Math.max(0, Math.min(time, state.totalDuration))
+        : Math.max(0, time);
+
+      // 현재 랩 계산: lapsData가 있으면 실제 랩 시작 시각 기준, 없으면 평균 90초 fallback
+      let currentLap = 1;
+      if (state.lapsData.length > 0) {
+        // 각 lapNumber별 최소 lapStartTime (선두 드라이버 기준 근사값)
+        const lapStartTimes = new Map<number, number>();
+        state.lapsData.forEach(l => {
+          const existing = lapStartTimes.get(l.lapNumber);
+          if (existing === undefined || l.lapStartTime < existing) {
+            lapStartTimes.set(l.lapNumber, l.lapStartTime);
+          }
+        });
+        lapStartTimes.forEach((startTime, lapNum) => {
+          if (startTime <= clampedTime && lapNum > currentLap) {
+            currentLap = lapNum;
+          }
+        });
+      } else {
+        currentLap = Math.max(1, Math.floor(clampedTime / 90) + 1);
+      }
+
+      set({
         currentTime: clampedTime,
-        currentLap 
+        currentLap
       });
     },
     

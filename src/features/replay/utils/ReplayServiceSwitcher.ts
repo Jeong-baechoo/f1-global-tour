@@ -70,13 +70,12 @@ export class ReplayServiceSwitcher {
   /**
    * 테스트용 드라이버 타이밍 데이터 가져오기
    */
-  async testTimings(): Promise<void> {
-    console.log('🧪 Testing driver timings...');
-    
+  testTimings(): void {
+    console.log('🧪 Testing driver timings (currentTime=0)...');
     try {
-      const timings = await this.driverTimingService.generateCurrentDriverTimings();
+      const timings = this.driverTimingService.getTimingsForDisplay(0);
       console.log('✅ Driver timings:', timings);
-      console.table(timings.slice(0, 5)); // 상위 5개만 테이블로 출력
+      console.table(timings.slice(0, 5));
     } catch (error) {
       console.error('❌ Failed to get driver timings:', error);
     }

@@ -32,7 +32,8 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
   const {
     setCurrentTime,
     updateDriverPositions,
-    setTotalDuration
+    setTotalDuration,
+    setLapsData
   } = useReplayActions();
 
   // 애니메이션 엔진 초기화
@@ -84,19 +85,24 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
 
     try {
       const success = await engineRef.current.loadReplayData(session);
-      
-      if (success) {
-        setTotalDuration(5400);
-        if (process.env.NODE_ENV === 'development') {
-        }
-      } else {
+
+      if (success && engineRef.current) {
+        // 콜백 재설정 (이전 세션의 cleanup()에서 제거되었을 수 있음)
+        engineRef.current.setOnTimeUpdate(setCurrentTime);
+        engineRef.current.setOnDriverPositionsUpdate(updateDriverPositions);
+
+        // 엔진에서 실제 랩 데이터와 총 시간을 가져와 store에 동기화
+        const laps = engineRef.current.getLapsData();
+        const totalDuration = engineRef.current.getTotalDuration();
+        setLapsData(laps);
+        setTotalDuration(totalDuration);
       }
       
       return success;
     } catch {
       return false;
     }
-  }, [setTotalDuration, map]);
+  }, [setTotalDuration, setLapsData, setCurrentTime, updateDriverPositions, map]);
 
   // 재생 제어 메서드들
   const play = useCallback(() => {

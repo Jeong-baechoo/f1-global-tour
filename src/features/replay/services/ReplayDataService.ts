@@ -5,7 +5,7 @@ import {
   ReplayLapData,
   ApiResponse
 } from '../types';
-import { mockSessions, mockDrivers, mockLaps, checkShouldForceMockData } from '../data/mockData';
+import { checkShouldForceMockData } from '../data/mockData';
 
 interface BackendSession {
   session_key: number;
@@ -47,14 +47,10 @@ export class ReplayDataService {
 
   async getSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
     if (checkShouldForceMockData()) {
-      return this.getMockSessions(year, countryName);
+      return { data: [], success: false, error: { code: 'MOCK_DISABLED', message: 'Mock data is disabled' } };
     }
 
-    try {
-      return await this.getSessionsFromBackend(year, countryName);
-    } catch {
-      return this.getMockSessions(year, countryName);
-    }
+    return await this.getSessionsFromBackend(year, countryName);
   }
 
   private async getSessionsFromBackend(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
@@ -85,59 +81,25 @@ export class ReplayDataService {
   }
 
 
-  private getMockSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let filteredSessions = mockSessions.filter(session => session.year === year);
-        
-        if (countryName) {
-          filteredSessions = filteredSessions.filter(session => 
-            session.countryName.toLowerCase().includes(countryName.toLowerCase())
-          );
-        }
-        
-        resolve({
-          data: filteredSessions,
-          success: true
-        });
-      }, 500); // 실제 API 호출을 시뮬레이션하기 위한 지연
-    });
-  }
-
   async getDrivers(sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
     if (checkShouldForceMockData()) {
-      return this.getMockDrivers(sessionKey);
+      return { data: [], success: false, error: { code: 'MOCK_DISABLED', message: 'Mock data is disabled' } };
     }
 
-    try {
-      const response = await axios.get(`${this.backendApiUrl}/sessions/${sessionKey}/drivers`, {
-        timeout: 30000,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data.success) {
-        const drivers = this.transformBackendDrivers(response.data.data);
-        return { data: drivers, success: true };
-      } else {
-        throw new Error('Backend API returned unsuccessful response');
+    const response = await axios.get(`${this.backendApiUrl}/sessions/${sessionKey}/drivers`, {
+      timeout: 30000,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       }
-    } catch {
-      return this.getMockDrivers(sessionKey);
-    }
-  }
-
-  private getMockDrivers(_sessionKey: number): Promise<ApiResponse<ReplayDriverData[]>> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          data: mockDrivers,
-          success: true
-        });
-      }, 300);
     });
+
+    if (response.data.success) {
+      const drivers = this.transformBackendDrivers(response.data.data);
+      return { data: drivers, success: true };
+    } else {
+      throw new Error('Backend API returned unsuccessful response');
+    }
   }
 
   async getLaps(
@@ -145,68 +107,34 @@ export class ReplayDataService {
     driverNumber?: number,
     lapNumber?: number
   ): Promise<ApiResponse<ReplayLapData[]>> {
-    // 강제 목 데이터 사용 설정이 있으면 목 데이터 사용
     if (checkShouldForceMockData()) {
-      return this.getMockLaps(sessionKey, driverNumber, lapNumber);
+      return { data: [], success: false, error: { code: 'MOCK_DISABLED', message: 'Mock data is disabled' } };
     }
 
-    // 백엔드 API 먼저 시도
-    try {
-      const params = new URLSearchParams();
-      if (driverNumber !== undefined) {
-        params.append('driverNumber', driverNumber.toString());
-      }
-      if (lapNumber !== undefined) {
-        params.append('lapNumber', lapNumber.toString());
-      }
-
-      const endpoint = `/laps/session/${sessionKey}${params.toString() ? `?${params.toString()}` : ''}`;
-      const response = await axios.get(`${this.backendApiUrl}${endpoint}`, {
-        timeout: 30000, // 대량의 lap 데이터를 위해 30초로 증가
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data.success || response.data.data) {
-        const laps = this.transformBackendLaps(response.data.data);
-        console.log('✅ [ReplayDataService] Laps loaded from backend:', laps.length);
-        return {
-          data: laps,
-          success: true
-        };
-      } else {
-        throw new Error('Backend API returned unsuccessful response');
-      }
-    } catch {
-      return this.getMockLaps(sessionKey, driverNumber, lapNumber);
+    const params = new URLSearchParams();
+    if (driverNumber !== undefined) {
+      params.append('driverNumber', driverNumber.toString());
     }
-  }
+    if (lapNumber !== undefined) {
+      params.append('lapNumber', lapNumber.toString());
+    }
 
-  private getMockLaps(
-    sessionKey: number, 
-    driverNumber?: number, 
-    lapNumber?: number
-  ): Promise<ApiResponse<ReplayLapData[]>> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let filteredLaps = mockLaps;
-        
-        if (driverNumber !== undefined) {
-          filteredLaps = filteredLaps.filter(lap => lap.driverNumber === driverNumber);
-        }
-        
-        if (lapNumber !== undefined) {
-          filteredLaps = filteredLaps.filter(lap => lap.lapNumber === lapNumber);
-        }
-        
-        resolve({
-          data: filteredLaps,
-          success: true
-        });
-      }, 400);
+    const endpoint = `/laps/session/${sessionKey}${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await axios.get(`${this.backendApiUrl}${endpoint}`, {
+      timeout: 30000,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
     });
+
+    if (response.data.success || response.data.data) {
+      const laps = this.transformBackendLaps(response.data.data);
+      console.log('✅ [ReplayDataService] Laps loaded from backend:', laps.length);
+      return { data: laps, success: true };
+    } else {
+      throw new Error('Backend API returned unsuccessful response');
+    }
   }
 
   async getFullRaceData(sessionKey: number): Promise<ApiResponse<{
@@ -310,6 +238,10 @@ export class ReplayDataService {
       sampleLap: backendLaps[0]
     });
 
+    // 레드플래그 등으로 비정상적으로 긴 랩을 감지하기 위한 임계값 (5분 = 300초)
+    // F1 어떤 서킷에서도 정상 랩타임은 300초를 초과하지 않음
+    const MAX_REASONABLE_LAP_DURATION = 300;
+
     return backendLaps
       .filter(lap => {
         // 백엔드 데이터 구조: { lapNumber, lapTime, sectors: {sector1, sector2, sector3}, timestamp, driverNumber, ... }
@@ -318,9 +250,20 @@ export class ReplayDataService {
 
         if (!isValid) {
           console.log('⚠️ [ReplayDataService] Filtering out invalid lap:', lap);
+          return false;
         }
 
-        return isValid;
+        // 레드플래그 등으로 인한 비정상 랩타임 필터링
+        if (lapTime > MAX_REASONABLE_LAP_DURATION) {
+          console.log('⚠️ [ReplayDataService] Filtering out red-flag lap (abnormal duration):', {
+            driver: lap.driverNumber,
+            lap: lap.lapNumber,
+            duration: lapTime
+          });
+          return false;
+        }
+
+        return true;
       })
       .map(lap => {
         // 랩 시작 시간을 ISO 문자열에서 타임스탬프로 변환
@@ -342,39 +285,81 @@ export class ReplayDataService {
   }
 
   private sortAndProcessLaps(laps: ReplayLapData[]): ReplayLapData[] {
-    // 드라이버별, 랩 번호별로 정렬
-    const sortedLaps = laps.sort((a, b) => {
-      if (a.driverNumber !== b.driverNumber) {
-        return a.driverNumber - b.driverNumber;
+    // 드라이버별로 그룹화
+    const driverLapsMap = new Map<number, ReplayLapData[]>();
+    for (const lap of laps) {
+      const arr = driverLapsMap.get(lap.driverNumber) ?? [];
+      arr.push(lap);
+      driverLapsMap.set(lap.driverNumber, arr);
+    }
+
+    // 레이스 시작 시점 결정: 모든 드라이버의 가장 작은 lap_number의 timestamp 중 최빈값
+    // (2024 일본 GP 예시: 모든 드라이버 lap 1 = 05:32:00, 레드플래그 lap 2 = 05:06:xx)
+    const firstLapTimestamps: number[] = [];
+    for (const [, driverLaps] of driverLapsMap) {
+      // 가장 작은 lapNumber를 가진 랩의 timestamp
+      const minLapNum = Math.min(...driverLaps.map(l => l.lapNumber));
+      const firstLap = driverLaps.find(l => l.lapNumber === minLapNum);
+      if (firstLap) {
+        firstLapTimestamps.push(firstLap.lapStartTime);
       }
-      return a.lapNumber - b.lapNumber;
-    });
+    }
+    // 가장 많은 드라이버가 공유하는 timestamp = 실제 레이스 시작 시점
+    // (동일 timestamp가 없으면 10초 이내를 같은 그룹으로 봄)
+    const raceStartTime = this.findMostCommonTimestamp(firstLapTimestamps);
 
-    // 각 드라이버별로 상대적인 랩 시작 시간 계산
-    const processedLaps: ReplayLapData[] = [];
-    const driverFirstLapTimes = new Map<number, number>();
+    console.log(`🏁 [ReplayDataService] Race start time determined: ${new Date(raceStartTime).toISOString()}`);
 
-    // 각 드라이버의 첫 번째 랩 시작 시간 찾기
-    sortedLaps.forEach(lap => {
-      if (!driverFirstLapTimes.has(lap.driverNumber)) {
-        driverFirstLapTimes.set(lap.driverNumber, lap.lapStartTime);
+    // 실제 타임스탬프 기반 상대 시간 변환 (드라이버 간 실제 간격 보존)
+    // 누적 방식은 필터링된 랩의 실제 소요시간을 무시하여 순위가 어긋남
+    const allRaceLaps: ReplayLapData[] = [];
+
+    for (const [, driverLaps] of driverLapsMap) {
+      // 레이스 시작 이전의 랩 제외 (레드플래그 이전 formation lap 등)
+      const raceLaps = driverLaps.filter(l => l.lapStartTime >= raceStartTime - 60000);
+      // 60초(60000ms) 여유: 동일 시점 타임스탬프의 미세 차이 허용
+      for (const lap of raceLaps) {
+        allRaceLaps.push(lap);
       }
-    });
+    }
 
-    // 레이스 시작 시간 (가장 빠른 첫 랩 시작 시간)
-    const raceStartTime = Math.min(...Array.from(driverFirstLapTimes.values()));
+    // 타임스탬프를 레이스 시작 기준 상대 초로 변환
+    return allRaceLaps.map(lap => ({
+      ...lap,
+      lapStartTime: Math.max(0, (lap.lapStartTime - raceStartTime) / 1000),
+    }));
+  }
 
-    // 상대적 시간으로 변환
-    sortedLaps.forEach(lap => {
-      const relativeStartTime = (lap.lapStartTime - raceStartTime) / 1000; // 밀리초를 초로 변환
-      
-      processedLaps.push({
-        ...lap,
-        lapStartTime: Math.max(0, relativeStartTime) // 음수 방지
-      });
-    });
+  // 타임스탬프 배열에서 가장 많은 값이 밀집된 클러스터의 최솟값 반환
+  private findMostCommonTimestamp(timestamps: number[]): number {
+    if (timestamps.length === 0) return 0;
+    if (timestamps.length === 1) return timestamps[0];
 
-    return processedLaps;
+    // 10초 이내의 타임스탬프를 같은 클러스터로 묶음
+    const CLUSTER_THRESHOLD = 10000; // 10초 (ms)
+    const sorted = [...timestamps].sort((a, b) => a - b);
+
+    let bestClusterStart = 0;
+    let bestClusterSize = 0;
+
+    let clusterStart = 0;
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] - sorted[clusterStart] > CLUSTER_THRESHOLD) {
+        const clusterSize = i - clusterStart;
+        if (clusterSize > bestClusterSize) {
+          bestClusterSize = clusterSize;
+          bestClusterStart = clusterStart;
+        }
+        clusterStart = i;
+      }
+    }
+    // 마지막 클러스터 확인
+    const lastClusterSize = sorted.length - clusterStart;
+    if (lastClusterSize > bestClusterSize) {
+      bestClusterStart = clusterStart;
+    }
+
+    return sorted[bestClusterStart];
   }
 
   // 캐싱을 위한 메서드들
