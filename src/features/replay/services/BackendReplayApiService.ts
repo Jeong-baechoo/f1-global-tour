@@ -26,11 +26,20 @@ interface DriverDisplayFrame {
   drivers: DriverDisplayRow[];
 }
 
+export interface RaceFlagsResponse {
+  sessionType: 'RACE' | 'QUALIFYING' | 'PRACTICE';
+  totalLaps: number;
+  lapFlags: ('NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW')[];
+  totalMinutes: number;
+  minuteFlags: ('NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW')[];
+}
+
 export class BackendReplayApiService {
   private static instance: BackendReplayApiService;
   private readonly baseUrl = 'http://localhost:4000/api/v1';
 
   private frames: DriverDisplayFrame[] = [];
+  private raceFlagsData: RaceFlagsResponse | null = null;
   private sessionKey: number = 0;
   private isLoading: boolean = false;
   private isAvailable: boolean = true;
@@ -46,9 +55,13 @@ export class BackendReplayApiService {
     if (this.sessionKey === sessionKey) return;
     this.sessionKey = sessionKey;
     this.frames = [];
+    this.raceFlagsData = null;
     this.loadAllDriverTimings(sessionKey).catch((err) => {
       console.warn('[BackendReplayApiService] Failed to load driver timings:', err);
       this.isAvailable = false;
+    });
+    this.loadRaceFlags(sessionKey).catch((err) => {
+      console.warn('[BackendReplayApiService] Failed to load race flags:', err);
     });
   }
 
@@ -90,9 +103,30 @@ export class BackendReplayApiService {
     }
   }
 
+  getRaceFlags(): RaceFlagsResponse | null {
+    return this.raceFlagsData;
+  }
+
   cleanup(): void {
     this.frames = [];
+    this.raceFlagsData = null;
     this.isLoading = false;
+  }
+
+  private async loadRaceFlags(sessionKey: number): Promise<void> {
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/sessions/${sessionKey}/race-flags`,
+        { timeout: 15000 },
+      );
+
+      if (!response.data.success) throw new Error('API returned success: false');
+
+      this.raceFlagsData = response.data.data as RaceFlagsResponse;
+    } catch (err) {
+      console.warn('[BackendReplayApiService] Race flags load failed:', err);
+      this.raceFlagsData = null;
+    }
   }
 
   private async loadAllDriverTimings(sessionKey: number): Promise<void> {

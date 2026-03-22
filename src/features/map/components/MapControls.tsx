@@ -7,6 +7,7 @@ import { ReplayPanel, useReplayStore } from '@/src/features/replay';
 import { ReplayProgressBar } from '@/src/features/replay/components/ReplayProgressBar';
 import { DriverTelemetryPanel, FlagInfoPanel, TrackInfoTogglePanel, ErrorNotification } from '@/src/features/replay/components/ui';
 import { OpenF1MockDataService } from '@/src/features/replay/services';
+import { DriverTimingService } from '@/src/features/replay/services/DriverTimingService';
 import ReplayErrorHandler from '@/src/features/replay/services/ReplayErrorHandler';
 import type { Circuit } from '@/src/features/circuits/types';
 import type { RealtimeDriverData } from '@/src/features/replay/types/openF1Types';
@@ -69,6 +70,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
   
   // 리플레이 스토어에서 선택된 드라이버 정보 가져오기
   const isPlaying = useReplayStore(state => state.isPlaying);
+  const currentTime = useReplayStore(state => state.currentTime);
   
   
   // 텔레메트리 데이터 업데이트 - 선택된 드라이버 우선, 없으면 1등 드라이버 표시
@@ -206,13 +208,13 @@ export const MapControls: React.FC<MapControlsProps> = ({
                           [&::-webkit-scrollbar-thumb:hover]:bg-gray-500/70">
             <div className="space-y-4 p-2">
               {(() => {
-                const openF1Service = OpenF1MockDataService.getInstance();
-                
+                const driverTimingService = DriverTimingService.getInstance();
+
                 // selectedDriverTelemetry가 있으면 사용, 없으면 1위 드라이버 사용
                 const displayDriver = selectedDriverTelemetry;
-                
+
                 if (!displayDriver) return null;
-                
+
                 // 재생 중이 아닐 때는 정적 데이터 사용
                 const staticTelemetry = {
                   speed: 0,
@@ -222,9 +224,9 @@ export const MapControls: React.FC<MapControlsProps> = ({
                   drs_enabled: false,
                   drs_available: false
                 };
-                
+
                 const displayTelemetry = isPlaying ? displayDriver.telemetry : staticTelemetry;
-                const raceStatus = openF1Service.getRaceStatus();
+                const raceStatus = driverTimingService.getRaceStatus(currentTime);
                 
                 return (
                   <>
@@ -243,20 +245,22 @@ export const MapControls: React.FC<MapControlsProps> = ({
                     </div>
 
                     {/* 플래그 정보 패널 */}
-                    <div className="pointer-events-auto">
-                      <FlagInfoPanel
-                        currentFlag={raceStatus.currentFlag}
-                        sessionType={raceStatus.sessionType}
-                        // 레이스용 props
-                        totalLaps={raceStatus.totalLaps}
-                        currentLap={raceStatus.currentLap}
-                        lapFlags={raceStatus.lapFlags}
-                        // 퀄리파잉/연습용 props
-                        totalMinutes={raceStatus.totalMinutes}
-                        currentMinute={raceStatus.currentMinute}
-                        minuteFlags={raceStatus.minuteFlags}
-                      />
-                    </div>
+                    {raceStatus && (
+                      <div className="pointer-events-auto">
+                        <FlagInfoPanel
+                          currentFlag={raceStatus.currentFlag}
+                          sessionType={raceStatus.sessionType}
+                          // 레이스용 props
+                          totalLaps={raceStatus.totalLaps}
+                          currentLap={raceStatus.currentLap}
+                          lapFlags={raceStatus.lapFlags}
+                          // 퀄리파잉/연습용 props
+                          totalMinutes={raceStatus.totalMinutes}
+                          currentMinute={raceStatus.currentMinute}
+                          minuteFlags={raceStatus.minuteFlags}
+                        />
+                      </div>
+                    )}
 
                     {/* 트랙 정보 토글 패널 */}
                     <div className="pointer-events-auto">

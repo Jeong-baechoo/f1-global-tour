@@ -62,7 +62,7 @@ export function FlagInfoPanel({
       case 'SC': return 'bg-yellow-400';
       case 'VSC': return 'bg-yellow-400';
       case 'YELLOW': return 'bg-yellow-500';
-      case 'NONE': return 'bg-blue-500';
+      case 'NONE': return 'bg-green-500';
       default: return 'bg-gray-600';
     }
   };
@@ -209,7 +209,7 @@ export function FlagInfoPanel({
       <div className="mt-4 bg-gray-800/50 rounded-md p-3 border border-white/10">
         <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-2 bg-blue-500 rounded-sm shadow-sm border border-black/20"></div>
+            <div className="w-3 h-2 bg-green-500 rounded-sm shadow-sm border border-black/20"></div>
             <span>Green</span>
           </div>
           <div className="flex items-center gap-2">

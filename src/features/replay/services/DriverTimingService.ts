@@ -1,4 +1,4 @@
-import { ReplayDriverData, ReplayLapData, ReplaySessionData, DriverPosition } from '../types';
+import { ReplayDriverData, ReplayLapData, ReplaySessionData, DriverPosition, RaceStatus } from '../types';
 import { DriverTiming } from '@/src/features/replay/components/ui';
 import { OpenF1MockDataService } from './OpenF1MockDataService';
 import { BackendReplayApiService } from './BackendReplayApiService';
@@ -72,6 +72,36 @@ export class DriverTimingService {
   getCurrentLapFromFrame(currentTime: number): number | null {
     const frame = this.backendService.getFrameAtTime(currentTime);
     return frame ? frame.currentLap : null;
+  }
+
+  // 백엔드 플래그 데이터 + 현재 프레임의 currentLap으로 RaceStatus 생성
+  getRaceStatus(currentTime: number): RaceStatus | null {
+    const flags = this.backendService.getRaceFlags();
+    if (!flags) return null;
+
+    const frame = this.backendService.getFrameAtTime(currentTime);
+    const currentLap = frame?.currentLap ?? 1;
+
+    // lapFlags에서 현재 랩의 플래그를 currentFlag로 변환
+    const currentLapFlag = flags.lapFlags[currentLap - 1] ?? 'NONE';
+    const currentFlag = currentLapFlag === 'NONE' ? 'GREEN' : currentLapFlag as RaceStatus['currentFlag'];
+
+    // 시간 기반 세션의 currentMinute 계산
+    let currentMinute = 0;
+    if (flags.sessionType !== 'RACE' && flags.totalMinutes > 0) {
+      currentMinute = Math.min(Math.floor(currentTime / 60), flags.totalMinutes);
+    }
+
+    return {
+      sessionType: flags.sessionType,
+      currentFlag,
+      currentLap,
+      totalLaps: flags.totalLaps,
+      lapFlags: flags.lapFlags,
+      currentMinute,
+      totalMinutes: flags.totalMinutes,
+      minuteFlags: flags.minuteFlags,
+    };
   }
 
   // currentTime 기준으로 백엔드에서 사전 병합된 프레임 반환
