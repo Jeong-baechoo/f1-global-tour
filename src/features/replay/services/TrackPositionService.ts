@@ -56,14 +56,6 @@ export class TrackPositionService {
       targetDistance
     );
 
-    if (process.env.NODE_ENV === 'development' && lapProgress === 0) {
-      console.log(`🎯 [TrackPositionService] Start position for ${circuitId}:`, position);
-      console.log(`🎯 [TrackPositionService] Circuit data:`, {
-        totalDistance: circuitData.totalDistance,
-        coordinatesCount: circuitData.trackCoordinates.length
-      });
-    }
-
     return position;
   }
 

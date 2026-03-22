@@ -26,6 +26,23 @@ interface DriverDisplayFrame {
   drivers: DriverDisplayRow[];
 }
 
+export interface TelemetryFrame {
+  timeOffset: number;
+  speed: number;
+  gear: number;
+  throttle: number;
+  brake: number;
+  drsEnabled: boolean;
+  drsAvailable: boolean;
+}
+
+interface DriverTelemetryResponse {
+  driverNumber: number;
+  driverCode: string;
+  teamColor: string;
+  frames: TelemetryFrame[];
+}
+
 export interface RaceFlagsResponse {
   sessionType: 'RACE' | 'QUALIFYING' | 'PRACTICE';
   totalLaps: number;
@@ -44,6 +61,10 @@ export class BackendReplayApiService {
   private isLoading: boolean = false;
   private isAvailable: boolean = true;
 
+  // 드라이버별 텔레메트리 캐시
+  private telemetryCache: Map<number, TelemetryFrame[]> = new Map();
+  private telemetryLoading: Set<number> = new Set();
+
   static getInstance(): BackendReplayApiService {
     if (!BackendReplayApiService.instance) {
       BackendReplayApiService.instance = new BackendReplayApiService();
@@ -56,6 +77,8 @@ export class BackendReplayApiService {
     this.sessionKey = sessionKey;
     this.frames = [];
     this.raceFlagsData = null;
+    this.telemetryCache.clear();
+    this.telemetryLoading.clear();
     this.loadAllDriverTimings(sessionKey).catch((err) => {
       console.warn('[BackendReplayApiService] Failed to load driver timings:', err);
       this.isAvailable = false;
@@ -111,6 +134,73 @@ export class BackendReplayApiService {
     this.frames = [];
     this.raceFlagsData = null;
     this.isLoading = false;
+    this.telemetryCache.clear();
+    this.telemetryLoading.clear();
+  }
+
+  /**
+   * 특정 드라이버의 텔레메트리 데이터를 백엔드에서 로드
+   * 이미 캐시에 있거나 로딩 중이면 스킵
+   */
+  async loadDriverTelemetry(driverNumber: number): Promise<void> {
+    if (this.telemetryCache.has(driverNumber) || this.telemetryLoading.has(driverNumber)) {
+      return;
+    }
+
+    this.telemetryLoading.add(driverNumber);
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/sessions/${this.sessionKey}/telemetry/${driverNumber}`,
+        { timeout: 30000 },
+      );
+
+      if (!response.data.success) throw new Error('API returned success: false');
+
+      const data = response.data.data as DriverTelemetryResponse;
+      this.telemetryCache.set(driverNumber, data.frames);
+    } catch (err) {
+      console.warn(`[BackendReplayApiService] Telemetry load failed for driver ${driverNumber}:`, err);
+    } finally {
+      this.telemetryLoading.delete(driverNumber);
+    }
+  }
+
+  /**
+   * 특정 드라이버의 특정 시간에 해당하는 텔레메트리 프레임 반환 (이진탐색)
+   */
+  getTelemetryAtTime(driverNumber: number, timeOffset: number): TelemetryFrame | null {
+    const frames = this.telemetryCache.get(driverNumber);
+    if (!frames || frames.length === 0) return null;
+    if (timeOffset < frames[0].timeOffset) return null;
+
+    // 이진탐색으로 timeOffset 이상인 첫 인덱스 찾기
+    let lo = 0;
+    let hi = frames.length - 1;
+
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (frames[mid].timeOffset < timeOffset) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+
+    // lo가 정확히 일치하거나 초과하는 첫 인덱스 — 이전 인덱스와 비교하여 더 가까운 쪽 반환
+    if (lo > 0) {
+      const diffPrev = Math.abs(frames[lo - 1].timeOffset - timeOffset);
+      const diffCurr = Math.abs(frames[lo].timeOffset - timeOffset);
+      return diffPrev <= diffCurr ? frames[lo - 1] : frames[lo];
+    }
+
+    return frames[lo];
+  }
+
+  /**
+   * 특정 드라이버의 텔레메트리가 로드되었는지 확인
+   */
+  isTelemetryLoaded(driverNumber: number): boolean {
+    return this.telemetryCache.has(driverNumber);
   }
 
   private async loadRaceFlags(sessionKey: number): Promise<void> {

@@ -71,7 +71,7 @@ export default function Home() {
   const [isReplayMode, setIsReplayMode] = useState(false);
   const [selectedDriverForTelemetry, setSelectedDriverForTelemetry] = useState<string | null>(null);
 
-  
+
   // Circuit 관련 상태
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [currentCircuit, setCurrentCircuit] = useState<Circuit | null>(null);

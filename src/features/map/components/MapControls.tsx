@@ -1,21 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import CircuitInfoPanel from '@/src/shared/components/ui/map/CircuitInfoPanel';
 import { ReplayPanel, useReplayStore } from '@/src/features/replay';
 import { ReplayProgressBar } from '@/src/features/replay/components/ReplayProgressBar';
 import { DriverTelemetryPanel, FlagInfoPanel, TrackInfoTogglePanel, ErrorNotification } from '@/src/features/replay/components/ui';
-import { OpenF1MockDataService } from '@/src/features/replay/services';
+import { BackendReplayApiService } from '@/src/features/replay/services/BackendReplayApiService';
 import { DriverTimingService } from '@/src/features/replay/services/DriverTimingService';
-import ReplayErrorHandler from '@/src/features/replay/services/ReplayErrorHandler';
 import type { Circuit } from '@/src/features/circuits/types';
-import type { RealtimeDriverData } from '@/src/features/replay/types/openF1Types';
+import type { TelemetryFrame } from '@/src/features/replay/services/BackendReplayApiService';
 
 interface MapControlsProps {
   map: mapboxgl.Map | null;
   isCircuitView: boolean;
-  
+
   // Circuit Info Panel props
   sectorInfoEnabled: boolean;
   drsInfoEnabled: boolean;
@@ -27,7 +26,7 @@ interface MapControlsProps {
   onToggleDRSInfoAction: (enabled: boolean) => void;
   onToggleElevationAction: (enabled: boolean) => void;
   resetPanelStates?: () => void;
-  
+
   // 리플레이 모드 관련 props
   isReplayMode?: boolean;
   setIsReplayMode?: (isReplayMode: boolean) => void;
@@ -62,93 +61,94 @@ export const MapControls: React.FC<MapControlsProps> = ({
   isCircuitView: ___
 }) => {
   const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);
-  const [selectedDriverTelemetry, setSelectedDriverTelemetry] = useState<RealtimeDriverData | null>(null);
-  
-  // 사용자 선택 보호를 위한 락 메커니즘
-  const userSelectionLockRef = useRef<NodeJS.Timeout | null>(null);
-  const isUserSelectionActiveRef = useRef(false);
-  
+  const [telemetryFrame, setTelemetryFrame] = useState<TelemetryFrame | null>(null);
+  const [telemetryDriverCode, setTelemetryDriverCode] = useState<string | null>(null);
+  const [telemetryTeamColor, setTelemetryTeamColor] = useState<string | null>(null);
+
   // 리플레이 스토어에서 선택된 드라이버 정보 가져오기
   const isPlaying = useReplayStore(state => state.isPlaying);
   const currentTime = useReplayStore(state => state.currentTime);
-  
-  
-  // 텔레메트리 데이터 업데이트 - 선택된 드라이버 우선, 없으면 1등 드라이버 표시
+  const drivers = useReplayStore(state => state.drivers);
+
+  // driverCode → driverNumber 매핑
+  const driverNumberByCode = useMemo(() => {
+    const map = new Map<string, number>();
+    drivers.forEach(d => map.set(d.nameAcronym, d.driverNumber));
+    return map;
+  }, [drivers]);
+
+  // 현재 표시할 드라이버 코드 결정 (선택 없으면 driver-timings 프레임의 1위 드라이버)
+  const targetDriverCode = useMemo(() => {
+    if (selectedDriverForTelemetry) {
+      return selectedDriverForTelemetry;
+    }
+    // 선택 없으면 현재 프레임의 1위 드라이버 코드
+    const backendApi = BackendReplayApiService.getInstance();
+    const frame = backendApi.getFrameAtTime(currentTime);
+    if (frame && frame.drivers.length > 0) {
+      return frame.drivers[0].driverCode;
+    }
+    return null;
+  }, [selectedDriverForTelemetry, currentTime]);
+
+  // driverCode → driverNumber 변환
+  const selectedDriverNumber = useMemo(() => {
+    if (!targetDriverCode) return null;
+    return driverNumberByCode.get(targetDriverCode) ?? null;
+  }, [targetDriverCode, driverNumberByCode]);
+
+  // 텔레메트리 데이터 로드 완료 여부 추적 (로드 완료 시 re-render 트리거)
+  const [telemetryReady, setTelemetryReady] = useState(0);
+
+  // 드라이버 선택 변경 시 — 드라이버 정보 + 텔레메트리 데이터 로드
   useEffect(() => {
-    if (!isReplayMode) {
-      setSelectedDriverTelemetry(null);
+    if (!isReplayMode || !targetDriverCode) {
+      setTelemetryFrame(null);
+      setTelemetryDriverCode(null);
+      setTelemetryTeamColor(null);
       return;
     }
 
-    // Capture current timer reference at effect start for cleanup
-    const currentTimer = userSelectionLockRef.current;
-    const openF1Service = OpenF1MockDataService.getInstance();
-    
-    const updateTelemetry = () => {
-      try {
-        // 🔒 사용자 선택이 활성화되어 있으면 자동 업데이트 중단
-        if (isUserSelectionActiveRef.current) {
-          return;
-        }
+    // 드라이버 정보 설정 (스토어에서 찾거나 코드를 직접 사용)
+    const driver = drivers.find(d => d.nameAcronym === targetDriverCode);
+    if (driver) {
+      setTelemetryDriverCode(driver.nameAcronym);
+      setTelemetryTeamColor(`#${driver.teamColor}`);
+    } else {
+      // 스토어에 없으면 driver-timings 프레임에서 팀 컬러 가져오기
+      const backendApi = BackendReplayApiService.getInstance();
+      const frame = backendApi.getFrameAtTime(currentTime);
+      const frameDriver = frame?.drivers.find(d => d.driverCode === targetDriverCode);
+      setTelemetryDriverCode(targetDriverCode);
+      setTelemetryTeamColor(frameDriver ? `#${frameDriver.teamColor}` : '#FFFFFF');
+    }
 
-        const realtimeData = openF1Service.generateRealtimeDriverData();
-        
-        if (realtimeData.length === 0) {
-          setSelectedDriverTelemetry(null);
-          return;
-        }
-
-        // 선택된 드라이버가 있으면 해당 드라이버를 우선적으로 찾기
-        let targetDriver;
-        if (selectedDriverForTelemetry) {
-          targetDriver = realtimeData.find(driver => driver.name_acronym === selectedDriverForTelemetry);
-          
-          // 선택된 드라이버를 찾았다면 즉시 설정하고 리턴
-          if (targetDriver) {
-            setSelectedDriverTelemetry(targetDriver);
-            return;
-          }
-        }
-        
-        // 선택된 드라이버가 없거나 찾을 수 없을 때만 1위 드라이버 사용
-        const leaderData = realtimeData.find(driver => driver.position === 1);
-        targetDriver = leaderData || realtimeData[0];
-        setSelectedDriverTelemetry(targetDriver);
-        
-      } catch (error) {
-        ReplayErrorHandler.handleTelemetryError(
-          error instanceof Error ? error : new Error('Telemetry update failed'),
-          {
-            selectedDriver: selectedDriverForTelemetry,
-            isUserSelectionActive: isUserSelectionActiveRef.current,
-            operation: 'updateTelemetry'
-          }
-        );
-        setSelectedDriverTelemetry(null);
+    // driverNumber가 있으면 텔레메트리 로드
+    if (selectedDriverNumber !== null) {
+      const backendApi = BackendReplayApiService.getInstance();
+      if (!backendApi.isTelemetryLoaded(selectedDriverNumber)) {
+        backendApi.loadDriverTelemetry(selectedDriverNumber).then(() => {
+          setTelemetryReady(prev => prev + 1);
+        });
       }
-    };
-    
-    // 초기 데이터 로드
-    updateTelemetry();
+    }
+  }, [isReplayMode, targetDriverCode, selectedDriverNumber, drivers]);
 
-    // 실시간 업데이트 - 사용자 선택을 방해하지 않도록 더 느린 주기 사용
-    const interval = setInterval(updateTelemetry, 2000);
+  // currentTime 변경 또는 텔레메트리 로드 완료 시 프레임 업데이트
+  useEffect(() => {
+    if (!isReplayMode || selectedDriverNumber === null) return;
 
-    return () => {
-      clearInterval(interval);
-      // 사용자 선택 락 타이머도 정리
-      if (currentTimer) {
-        clearTimeout(currentTimer);
-      }
-    };
-  }, [isReplayMode, selectedDriverForTelemetry]);
+    const backendApi = BackendReplayApiService.getInstance();
+    const frame = backendApi.getTelemetryAtTime(selectedDriverNumber, currentTime);
+    setTelemetryFrame(frame);
+  }, [isReplayMode, selectedDriverNumber, currentTime, telemetryReady]);
 
   const handleReplayToggle = () => {
     // 리플레이 패널을 열기 전에 다른 패널들을 닫기
     if (resetPanelStates) {
       resetPanelStates();
     }
-    
+
     setIsReplayPanelOpen(!isReplayPanelOpen);
   };
 
@@ -198,8 +198,8 @@ export const MapControls: React.FC<MapControlsProps> = ({
       {/* 리플레이 패널들 스크롤 컨테이너 (리플레이 모드에서만) */}
       {isReplayMode && (
         <div className="fixed left-4 top-40 bottom-16 w-80 z-50 pointer-events-none">
-          <div className="h-full overflow-y-auto 
-                          scrollbar-thin scrollbar-thumb-gray-600/50 scrollbar-track-transparent 
+          <div className="h-full overflow-y-auto
+                          scrollbar-thin scrollbar-thumb-gray-600/50 scrollbar-track-transparent
                           hover:scrollbar-thumb-gray-500/70
                           [&::-webkit-scrollbar]:w-2
                           [&::-webkit-scrollbar-track]:bg-transparent
@@ -210,37 +210,26 @@ export const MapControls: React.FC<MapControlsProps> = ({
               {(() => {
                 const driverTimingService = DriverTimingService.getInstance();
 
-                // selectedDriverTelemetry가 있으면 사용, 없으면 1위 드라이버 사용
-                const displayDriver = selectedDriverTelemetry;
-
-                if (!displayDriver) return null;
-
                 // 재생 중이 아닐 때는 정적 데이터 사용
-                const staticTelemetry = {
-                  speed: 0,
-                  gear: 0,
-                  throttle: 0,
-                  brake: 0,
-                  drs_enabled: false,
-                  drs_available: false
-                };
+                const displayTelemetry = isPlaying && telemetryFrame
+                  ? telemetryFrame
+                  : { speed: 0, gear: 0, throttle: 0, brake: 0, drsEnabled: false, drsAvailable: false };
 
-                const displayTelemetry = isPlaying ? displayDriver.telemetry : staticTelemetry;
                 const raceStatus = driverTimingService.getRaceStatus(currentTime);
-                
+
                 return (
                   <>
                     {/* 텔레메트리 패널 */}
                     <div className="pointer-events-auto">
                       <DriverTelemetryPanel
-                        speed={displayTelemetry?.speed || 0}
-                        gear={displayTelemetry?.gear || 0}
-                        throttle={displayTelemetry?.throttle || 0}
-                        brake={displayTelemetry?.brake || 0}
-                        drsEnabled={displayTelemetry?.drs_enabled || false}
-                        drsAvailable={displayTelemetry?.drs_available || false}
-                        driverCode={displayDriver.name_acronym}
-                        teamColor={`#${displayDriver.team_colour}`}
+                        speed={displayTelemetry.speed}
+                        gear={displayTelemetry.gear}
+                        throttle={displayTelemetry.throttle}
+                        brake={displayTelemetry.brake}
+                        drsEnabled={displayTelemetry.drsEnabled}
+                        drsAvailable={displayTelemetry.drsAvailable}
+                        driverCode={telemetryDriverCode || '---'}
+                        teamColor={telemetryTeamColor || '#FFFFFF'}
                       />
                     </div>
 
@@ -284,18 +273,6 @@ export const MapControls: React.FC<MapControlsProps> = ({
         setIsReplayMode={setIsReplayMode}
       />
 
-      {/* 텔레메트리 패널 - 리플레이 모드에서 표시 */}
-      {isReplayMode && (() => {
-        const openF1Service = OpenF1MockDataService.getInstance();
-        const realtimeData = openF1Service.generateRealtimeDriverData();
-        const leaderData = realtimeData.find(driver => driver.position === 1) || realtimeData[0];
-        
-        
-        if (!leaderData) return null;
-        
-        return null; // 패널들은 이제 스크롤 컨테이너에서 관리됨
-      })()}
-      
       {/* 에러 알림 - 전역으로 표시 */}
       <ErrorNotification />
     </>

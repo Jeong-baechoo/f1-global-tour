@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { DriverInfoPanelProps } from './types';
 import { cn } from '@/lib/utils';
 import { useReplayStore } from '@/src/features/replay';
@@ -47,7 +47,6 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
   const [lastValidDrivers, setLastValidDrivers] = useState<typeof drivers>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 마지막 유효한 드라이버 데이터 관리
   useEffect(() => {
@@ -69,14 +68,9 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
   const displayDrivers = drivers.length > 0 ? drivers : lastValidDrivers;
   const shouldShowLoading = isInitialLoading && displayDrivers.length === 0;
 
-  // 드라이버 클릭 이벤트 디바운싱
+  // 드라이버 클릭 — 즉시 호출 (setTimeout 불필요, useEffect cleanup에 의해 취소되던 버그 수정)
   const stableOnDriverSelect = useCallback((driverCode: string) => {
-    if (clickTimeoutRef.current) {
-      clearTimeout(clickTimeoutRef.current);
-    }
-    clickTimeoutRef.current = setTimeout(() => {
-      onDriverSelect?.(driverCode);
-    }, 10);
+    onDriverSelect?.(driverCode);
   }, [onDriverSelect]);
 
   // 드라이버 데이터 업데이트 — 백엔드 프레임을 currentTime으로 조회 (병합 없음)
@@ -115,11 +109,6 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
     if (isReplayMode && currentSession) {
       asyncUpdateWrapper();
     }
-    return () => {
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
-    };
   }, [isReplayMode, currentSession?.sessionKey, currentLap, asyncUpdateWrapper]);
 
   // 2초마다 position/interval 갱신 (백엔드 프레임 단위와 일치)
