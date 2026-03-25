@@ -1,4 +1,4 @@
-import { ReplayDriverData, ReplayLapData, ReplaySessionData, DriverPosition, RaceStatus } from '../types';
+import { ReplaySessionData, RaceStatus } from '../types';
 import { DriverTiming } from '@/src/features/replay/components/ui';
 import { OpenF1MockDataService } from './OpenF1MockDataService';
 import { BackendReplayApiService } from './BackendReplayApiService';
@@ -21,12 +21,9 @@ export class DriverTimingService {
   private static instance: DriverTimingService;
   private currentSession: ReplaySessionData | null = null;
   private currentLap: number = 1;
-  private drivers: ReplayDriverData[] = [];
-  private laps: ReplayLapData[] = [];
   private backendService: BackendReplayApiService;
   private mockService: OpenF1MockDataService;
   private preferredServiceType: ReplayDataServiceType;
-  private currentDriverPositions: DriverPosition[] = [];
   private isUsingBackend: boolean = false;
 
   static getInstance(): DriverTimingService {
@@ -36,11 +33,7 @@ export class DriverTimingService {
     return DriverTimingService.instance;
   }
 
-  constructor() {
-    this.drivers = [];
-    this.laps = [];
-    this.currentSession = null;
-
+  private constructor() {
     this.backendService = BackendReplayApiService.getInstance();
     this.mockService = OpenF1MockDataService.getInstance();
     this.preferredServiceType = getPreferredService();
@@ -57,11 +50,6 @@ export class DriverTimingService {
   setCurrentLap(lapNumber: number): void {
     this.currentLap = lapNumber;
     this.mockService.setCurrentLap(lapNumber);
-  }
-
-  // 실제 드라이버 위치 업데이트 (ReplayAnimationEngine에서 호출)
-  updateDriverPositions(positions: DriverPosition[]): void {
-    this.currentDriverPositions = positions;
   }
 
   getInitialDriverTimings(): DriverTiming[] {
@@ -137,10 +125,6 @@ export class DriverTimingService {
     return this.currentLap;
   }
 
-  getAvailableSessions(): ReplaySessionData[] {
-    return [];
-  }
-
   // ===============================
   // 서비스 전환 및 관리 메서드들
   // ===============================
@@ -193,53 +177,5 @@ export class DriverTimingService {
   cleanup(): void {
     this.backendService.cleanup();
     this.mockService.stopRealtimeUpdates();
-  }
-
-  // 미사용이지만 외부에서 참조할 수 있으므로 유지
-  private formatLapTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const secs = (seconds % 60).toFixed(3);
-    return `${minutes}:${secs.padStart(6, '0')}`;
-  }
-
-  private calculateGapToLeader(driverLaps: ReplayLapData[], leaderTime: number): string {
-    if (!driverLaps.length) return '--';
-    const driverCurrentTime = driverLaps
-      .filter((lap) => lap.lapNumber <= this.currentLap)
-      .reduce((total, lap) => total + lap.lapDuration, 0);
-    if (driverCurrentTime === leaderTime) return '--';
-    const gap = driverCurrentTime - leaderTime;
-    return gap > 0 ? `+${gap.toFixed(3)}` : `${gap.toFixed(3)}`;
-  }
-
-  private syncWithRealPositions(mockTimings: DriverTiming[]): DriverTiming[] {
-    if (!this.currentDriverPositions || this.currentDriverPositions.length === 0) {
-      return mockTimings.slice(0, 20);
-    }
-    const sortedPositions = [...this.currentDriverPositions]
-      .sort((a, b) => a.position - b.position)
-      .slice(0, 20);
-    const synced: DriverTiming[] = [];
-    const usedDriverCodes = new Set<string>();
-    for (let i = 0; i < Math.min(sortedPositions.length, 20); i++) {
-      const realPosition = sortedPositions[i];
-      const driverCode = this.getDriverCodeFromNumber(realPosition.driverNumber);
-      if (usedDriverCodes.has(driverCode)) continue;
-      const mockData = mockTimings.find((timing) => timing.driverCode === driverCode);
-      if (mockData) {
-        usedDriverCodes.add(driverCode);
-        synced.push({
-          ...mockData,
-          position: i + 1,
-          interval: i === 0 ? '--' : mockData.interval,
-        });
-      }
-    }
-    return synced.slice(0, 20);
-  }
-
-  private getDriverCodeFromNumber(driverNumber: number): string {
-    const driver = this.drivers.find((d) => d.driverNumber === driverNumber);
-    return driver?.nameAcronym || 'UNK';
   }
 }

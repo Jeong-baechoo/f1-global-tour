@@ -1,13 +1,13 @@
 'use client';
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Calendar, ChevronDown, Clock, MapPin} from 'lucide-react';
-import {useReplayActions} from '@/src/features/replay';
-import {replayDataService} from '../services';
-import {ReplaySessionData} from '../types';
-import {OpenF1MockDataService} from '@/src/features/replay/services/OpenF1MockDataService';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Calendar, ChevronDown, Clock, MapPin } from 'lucide-react';
+import { useReplayActions } from '@/src/features/replay';
+import { replayDataService } from '../services';
+import { ReplaySessionData } from '../types';
+import { OpenF1MockDataService } from '@/src/features/replay/services/OpenF1MockDataService';
 import ReplayErrorHandler from '../services/ReplayErrorHandler';
-import {cn} from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface SessionSelectorProps {
   className?: string;
@@ -27,8 +27,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
 
   const { setCurrentSession, setDrivers } = useReplayActions();
 
-  // 사용 가능한 연도 목록
-  const availableYears = useMemo(() => [2025, 2024, 2023], []);
+  const availableYears = [2025, 2024, 2023];
 
   // 세션 데이터 로드
   const loadSessions = useCallback(async (year: number, country?: string) => {
@@ -69,9 +68,6 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
     setSelectedCountry(''); // 연도 변경 시 국가 필터 초기화
   }, []);
 
-  const handleCountryChange = useCallback((country: string) => {
-    setSelectedCountry(country);
-  }, []);
 
   const handleSessionSelect = useCallback(async (session: ReplaySessionData) => {
     setSelectedSession(session); // 선택된 세션 상태 업데이트
@@ -80,16 +76,8 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
     // OpenF1MockDataService에 세션 타입 업데이트
     const openF1Service = OpenF1MockDataService.getInstance();
     const sessionType = session.sessionType.toUpperCase() as 'RACE' | 'QUALIFYING' | 'PRACTICE';
-    
-    // 세션 타입에 따른 시간 설정
-    let totalMinutes: number | undefined;
-    if (sessionType === 'QUALIFYING') {
-      totalMinutes = 18; // Q1 기준 18분
-    } else if (sessionType === 'PRACTICE') {
-      totalMinutes = 90; // 연습 세션 90분
-    }
-    
-    openF1Service.setSessionType(sessionType, totalMinutes);
+    const SESSION_MINUTES: Record<string, number> = { QUALIFYING: 18, PRACTICE: 90 };
+    openF1Service.setSessionType(sessionType, SESSION_MINUTES[sessionType]);
     
     // 세션 선택 시 자동으로 드라이버 데이터 로드
     try {
@@ -131,12 +119,12 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
     );
   }, [sessions, selectedCountry]);
 
-  const formatDate = useCallback((dateString: string) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
     });
-  }, []);
+  };
 
   return (
     <div className={cn(
@@ -179,7 +167,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
           <div className="relative">
             <select
               value={selectedCountry}
-              onChange={(e) => handleCountryChange(e.target.value)}
+              onChange={(e) => setSelectedCountry(e.target.value)}
               className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2
                          focus:outline-none focus:ring-2 focus:ring-red-600
                          appearance-none cursor-pointer"

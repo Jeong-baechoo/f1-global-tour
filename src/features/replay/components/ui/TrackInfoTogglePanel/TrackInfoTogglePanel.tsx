@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { glassPanelStyle } from '../styles';
 
 // 상수 정의
 const TRACK_EVENTS = {
@@ -76,14 +77,7 @@ export const TrackInfoTogglePanel: React.FC<TrackInfoTogglePanelProps> = ({
         "rounded-3xl shadow-2xl p-4 text-white text-sm transition-shadow duration-300",
         className
       )}
-      style={{
-        backgroundColor: 'rgba(18, 18, 20, 0.65)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05)',
-        filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.3)) drop-shadow(0 15px 30px rgba(0,0,0,0.2))'
-      }}
+      style={glassPanelStyle}
     >
       {/* 패널 헤더 */}
       <div className="flex items-center justify-center gap-3 mb-4">

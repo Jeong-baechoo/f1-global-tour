@@ -130,7 +130,6 @@ export class ReplayDataService {
 
     if (response.data.success || response.data.data) {
       const laps = this.transformBackendLaps(response.data.data);
-      console.log('✅ [ReplayDataService] Laps loaded from backend:', laps.length);
       return { data: laps, success: true };
     } else {
       throw new Error('Backend API returned unsuccessful response');
@@ -142,31 +141,13 @@ export class ReplayDataService {
     laps: ReplayLapData[];
   }>> {
     try {
-      console.log('🚀 [ReplayDataService] Loading full race data for session:', sessionKey);
-
       // 병렬로 드라이버와 랩 데이터 가져오기
       const [driversResponse, lapsResponse] = await Promise.all([
         this.getDrivers(sessionKey),
         this.getLaps(sessionKey)
       ]);
 
-      console.log('🎯 [ReplayDataService] Drivers response:', {
-        success: driversResponse.success,
-        driversCount: driversResponse.data?.length || 0,
-        firstDriver: driversResponse.data?.[0]
-      });
-
-      console.log('🎯 [ReplayDataService] Laps response:', {
-        success: lapsResponse.success,
-        lapsCount: lapsResponse.data?.length || 0
-      });
-
       if (!driversResponse.success || !lapsResponse.success) {
-        console.error('🔴 [ReplayDataService] Failed to fetch race data:', {
-          driversSuccess: driversResponse.success,
-          lapsSuccess: lapsResponse.success
-        });
-
         return {
           data: { drivers: [], laps: [] },
           success: false,
@@ -181,11 +162,6 @@ export class ReplayDataService {
       // 랩 데이터 정렬 및 정리
       const sortedLaps = this.sortAndProcessLaps(lapsResponse.data);
 
-      console.log('✅ [ReplayDataService] Race data loaded successfully:', {
-        driversCount: driversResponse.data.length,
-        lapsCount: sortedLaps.length
-      });
-
       return {
         data: {
           drivers: driversResponse.data,
@@ -194,7 +170,7 @@ export class ReplayDataService {
         success: true
       };
     } catch (error) {
-      console.error('🔴 [ReplayDataService] Error loading race data:', error);
+      console.error('[ReplayDataService] Error loading race data:', error);
       return {
         data: { drivers: [], laps: [] },
         success: false,
@@ -233,11 +209,6 @@ export class ReplayDataService {
   }
 
   private transformBackendLaps(backendLaps: BackendLap[]): ReplayLapData[] {
-    console.log('🔍 [ReplayDataService] Transforming backend laps:', {
-      totalLaps: backendLaps.length,
-      sampleLap: backendLaps[0]
-    });
-
     // 레드플래그 등으로 비정상적으로 긴 랩을 감지하기 위한 임계값 (5분 = 300초)
     // F1 어떤 서킷에서도 정상 랩타임은 300초를 초과하지 않음
     const MAX_REASONABLE_LAP_DURATION = 300;
@@ -249,17 +220,11 @@ export class ReplayDataService {
         const isValid = lapTime !== null && lapTime !== undefined;
 
         if (!isValid) {
-          console.log('⚠️ [ReplayDataService] Filtering out invalid lap:', lap);
           return false;
         }
 
         // 레드플래그 등으로 인한 비정상 랩타임 필터링
         if (lapTime > MAX_REASONABLE_LAP_DURATION) {
-          console.log('⚠️ [ReplayDataService] Filtering out red-flag lap (abnormal duration):', {
-            driver: lap.driverNumber,
-            lap: lap.lapNumber,
-            duration: lapTime
-          });
           return false;
         }
 
@@ -307,8 +272,6 @@ export class ReplayDataService {
     // 가장 많은 드라이버가 공유하는 timestamp = 실제 레이스 시작 시점
     // (동일 timestamp가 없으면 10초 이내를 같은 그룹으로 봄)
     const raceStartTime = this.findMostCommonTimestamp(firstLapTimestamps);
-
-    console.log(`🏁 [ReplayDataService] Race start time determined: ${new Date(raceStartTime).toISOString()}`);
 
     // 실제 타임스탬프 기반 상대 시간 변환 (드라이버 간 실제 간격 보존)
     // 누적 방식은 필터링된 랩의 실제 소요시간을 무시하여 순위가 어긋남
@@ -402,17 +365,6 @@ export class ReplayDataService {
     }
     
     return result;
-  }
-
-  clearCache(): void {
-    this.cache.clear();
-  }
-
-  getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys())
-    };
   }
 
 }

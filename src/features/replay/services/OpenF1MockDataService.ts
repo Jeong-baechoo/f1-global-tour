@@ -53,7 +53,7 @@ export class OpenF1MockDataService {
     return OpenF1MockDataService.instance;
   }
 
-  constructor() {
+  private constructor() {
     this.generateAllLapData();
     this.initializeFlagData();
     this.initializeMinuteFlagData();
@@ -536,32 +536,6 @@ export class OpenF1MockDataService {
         lapCount: 0,
         compound: 'SOFT' as const,
       }
-    }));
-  }
-
-  // BackendReplayApiService에서 fallback으로 사용할 수 있는 public 메서드들
-  generateIntervals(): OpenF1Interval[] {
-    return this.intervalData.get(this.currentLap) || [];
-  }
-
-  generateLaps(): OpenF1Lap[] {
-    return this.lapData.get(this.currentLap) || [];
-  }
-
-  generateDrivers(): OpenF1Driver[] {
-    return this.drivers.map(driver => ({
-      driver_number: driver.driver_number,
-      broadcast_name: driver.name_acronym,
-      full_name: driver.name_acronym,
-      name_acronym: driver.name_acronym,
-      team_name: 'Unknown Team',
-      team_colour: driver.team_colour,
-      first_name: driver.name_acronym.substring(0, 3),
-      last_name: driver.name_acronym.substring(3),
-      headshot_url: null,
-      country_code: 'UNK',
-      session_key: this.sessionKey,
-      meeting_key: this.meetingKey
     }));
   }
 

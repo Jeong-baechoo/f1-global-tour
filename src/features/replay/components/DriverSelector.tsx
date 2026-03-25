@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { Eye, EyeOff, Users, UserCheck } from 'lucide-react';
 import { useReplayDrivers, useReplayStore, useReplayActions } from '@/src/features/replay';
 import { cn } from '@/lib/utils';
@@ -20,16 +20,14 @@ export const DriverSelector: React.FC<DriverSelectorProps> = ({ className }) => 
     deselectAllDrivers 
   } = useReplayActions();
 
-  // 팀 컬러의 밝기에 따른 최적 텍스트 색상 결정
-  const getOptimalTextColor = useCallback((hexColor: string): string => {
+  const getOptimalTextColor = (hexColor: string): string => {
     const hex = hexColor.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-    
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
-  }, []);
+  };
 
   const handleDriverToggle = useCallback((driverNumber: number) => {
     if (selectedDrivers.includes(driverNumber)) {
@@ -47,14 +45,7 @@ export const DriverSelector: React.FC<DriverSelectorProps> = ({ className }) => 
     }
   }, [selectedDrivers.length, drivers.length, selectAllDrivers, deselectAllDrivers]);
 
-  const isDriverSelected = useCallback((driverNumber: number) => {
-    return selectedDrivers.includes(driverNumber);
-  }, [selectedDrivers]);
-
-  const allSelected = useMemo(() => 
-    selectedDrivers.length === drivers.length, 
-    [selectedDrivers.length, drivers.length]
-  );
+  const allSelected = selectedDrivers.length === drivers.length;
 
   return (
     <div className={cn(
@@ -102,7 +93,7 @@ export const DriverSelector: React.FC<DriverSelectorProps> = ({ className }) => 
           </div>
         ) : (
           drivers.map(driver => {
-          const isSelected = isDriverSelected(driver.driverNumber);
+          const isSelected = selectedDrivers.includes(driver.driverNumber);
           
           return (
             <div

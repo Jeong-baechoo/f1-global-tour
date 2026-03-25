@@ -54,10 +54,6 @@ export class CircuitTrackManager {
         return;
       }
       
-      // Track data loaded
-      
-      // Track data validated
-
       // 맵 준비 후 트랙 추가
       await this.addTrackToMapWithRetry(trackData, 3);
       
@@ -161,16 +157,7 @@ export class CircuitTrackManager {
           'line-opacity': 1.0 // 완전 불투명
         }
       }, beforeLayerId);
-      
-      
-      // 레이어가 실제로 존재하는지 확인
-      setTimeout(() => {
-        const layerExists = this.map.getLayer(this.trackLayerId);
-        
-        if (layerExists) {
-          // Track layer exists - ready for use
-        }
-      }, 100);
+
 
     } catch (error) {
       console.error(`❌ Error adding track to map:`, error);

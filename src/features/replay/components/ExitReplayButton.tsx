@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import {  ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useReplayStore, useReplayActions } from '@/src/features/replay';
 import { cn } from '@/lib/utils';
 import type { MapAPI } from '@/src/shared/types';

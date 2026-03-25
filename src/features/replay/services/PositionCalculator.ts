@@ -9,7 +9,6 @@ export class PositionCalculator {
   setData(
     driversData: ReplayDriverData[],
     lapsData: ReplayLapData[],
-    telemetryData: unknown[],
     circuitId: string
   ): void {
     this.driversData = driversData;

@@ -1,3 +1,7 @@
+import type { SectorPerformance } from '../../../types/openF1Types';
+
+export type { SectorPerformance };
+
 export interface DriverTiming {
   position: number;
   driverCode: string; // 3-letter code like 'PIA', 'NOR', 'VER'
@@ -7,9 +11,9 @@ export interface DriverTiming {
   currentLapTime: string; // "1:14.119"
   bestLapTime: string; // "1:13.965"
   miniSector: {
-    sector1: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none'; // purple, green, yellow, gray, transparent
-    sector2: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
-    sector3: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+    sector1: SectorPerformance;
+    sector2: SectorPerformance;
+    sector3: SectorPerformance;
   };
   tireInfo: {
     pitStops: number; // 1 for "1PIT", -1 for "-PIT"

@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { SkipBack, SkipForward, Play, Pause } from 'lucide-react';
-import { 
+import {
   useReplayIsPlaying,
   useReplayCurrentTime,
   useReplayTotalDuration,
   useReplayPlaybackSpeed,
   useReplayCurrentLap,
-  useReplayActions 
+  useReplayActions
 } from '@/src/features/replay';
 import { cn } from '@/lib/utils';
+import { formatReplayTime, PLAYBACK_SPEED_OPTIONS } from '../utils/format';
 
 interface ReplayProgressBarProps {
   className?: string;
@@ -22,19 +23,22 @@ export const ReplayProgressBar: React.FC<ReplayProgressBarProps> = ({ className 
   const totalDuration = useReplayTotalDuration();
   const playbackSpeed = useReplayPlaybackSpeed();
   const currentLap = useReplayCurrentLap();
-  
-  const { 
+
+  const {
     play,
     pause,
     setPlaybackSpeed,
     seekTo,
-    jumpToLap 
+    jumpToLap
   } = useReplayActions();
 
   const handleTimelineChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = parseFloat(event.target.value);
-    seekTo(newTime);
+    seekTo(parseFloat(event.target.value));
   }, [seekTo]);
+
+  const handlePlayPause = useCallback(() => {
+    if (isPlaying) { pause(); } else { play(); }
+  }, [isPlaying, play, pause]);
 
   const handlePreviousLap = useCallback(() => {
     jumpToLap(Math.max(1, currentLap - 1));
@@ -43,26 +47,6 @@ export const ReplayProgressBar: React.FC<ReplayProgressBarProps> = ({ className 
   const handleNextLap = useCallback(() => {
     jumpToLap(currentLap + 1);
   }, [currentLap, jumpToLap]);
-
-  const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
-      pause();
-    } else {
-      play();
-    }
-  }, [isPlaying, play, pause]);
-
-  const handleSpeedChange = useCallback((newSpeed: number) => {
-    setPlaybackSpeed(newSpeed);
-  }, [setPlaybackSpeed]);
-
-  const formatTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }, []);
-
-  const speedOptions = useMemo(() => [0.5, 1, 1.5, 2, 5], []);
 
   return (
     <div className={cn(
@@ -75,8 +59,8 @@ export const ReplayProgressBar: React.FC<ReplayProgressBarProps> = ({ className 
       border: '1px solid rgba(255, 255, 255, 0.08)',
       boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05), 0 30px 60px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.2)'
     }}>
-        {/* 랩 이동 버튼 */}
-        <div className="flex items-center space-x-1">
+      {/* 랩 이동 버튼 */}
+      <div className="flex items-center space-x-1">
         <button
           onClick={handlePreviousLap}
           className="p-1 hover:bg-white/10 rounded-full transition-colors"
@@ -84,7 +68,7 @@ export const ReplayProgressBar: React.FC<ReplayProgressBarProps> = ({ className 
         >
           <SkipBack className="w-3 h-3" />
         </button>
-        
+
         <button
           onClick={handleNextLap}
           className="p-1 hover:bg-white/10 rounded-full transition-colors"
@@ -109,9 +93,9 @@ export const ReplayProgressBar: React.FC<ReplayProgressBarProps> = ({ className 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between text-xs mb-1">
           <span>Lap {currentLap}</span>
-          <span>{formatTime(currentTime)} / {formatTime(totalDuration)}</span>
+          <span>{formatReplayTime(currentTime)} / {formatReplayTime(totalDuration)}</span>
         </div>
-        
+
         <input
           type="range"
           min={0}
@@ -129,18 +113,14 @@ export const ReplayProgressBar: React.FC<ReplayProgressBarProps> = ({ className 
       </div>
 
       {/* 재생 속도 */}
-      <div className="flex items-center space-x-2 relative">
+      <div className="flex items-center space-x-2 relative z-[9999]">
         <select
           value={playbackSpeed}
-          onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+          onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
           className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs
-                     focus:outline-none focus:ring-1 focus:ring-red-600 relative z-[9999]"
-          style={{ 
-            position: 'relative',
-            zIndex: 9999
-          }}
+                     focus:outline-none focus:ring-1 focus:ring-red-600"
         >
-          {speedOptions.map(speed => (
+          {PLAYBACK_SPEED_OPTIONS.map(speed => (
             <option key={speed} value={speed}>
               {speed}x
             </option>

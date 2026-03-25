@@ -71,29 +71,18 @@ export class ReplayAnimationEngine {
     const driversWithLaps = new Set(this.lapsData.map(lap => lap.driverNumber));
     this.driversData = response.data.drivers.filter(driver => driversWithLaps.has(driver.driverNumber));
 
-    console.log(`🏁 [ReplayAnimationEngine] Filtered drivers: ${this.driversData.length}/${response.data.drivers.length} (excluded ${response.data.drivers.length - this.driversData.length} DNF drivers with no lap data)`);
-
     await this.initializeReplay();
     return true;
   }
 
   private async initializeReplay(): Promise<void> {
-    console.log('🚀 [ReplayAnimationEngine] Initializing replay for circuit:', this.circuitId);
-
     // 트랙 좌표 데이터 로드
-    try {
-      await trackPositionService.loadCircuitData(this.circuitId);
-      console.log('✅ [ReplayAnimationEngine] Circuit data loaded successfully');
-    } catch (error) {
-      console.error('🔴 [ReplayAnimationEngine] Failed to load circuit data:', error);
-      throw error;
-    }
+    await trackPositionService.loadCircuitData(this.circuitId);
 
     // 위치 계산기에 데이터 설정
     this.positionCalculator.setData(
       this.driversData,
       this.lapsData,
-      [],
       this.circuitId
     );
 
@@ -103,14 +92,12 @@ export class ReplayAnimationEngine {
     // 트랙 레이아웃 생성 (TrackEventBus 등록도 포함)
     try {
       await this.trackManager.drawCircuitTrack(this.circuitId);
-      console.log('✅ [ReplayAnimationEngine] Circuit track drawn successfully');
     } catch (error) {
-      console.error('❌ Failed to draw circuit track:', error);
+      console.error('Failed to draw circuit track:', error);
     }
 
     // 줌 레벨 변경 시 마커 크기 조절 리스너 추가
     this.setupZoomListener();
-    console.log('✅ [ReplayAnimationEngine] Replay initialization completed');
   }
 
   private mapCircuitName(circuitShortName: string): string {
@@ -146,26 +133,18 @@ export class ReplayAnimationEngine {
   }
 
   private createDriverMarkers(): void {
-    console.log('🚀 [ReplayAnimationEngine] Creating driver markers for circuit:', this.circuitId);
-    console.log('🚀 [ReplayAnimationEngine] Drivers data:', this.driversData.length, 'drivers');
-
     this.markerManager.createDriverMarkers(this.driversData);
 
     // 모든 드라이버를 출발선에서 시작하도록 위치 설정
     const startPositions = new Map<number, [number, number]>();
+    const startPosition = trackPositionService.getPositionAtProgress(this.circuitId, 0);
 
-    this.driversData.forEach(driver => {
-      const startPosition = trackPositionService.getPositionAtProgress(this.circuitId, 0);
-      console.log(`🎯 [ReplayAnimationEngine] Start position for driver ${driver.driverNumber}:`, startPosition);
-
-      if (startPosition && Array.isArray(startPosition) && startPosition.length === 2) {
+    if (startPosition) {
+      this.driversData.forEach(driver => {
         startPositions.set(driver.driverNumber, [startPosition[0], startPosition[1]]);
-      } else {
-        console.error(`🔴 [ReplayAnimationEngine] Failed to get start position for driver ${driver.driverNumber}`);
-      }
-    });
+      });
+    }
 
-    console.log('🎯 [ReplayAnimationEngine] Final start positions map:', Array.from(startPositions.entries()));
     this.markerManager.addMarkersToMap(startPositions);
 
     // 서킷으로 카메라 이동

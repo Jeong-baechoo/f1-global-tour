@@ -222,6 +222,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
                     {/* 텔레메트리 패널 */}
                     <div className="pointer-events-auto">
                       <DriverTelemetryPanel
+                        loading={!telemetryFrame}
                         speed={displayTelemetry.speed}
                         gear={displayTelemetry.gear}
                         throttle={displayTelemetry.throttle}
@@ -234,22 +235,21 @@ export const MapControls: React.FC<MapControlsProps> = ({
                     </div>
 
                     {/* 플래그 정보 패널 */}
-                    {raceStatus && (
-                      <div className="pointer-events-auto">
-                        <FlagInfoPanel
-                          currentFlag={raceStatus.currentFlag}
-                          sessionType={raceStatus.sessionType}
-                          // 레이스용 props
-                          totalLaps={raceStatus.totalLaps}
-                          currentLap={raceStatus.currentLap}
-                          lapFlags={raceStatus.lapFlags}
-                          // 퀄리파잉/연습용 props
-                          totalMinutes={raceStatus.totalMinutes}
-                          currentMinute={raceStatus.currentMinute}
-                          minuteFlags={raceStatus.minuteFlags}
-                        />
-                      </div>
-                    )}
+                    <div className="pointer-events-auto">
+                      <FlagInfoPanel
+                        loading={!raceStatus}
+                        currentFlag={raceStatus?.currentFlag ?? null}
+                        sessionType={raceStatus?.sessionType ?? 'RACE'}
+                        // 레이스용 props
+                        totalLaps={raceStatus?.totalLaps}
+                        currentLap={raceStatus?.currentLap}
+                        lapFlags={raceStatus?.lapFlags}
+                        // 퀄리파잉/연습용 props
+                        totalMinutes={raceStatus?.totalMinutes}
+                        currentMinute={raceStatus?.currentMinute}
+                        minuteFlags={raceStatus?.minuteFlags}
+                      />
+                    </div>
 
                     {/* 트랙 정보 토글 패널 */}
                     <div className="pointer-events-auto">

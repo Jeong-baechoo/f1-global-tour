@@ -77,31 +77,14 @@ export class DriverMarkerManager {
   }
 
   addMarkersToMap(startPositions: Map<number, [number, number]>): void {
-    console.log('🎯 [DriverMarkerManager] Adding markers to map:', {
-      totalMarkers: this.driverMarkers.size,
-      startPositionsCount: startPositions.size,
-      startPositions: Array.from(startPositions.entries())
-    });
-
     this.driverMarkers.forEach((marker, driverNumber) => {
       const startPosition = startPositions.get(driverNumber);
 
       if (startPosition && Array.isArray(startPosition) && startPosition.length === 2) {
-        console.log(`🟢 [DriverMarkerManager] Adding marker for driver ${driverNumber} at position:`, startPosition);
         marker.setLngLat([startPosition[0], startPosition[1]]);
         marker.addTo(this.map);
-
-        // DOM에 실제로 추가되었는지 확인
-        setTimeout(() => {
-          const addedElement = document.getElementById(`driver-marker-${driverNumber}`);
-          if (!addedElement && process.env.NODE_ENV === 'development') {
-            console.error(`🔴 [DriverMarkerManager] Failed to add marker to DOM for driver ${driverNumber}`);
-          } else if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [DriverMarkerManager] Successfully added marker to DOM for driver ${driverNumber}`);
-          }
-        }, 100);
       } else if (process.env.NODE_ENV === 'development') {
-        console.error(`🔴 [DriverMarkerManager] Invalid start position for driver ${driverNumber}:`, startPosition);
+        console.warn(`[DriverMarkerManager] Invalid start position for driver ${driverNumber}:`, startPosition);
       }
     });
   }

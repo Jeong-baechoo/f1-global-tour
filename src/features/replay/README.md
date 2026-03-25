@@ -18,9 +18,12 @@ F1 Global Tour의 실시간 레이스 리플레이 기능입니다. 백엔드 AP
 ### 핵심 기능
 - **세션 선택**: 연도/국가별 F1 레이스, 퀄리파잉, 연습 세션 선택
 - **드라이버 추적**: Mapbox GL 위 실시간 드라이버 마커 위치 추적
-- **재생 컨트롤**: 재생/일시정지/속도 조절(0.5x~5x)/시점 이동/랩 점프
+- **재생 컨트롤**: 재생/일시정지/정지/속도 조절(0.25x~4x)/시점 이동/랩 점프
+- **드라이버 선택**: 개별 드라이버 표시/숨김 토글 (전체 선택/해제)
 - **드라이버 타이밍 패널**: 백엔드 사전 계산 프레임 기반 순위/인터벌/랩타임/섹터/타이어 표시
+- **드라이버 텔레메트리 패널**: 선택 드라이버의 속도/기어/스로틀/브레이크/DRS 실시간 표시
 - **플래그 인포 패널**: 백엔드 `race-flags` API 기반 실시간 플래그 상태 표시 (RED/SC/VSC/GREEN)
+- **에러 알림**: 데이터 로드/세션/텔레메트리 등 에러 발생 시 토스트 알림 자동 표시
 - **DNF 처리**: 리타이어 드라이버 마커 자동 숨김 및 패널 DNF 표시
 - **레드플래그 대응**: 비정상 랩타임 필터링 및 타임라인 gap 압축
 
@@ -32,17 +35,24 @@ F1 Global Tour의 실시간 레이스 리플레이 기능입니다. 백엔드 AP
 
 ```
 src/features/replay/
+├── index.ts                 # 배럴 export (컴포넌트/스토어/서비스/훅/타입)
 ├── components/              # UI 컴포넌트
+│   ├── index.ts               # 컴포넌트 배럴 export
 │   ├── ReplayPanel.tsx         # 메인 패널 UI (탭 네비게이션)
+│   ├── ReplayControls.tsx      # 재생 컨트롤 (재생/정지/속도/랩 점프/타임라인)
 │   ├── ReplayProgressBar.tsx   # 재생 진행바 (시간/랩 표시)
 │   ├── SessionSelector.tsx     # 세션 선택 (연도/국가 필터)
+│   ├── DriverSelector.tsx      # 드라이버 표시/숨김 토글 (전체 선택/해제)
 │   ├── ExitReplayButton.tsx    # 리플레이 종료
 │   └── ui/
-│       ├── DriverTimingPanel/  # 드라이버 순위/타이밍 패널
-│       ├── DriverInfoPanel/    # 드라이버 상세 정보 (속도/기어/DRS)
-│       ├── FlagInfoPanel/     # 레이스 플래그 상태 패널 (RED/SC/VSC/GREEN)
+│       ├── index.ts              # UI 컴포넌트 배럴 export
+│       ├── DriverInfoPanel/      # 드라이버 정보 패널
+│       ├── DriverTelemetryPanel/ # 드라이버 텔레메트리 (속도/기어/스로틀/브레이크/DRS)
+│       ├── FlagInfoPanel/        # 레이스 플래그 상태 패널 (RED/SC/VSC/GREEN)
+│       ├── ErrorNotification/    # 에러/경고/안내 토스트 알림
 │       └── TrackInfoTogglePanel/ # 섹터/DRS존 토글
 ├── services/                # 비즈니스 로직
+│   ├── index.ts                    # 서비스 배럴 export
 │   ├── ReplayDataService.ts          # 백엔드 API 통신 + 랩 데이터 전처리
 │   ├── ReplayAnimationEngine.ts      # 메인 애니메이션 엔진 (RAF 루프)
 │   ├── BackendReplayApiService.ts    # 사전 계산 프레임 로드 (이진탐색)
@@ -51,11 +61,17 @@ src/features/replay/
 │   ├── DriverMarkerManager.ts        # 드라이버 마커 관리
 │   ├── TrackPositionService.ts       # 트랙 좌표 보간
 │   ├── PositionCalculator.ts         # 드라이버 위치/순위 계산
+│   ├── ReplayErrorHandler.ts         # 중앙 에러 처리 + 사용자 알림 시스템
+│   ├── DataCacheManager.ts           # API 응답 인메모리 캐시 (5분 TTL)
+│   ├── MockDataProvider.ts           # Mock 데이터 제공 (세션/드라이버/랩)
 │   ├── OpenF1MockDataService.ts      # Mock 데이터 서비스 (개발용)
+│   ├── RealtimeUpdateService.ts      # 4초 간격 실시간 업데이트
 │   └── ReplayTrackInfoManager.ts     # 섹터/DRS 표시 관리
 ├── store/                   # 상태 관리
-│   └── useReplayStore.ts      # Zustand 스토어 (상태 + 액션 + 셀렉터)
+│   ├── useReplayStore.ts      # Zustand 스토어 (상태 + 액션)
+│   └── replaySelectors.ts     # 메모이제이션 셀렉터 팩토리 (성능 최적화)
 ├── hooks/                   # 커스텀 훅
+│   ├── index.ts               # 훅 배럴 export
 │   └── useReplayEngine.ts     # 엔진-스토어 연결 훅
 ├── types/                   # TypeScript 타입
 │   ├── index.ts               # 주요 타입 정의
@@ -99,6 +115,34 @@ src/features/replay/
 - `getTimingsForDisplay(currentTime)`: 백엔드 프레임을 `DriverTiming[]`으로 변환
 - `getCurrentLapFromFrame(currentTime)`: 프레임의 currentLap 반환 (스토어 동기화용)
 - `getRaceStatus(currentTime)`: 백엔드 플래그 데이터 + 현재 프레임의 currentLap으로 `RaceStatus` 객체 생성 → `FlagInfoPanel`에 전달
+
+#### DataCacheManager
+API 응답을 인메모리에 캐싱하는 서비스입니다.
+
+**핵심 동작:**
+- 5분 TTL 기반 자동 만료
+- 제네릭 타입 안전 `get<T>()/set<T>()` 메서드
+- 메서드 + 파라미터 조합으로 캐시 키 생성
+- 캐시 통계 리포팅 및 만료 엔트리 자동 정리
+
+#### MockDataProvider
+개발/테스트용 Mock F1 데이터를 제공하는 싱글턴 서비스입니다.
+
+**핵심 동작:**
+- `getSessions()`, `getDrivers()`, `getLaps()`, `getFullRaceData()` 제공
+- 필터링 지원 (국가/연도/세션키)
+- 300~500ms 시뮬레이션 지연으로 실제 API 동작 모방
+
+#### ReplayErrorHandler
+리플레이 전체의 에러를 중앙 집중 처리하는 서비스입니다.
+
+**핵심 동작:**
+- 에러 타입별 정적 메서드: `DataFetchError`, `SessionLoadError`, `DriverDataError`, `TelemetryError`, `AnimationError` 등
+- 에러 히스토리 추적 (최대 50건)
+- 사용자 친화적 메시지 변환
+- 알림 콜백 구독 시스템 → `ErrorNotification` 컴포넌트와 연동
+- 네트워크/타임아웃 에러 자동 감지
+- 복구 가능 에러 판별
 
 ### 애니메이션 레이어
 
@@ -162,6 +206,18 @@ interface ReplayState {
 - `setLapsData(laps)`: 랩 데이터 설정 + `totalDuration` 자동 계산
 - `cleanup()`: 엔진 정리 이벤트(`replayEngineCleanup`) 발송 + 스토어 완전 초기화
 
+#### replaySelectors
+Zustand 셀렉터 팩토리로 성능 최적화된 메모이제이션 셀렉터를 제공합니다.
+
+**주요 셀렉터:**
+- `getPlaybackStatus`: 재생 상태 (isPlaying, currentTime, progress 등)
+- `getCurrentLapInfo`: 현재 랩 번호 및 진행률
+- `getSelectedDriversInfo`: 선택된 드라이버 목록/카운트
+- `getSessionStatus`: 세션 준비 상태 및 로딩 여부
+- `getDriverPositionStats`: 위치 통계 및 선두 드라이버
+- `getFormattedPlaybackInfo`: UI용 포맷팅된 시간/속도 문자열
+- 단일 속성용 "Only" 셀렉터 (불필요한 리렌더 방지)
+
 ## 📡 데이터 흐름
 
 ### 리플레이 시작 흐름
@@ -198,7 +254,7 @@ animate() [매 프레임, RAF]
   │   → ReplayProgressBar 업데이트
   └→ onDriverPositionsUpdate(positions) → store.updateDriverPositions()
 
-DriverTimingPanel [별도 렌더 사이클]
+DriverTelemetryPanel [별도 렌더 사이클]
   → driverTimingService.getTimingsForDisplay(currentTime)
     → backendReplayApiService.getFrameAtTime(currentTime)
       → 이진탐색으로 프레임 조회 (2초 윈도우)
@@ -233,12 +289,12 @@ Exit Replay
 
 ### 2. 재생 컨트롤
 - **재생/일시정지**: 하단 프로그레스바의 Play/Pause 버튼
-- **재생 속도**: 0.5x, 1x, 1.5x, 2x, 5x 선택
+- **재생 속도**: 0.25x, 0.5x, 1x, 1.5x, 2x, 4x 선택
 - **시점 이동**: 프로그레스바 드래그 또는 랩 점프 버튼
 
 ### 3. 타이밍 정보
 - 우측 패널: 순위, 인터벌, 랩타임, 섹터 퍼포먼스, 타이어 정보
-- 좌측 패널: 선택된 드라이버의 속도, 기어, DRS 상태
+- 좌측 패널: 선택된 드라이버의 텔레메트리 (속도, 기어, 스로틀, 브레이크, DRS)
 
 ### 4. 리플레이 종료
 좌상단 "Exit Replay" 버튼 → 엔진 정리 + 스토어 초기화 + 메인 지도 복귀
@@ -386,10 +442,15 @@ interface RaceStatus {
 1. **백엔드 연동**: NestJS 백엔드를 통한 OpenF1 데이터 프록시 및 사전 계산
 2. **애니메이션 엔진**: RAF 기반 60fps 드라이버 위치 애니메이션
 3. **타이밍 패널**: 백엔드 프레임 기반 실시간 순위/인터벌/랩타임/섹터/타이어
-4. **플래그 인포 패널**: 백엔드 `race-flags` API 기반 랩별 플래그 상태 표시 (RED/SC/VSC/GREEN)
-5. **레드플래그 대응**: 비정상 랩 필터링 + 타임라인 gap 압축
-6. **DNF 처리**: 마커 자동 숨김 + 패널 DNF 표시 + 순위 맨 뒤 정렬
-7. **세션 전환**: 콜백 재등록 + 스토어 동기화로 안정적 세션 전환
+4. **드라이버 텔레메트리 패널**: 속도/기어/스로틀/브레이크/DRS 실시간 표시
+5. **플래그 인포 패널**: 백엔드 `race-flags` API 기반 랩별 플래그 상태 표시 (RED/SC/VSC/GREEN)
+6. **레드플래그 대응**: 비정상 랩 필터링 + 타임라인 gap 압축
+7. **DNF 처리**: 마커 자동 숨김 + 패널 DNF 표시 + 순위 맨 뒤 정렬
+8. **세션 전환**: 콜백 재등록 + 스토어 동기화로 안정적 세션 전환
+9. **드라이버 선택**: 개별 드라이버 표시/숨김 토글 (전체 선택/해제)
+10. **에러 처리 시스템**: 중앙 에러 핸들러 + 토스트 알림 UI
+11. **데이터 캐싱**: 인메모리 캐시 (5분 TTL)로 API 응답 최적화
+12. **셀렉터 최적화**: 메모이제이션 셀렉터 팩토리로 불필요한 리렌더 방지
 
 ### 알려진 제한사항
 1. **데이터 누락**: 일부 드라이버의 특정 랩 `lap_duration`이 null인 경우 해당 구간 위치 추정 불가
@@ -398,4 +459,4 @@ interface RaceStatus {
 
 ---
 
-**마지막 업데이트**: 2026년 3월 22일
+**마지막 업데이트**: 2026년 3월 24일

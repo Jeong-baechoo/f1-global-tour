@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { X } from 'lucide-react';
 import { SessionSelector } from './SessionSelector';
-import { useReplayStore } from '@/src/features/replay';
-import { useReplayEngine } from '@/src/features/replay';
+import { useReplayStore, useReplayEngine } from '@/src/features/replay';
 import ReplayErrorHandler from '../services/ReplayErrorHandler';
 import { cn } from '@/lib/utils';
 
@@ -16,33 +15,18 @@ interface ReplayPanelProps {
 }
 
 export const ReplayPanel: React.FC<ReplayPanelProps> = ({
-  isOpen, 
+  isOpen,
   onCloseAction,
   className,
   setIsReplayMode
 }) => {
   const currentSession = useReplayStore(state => state.currentSession);
-  
-  // ReplayEngine 훅 사용
+
   useReplayEngine();
-
-  // 세션 상태에 따른 탭 전환
-  useEffect(() => {
-    // Session handling logic
-    if (currentSession) {
-      // Session is selected
-    }
-  }, [currentSession]);
-
-  const handleSessionSelect = useCallback(() => {
-    // useEffect에서 자동으로 탭 전환되므로 여기서는 추가 로직 없음
-  }, []);
 
   const handleStartReplay = useCallback(() => {
     try {
-      if (setIsReplayMode) {
-        setIsReplayMode(true);
-      }
+      setIsReplayMode?.(true);
       onCloseAction();
     } catch (error) {
       ReplayErrorHandler.handleUserInteractionError(
@@ -54,7 +38,6 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
       );
     }
   }, [onCloseAction, setIsReplayMode, currentSession]);
-
 
   if (!isOpen) return null;
 
@@ -91,7 +74,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
 
         <div className="flex-1 overflow-auto min-h-0">
           <div className="p-3 sm:p-4">
-            <SessionSelector onSessionSelectAction={handleSessionSelect} />
+            <SessionSelector />
           </div>
         </div>
 
@@ -105,7 +88,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
                 'Select a session to start replay'
               )}
             </div>
-            
+
             <div className="flex space-x-2 justify-center sm:justify-end">
               <button
                 onClick={onCloseAction}
@@ -113,7 +96,7 @@ export const ReplayPanel: React.FC<ReplayPanelProps> = ({
               >
                 Close
               </button>
-              
+
               {currentSession && (
                 <button
                   onClick={handleStartReplay}

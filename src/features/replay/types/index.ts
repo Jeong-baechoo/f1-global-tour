@@ -1,52 +1,10 @@
-// OpenF1 API 응답 타입
-export interface OpenF1Session {
-  circuit_key: number;
-  circuit_short_name: string;
-  country_code: string;
-  country_key: number;
-  country_name: string;
-  date_end: string;
-  date_start: string;
-  gmt_offset: string;
-  location: string;
-  meeting_key: number;
-  session_key: number;
-  session_name: string;
-  session_type: string;
-  year: number;
-}
+// OpenF1 API 타입은 openF1Types.ts에서 관리
+export type { OpenF1Session, OpenF1Driver, OpenF1Lap } from './openF1Types';
 
-export interface OpenF1Driver {
-  broadcast_name: string;
-  country_code: string;
-  driver_number: number;
-  first_name: string;
-  full_name: string;
-  headshot_url: string;
-  last_name: string;
-  name_acronym: string;
-  session_key: number;
-  team_colour: string;
-  team_name: string;
-}
-
-export interface OpenF1Lap {
-  date_start: string;
-  driver_number: number;
-  duration_sector_1: number | null;
-  duration_sector_2: number | null;
-  duration_sector_3: number | null;
-  i1_speed: number | null;
-  i2_speed: number | null;
-  is_pit_out_lap: boolean;
-  lap_duration: number | null;
-  lap_number: number;
-  segments_sector_1: number[];
-  segments_sector_2: number[];
-  segments_sector_3: number[];
-  session_key: number;
-  st_speed: number | null;
-}
+// 플래그/세션 타입 (UI 컴포넌트와 공유)
+export type FlagStatus = 'GREEN' | 'RED' | 'SC' | 'VSC' | 'YELLOW';
+export type LapFlagStatus = 'NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW';
+export type SessionType = 'RACE' | 'QUALIFYING' | 'PRACTICE';
 
 // 내부 데이터 구조
 export interface ReplayLapData {
@@ -81,27 +39,16 @@ export interface ReplaySessionData {
 
 // 리플레이 상태
 export interface ReplayState {
-  // 현재 세션 정보
   currentSession: ReplaySessionData | null;
-  
-  // 드라이버 정보
   drivers: ReplayDriverData[];
-  
-  // 랩 데이터
   lapsData: ReplayLapData[];
-  
-  // 재생 상태
   isPlaying: boolean;
   isPaused: boolean;
-  currentTime: number; // 현재 재생 시간 (초)
-  totalDuration: number; // 전체 레이스 시간 (초)
-  playbackSpeed: number; // 재생 속도 (0.5x ~ 10x)
-  
-  // 트랙 정보
+  currentTime: number;
+  totalDuration: number;
+  playbackSpeed: number;
   currentLap: number;
-  selectedDrivers: number[]; // 추적할 드라이버 번호 배열
-  
-  // UI 상태
+  selectedDrivers: number[];
   showControls: boolean;
   showDriverInfo: boolean;
 }
@@ -116,33 +63,6 @@ export interface DriverPosition {
   lapProgress: number; // 0-1
   lapTime: number | null;
   position: number; // 현재 순위
-}
-
-// 리플레이 프레임 데이터
-export interface ReplayFrame {
-  timestamp: number; // 레이스 시작부터 경과 시간 (초)
-  drivers: DriverPosition[];
-}
-
-// 재생 제어 인터페이스
-export interface PlaybackControls {
-  play: () => void;
-  pause: () => void;
-  stop: () => void;
-  setSpeed: (speed: number) => void;
-  seekTo: (time: number) => void;
-  jumpToLap: (lap: number) => void;
-  getCurrentTime: () => number;
-  isPlaying: () => boolean;
-  getSpeed: () => number;
-}
-
-// 성능 메트릭스 (디버깅용)
-export interface PerformanceMetrics {
-  frameRate: number;
-  animationDuration: number;
-  positionUpdateCount: number;
-  memoryUsage?: number;
 }
 
 // 트랙 진행률 계산 관련
@@ -160,20 +80,12 @@ export interface CircuitCoordinates {
   totalDistance: number; // 총 트랙 길이 (미터)
 }
 
-// 애니메이션 관련
-export interface AnimationConfig {
-  duration: number; // 애니메이션 지속 시간 (ms)
-  easing: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
-  smoothing: boolean; // 부드러운 보간 활성화
-}
-
 // 에러 타입
 export interface ReplayError {
   code: string;
   message: string;
   details?: unknown;
 }
-
 
 // API 응답 타입
 export interface ApiResponse<T> {
@@ -195,57 +107,16 @@ export interface ReplaySettings {
   enableSmoothAnimation: boolean;
 }
 
-// 리플레이 엔진 상태
-export interface ReplayEngineState {
-  isInitialized: boolean;
-  isLoading: boolean;
-  hasData: boolean;
-  error: string | null;
-}
-
-// 드라이버 마커 설정
-export interface DriverMarkerConfig {
-  size: number;
-  borderWidth: number;
-  fontSize: number;
-  showNumber: boolean;
-  showName: boolean;
-}
-
-// 서킷 트랙 설정
-export interface CircuitTrackConfig {
-  color: string;
-  width: number;
-  opacity: number;
-  visible: boolean;
-}
-
-// 위치 계산 옵션
-export interface PositionCalculationOptions {
-  useInterpolation: boolean;
-  smoothingFactor: number;
-  accuracyThreshold: number;
-}
-
 // 레이스 상태 정보 (플래그 포함)
 export interface RaceStatus {
-  sessionType: 'RACE' | 'QUALIFYING' | 'PRACTICE';
-  currentFlag: 'GREEN' | 'RED' | 'SC' | 'VSC' | 'YELLOW';
-  // 레이스용 프로퍼티
+  sessionType: SessionType;
+  currentFlag: FlagStatus;
+  // 레이스용
   currentLap: number;
   totalLaps: number;
-  lapFlags: ('NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW')[];
-  // 퀄리파잉/연습용 프로퍼티
+  lapFlags: LapFlagStatus[];
+  // 퀄리파잉/연습용
   currentMinute: number;
   totalMinutes: number;
-  minuteFlags: ('NONE' | 'RED' | 'SC' | 'VSC' | 'YELLOW')[];
-}
-
-// 드라이버 상태 (은퇴 포함)
-export interface DriverStatus {
-  driverNumber: number;
-  isActive: boolean;
-  status: 'RACING' | 'RETIRED' | 'DNF' | 'DSQ';
-  retirementReason?: string;
-  retirementLap?: number;
+  minuteFlags: LapFlagStatus[];
 }

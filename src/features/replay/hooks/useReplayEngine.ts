@@ -21,20 +21,20 @@ interface UseReplayEngineReturn {
 export const useReplayEngine = (): UseReplayEngineReturn => {
   const map = useMapStore(state => state.map);
   const engineRef = useRef<ReplayAnimationEngine | null>(null);
-  
+
   const {
     currentSession,
     isPlaying,
     playbackSpeed,
-    selectedDrivers
   } = useReplayStore();
-  
+
   const {
     setCurrentTime,
     updateDriverPositions,
     setTotalDuration,
     setLapsData
   } = useReplayActions();
+
 
   // 애니메이션 엔진 초기화
   useEffect(() => {
@@ -43,31 +43,21 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     if (!engineRef.current) {
       engineRef.current = new ReplayAnimationEngine(map);
     }
-    
-    // 엔진 콜백 설정
-    if (engineRef.current) {
-      engineRef.current.setOnTimeUpdate(setCurrentTime);
-      engineRef.current.setOnDriverPositionsUpdate(updateDriverPositions);
-    }
 
-    // 전역 cleanup 이벤트 리스너 추가
+    // 엔진 콜백 설정
+    engineRef.current.setOnTimeUpdate(setCurrentTime);
+    engineRef.current.setOnDriverPositionsUpdate(updateDriverPositions);
+
+    // 전역 cleanup 이벤트 리스너
     const handleCleanup = () => {
-      if (engineRef.current) {
-        // 엔진 데이터만 정리하고 인스턴스는 유지 (재사용 가능)
-        engineRef.current.cleanup();
-        // destroy()와 null 설정은 하지 않음 - 엔진을 재사용할 수 있도록 유지
-      }
+      engineRef.current?.cleanup();
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('replayEngineCleanup', handleCleanup);
-    }
+    window.addEventListener('replayEngineCleanup', handleCleanup);
 
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('replayEngineCleanup', handleCleanup);
-      }
-      
+      window.removeEventListener('replayEngineCleanup', handleCleanup);
+
       if (engineRef.current) {
         engineRef.current.destroy();
         engineRef.current = null;
@@ -75,11 +65,9 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     };
   }, [map, setCurrentTime, updateDriverPositions]);
 
-  // 세션 로드 (중복 로드 방지)
+  // 세션 로드
   const loadSession = useCallback(async (session: ReplaySessionData): Promise<boolean> => {
     if (!engineRef.current || !map) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return false;
     }
 
@@ -92,12 +80,10 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
         engineRef.current.setOnDriverPositionsUpdate(updateDriverPositions);
 
         // 엔진에서 실제 랩 데이터와 총 시간을 가져와 store에 동기화
-        const laps = engineRef.current.getLapsData();
-        const totalDuration = engineRef.current.getTotalDuration();
-        setLapsData(laps);
-        setTotalDuration(totalDuration);
+        setLapsData(engineRef.current.getLapsData());
+        setTotalDuration(engineRef.current.getTotalDuration());
       }
-      
+
       return success;
     } catch {
       return false;
@@ -105,41 +91,16 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
   }, [setTotalDuration, setLapsData, setCurrentTime, updateDriverPositions, map]);
 
   // 재생 제어 메서드들
-  const play = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.play();
-    }
-  }, []);
-
-  const pause = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.pause();
-    }
-  }, []);
-
-  const stop = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.stop();
-    }
-  }, []);
-
-  const setSpeed = useCallback((speed: number) => {
-    if (engineRef.current) {
-      engineRef.current.setPlaybackSpeed(speed);
-    }
-  }, []);
-
-  const seekTo = useCallback((time: number) => {
-    if (engineRef.current) {
-      engineRef.current.seekTo(time);
-    }
-  }, []);
+  const play = useCallback(() => { engineRef.current?.play(); }, []);
+  const pause = useCallback(() => { engineRef.current?.pause(); }, []);
+  const stop = useCallback(() => { engineRef.current?.stop(); }, []);
+  const setSpeed = useCallback((speed: number) => { engineRef.current?.setPlaybackSpeed(speed); }, []);
+  const seekTo = useCallback((time: number) => { engineRef.current?.seekTo(time); }, []);
+  const cleanup = useCallback(() => { engineRef.current?.cleanup(); }, []);
 
   // 재생 상태 동기화
   useEffect(() => {
-    if (!engineRef.current) {
-      return;
-    }
+    if (!engineRef.current) return;
 
     if (isPlaying && !engineRef.current.isCurrentlyPlaying()) {
       engineRef.current.play();
@@ -155,28 +116,12 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     }
   }, [playbackSpeed]);
 
-  // 선택된 드라이버 마커 표시/숨기기
-  useEffect(() => {
-    if (!engineRef.current) return;
-
-    if (selectedDrivers.length === 0) {
-      return;
-    }
-    // TODO: 개별 마커 표시/숨기기 구현
-  }, [selectedDrivers]);
-
   // 현재 세션이 변경되면 로드 (엔진이 준비된 후에만)
   useEffect(() => {
     if (currentSession && engineRef.current && map) {
       loadSession(currentSession);
     }
   }, [currentSession, loadSession, map]);
-
-  const cleanup = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.cleanup();
-    }
-  }, []);
 
   return {
     loadSession,

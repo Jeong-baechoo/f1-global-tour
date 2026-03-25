@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { Play, Pause, Square, SkipBack, SkipForward } from 'lucide-react';
-import { 
+import {
   useReplayIsPlaying,
   useReplayCurrentTime,
   useReplayTotalDuration,
   useReplayPlaybackSpeed,
   useReplayCurrentLap,
-  useReplayActions 
+  useReplayActions
 } from '@/src/features/replay';
 import { cn } from '@/lib/utils';
+import { formatReplayTime, PLAYBACK_SPEED_OPTIONS } from '../utils/format';
 
 interface ReplayControlsProps {
   className?: string;
@@ -22,31 +23,19 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
   const totalDuration = useReplayTotalDuration();
   const playbackSpeed = useReplayPlaybackSpeed();
   const currentLap = useReplayCurrentLap();
-  
-  const { 
-    play, 
-    pause, 
-    stop, 
-    setPlaybackSpeed, 
+
+  const {
+    play,
+    pause,
+    stop,
+    setPlaybackSpeed,
     seekTo,
-    jumpToLap 
+    jumpToLap
   } = useReplayActions();
 
   const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
-      pause();
-    } else {
-      play();
-    }
+    if (isPlaying) { pause(); } else { play(); }
   }, [isPlaying, play, pause]);
-
-  const handleStop = useCallback(() => {
-    stop();
-  }, [stop]);
-
-  const handleSpeedChange = useCallback((newSpeed: number) => {
-    setPlaybackSpeed(newSpeed);
-  }, [setPlaybackSpeed]);
 
   const handleTimelineChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(event.target.value);
@@ -63,14 +52,6 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
     jumpToLap(currentLap + 1);
   }, [currentLap, jumpToLap]);
 
-  const formatTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }, []);
-
-  const speedOptions = useMemo(() => [0.25, 0.5, 1, 1.5, 2, 4], []);
-
   return (
     <div className={cn(
       "bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white",
@@ -81,9 +62,9 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
       <div className="mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
           <span>Lap {currentLap}</span>
-          <span>{formatTime(currentTime)} / {formatTime(totalDuration)}</span>
+          <span>{formatReplayTime(currentTime)} / {formatReplayTime(totalDuration)}</span>
         </div>
-        
+
         <input
           type="range"
           min={0}
@@ -111,7 +92,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
           >
             <SkipBack className="w-4 h-4" />
           </button>
-          
+
           <button
             onClick={handleNextLap}
             className="p-2 hover:bg-white/10 rounded-full transition-colors"
@@ -132,9 +113,9 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
               <Play className="w-6 h-6" />
             )}
           </button>
-          
+
           <button
-            onClick={handleStop}
+            onClick={stop}
             className="p-3 hover:bg-white/10 rounded-full transition-colors"
           >
             <Square className="w-6 h-6" />
@@ -146,11 +127,11 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({ className }) => 
           <span className="text-sm">Speed:</span>
           <select
             value={playbackSpeed}
-            onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+            onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
             className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm
                        focus:outline-none focus:ring-2 focus:ring-red-600"
           >
-            {speedOptions.map(speed => (
+            {PLAYBACK_SPEED_OPTIONS.map(speed => (
               <option key={speed} value={speed}>
                 {speed}x
               </option>

@@ -1,30 +1,33 @@
 // OpenF1 API 데이터 타입 정의
+
+export type SectorPerformance = 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+
 export interface OpenF1Interval {
-  date: string; // ISO 8601 UTC format
+  date: string;
   driver_number: number;
-  gap_to_leader: number | null; // seconds, null for leader
-  interval: number | null; // seconds to car ahead, null for leader
+  gap_to_leader: number | null;
+  interval: number | null;
   meeting_key: number;
   session_key: number;
 }
 
 export interface OpenF1Lap {
-  date_start: string; // ISO 8601 UTC format
+  date_start: string;
   driver_number: number;
-  duration_sector_1: number | null; // seconds
-  duration_sector_2: number | null; // seconds
-  duration_sector_3: number | null; // seconds
-  i1_speed: number | null; // km/h
-  i2_speed: number | null; // km/h
+  duration_sector_1: number | null;
+  duration_sector_2: number | null;
+  duration_sector_3: number | null;
+  i1_speed: number | null;
+  i2_speed: number | null;
   is_pit_out_lap: boolean;
-  lap_duration: number | null; // total lap time in seconds
+  lap_duration: number | null;
   lap_number: number;
   meeting_key: number;
-  segments_sector_1: number[]; // mini-sector performance indicators
+  segments_sector_1: number[];
   segments_sector_2: number[];
   segments_sector_3: number[];
   session_key: number;
-  st_speed: number | null; // speed trap km/h
+  st_speed: number | null;
 }
 
 export interface OpenF1Driver {
@@ -74,13 +77,13 @@ export interface RealtimeDriverData {
     sector3: number | null;
   };
   sector_performance: {
-    sector1: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
-    sector2: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
-    sector3: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
+    sector1: SectorPerformance;
+    sector2: SectorPerformance;
+    sector3: SectorPerformance;
   };
   tire_info: {
     compound: 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET';
-    age: number; // laps on current tires
+    age: number;
     pit_stops: number;
   };
   speeds: {
@@ -89,10 +92,10 @@ export interface RealtimeDriverData {
     st_speed: number | null;
   };
   telemetry: {
-    speed: number; // km/h
-    gear: number; // 1-8, 0 for neutral, -1 for reverse  
-    throttle: number; // 0-100%
-    brake: number; // 0-100%
+    speed: number;
+    gear: number;
+    throttle: number;
+    brake: number;
     drs_enabled: boolean;
     drs_available: boolean;
   };

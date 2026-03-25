@@ -6,7 +6,6 @@ import { DriverTimingService } from '../services/DriverTimingService';
  */
 export class ReplayServiceSwitcher {
   private static instance: ReplayServiceSwitcher;
-  private driverTimingService: DriverTimingService;
 
   static getInstance(): ReplayServiceSwitcher {
     if (!ReplayServiceSwitcher.instance) {
@@ -15,15 +14,17 @@ export class ReplayServiceSwitcher {
     return ReplayServiceSwitcher.instance;
   }
 
-  constructor() {
-    this.driverTimingService = DriverTimingService.getInstance();
+  private constructor() {}
+
+  private get service() {
+    return DriverTimingService.getInstance();
   }
 
   /**
    * 현재 서비스 상태 출력
    */
   status(): void {
-    const status = this.driverTimingService.getServiceStatus();
+    const status = this.service.getServiceStatus();
     console.table(status);
     console.log('📊 Service Status:', status);
   }
@@ -34,9 +35,9 @@ export class ReplayServiceSwitcher {
   async useBackend(): Promise<void> {
     console.log('🔄 Switching to backend service...');
     
-    const success = await this.driverTimingService.tryBackendService();
+    const success = await this.service.tryBackendService();
     if (success) {
-      this.driverTimingService.switchToService('backend');
+      this.service.switchToService('backend');
       console.log('✅ Successfully switched to backend service');
     } else {
       console.log('❌ Failed to switch to backend service');
@@ -50,7 +51,7 @@ export class ReplayServiceSwitcher {
    */
   useMock(): void {
     console.log('🔄 Switching to mock service...');
-    this.driverTimingService.switchToService('mock');
+    this.service.switchToService('mock');
     console.log('✅ Switched to mock service');
     this.status();
   }
@@ -59,7 +60,7 @@ export class ReplayServiceSwitcher {
    * 백엔드 API 헬스 체크
    */
   async healthCheck(): Promise<void> {
-    const isAvailable = this.driverTimingService.isBackendAvailable();
+    const isAvailable = this.service.isBackendAvailable();
     console.log(`🏥 Backend API Health: ${isAvailable ? '🟢 Healthy' : '🔴 Unavailable'}`);
     
     if (!isAvailable) {
@@ -73,7 +74,7 @@ export class ReplayServiceSwitcher {
   testTimings(): void {
     console.log('🧪 Testing driver timings (currentTime=0)...');
     try {
-      const timings = this.driverTimingService.getTimingsForDisplay(0);
+      const timings = this.service.getTimingsForDisplay(0);
       console.log('✅ Driver timings:', timings);
       console.table(timings.slice(0, 5));
     } catch (error) {
@@ -88,7 +89,7 @@ export class ReplayServiceSwitcher {
     console.log(`🎬 Starting replay session: ${sessionKey}`);
     
     try {
-      await this.driverTimingService.startReplaySession(sessionKey);
+      await this.service.startReplaySession(sessionKey);
       console.log('✅ Replay session started successfully');
     } catch (error) {
       console.error('❌ Failed to start replay session:', error);
@@ -139,5 +140,3 @@ Quick Start:
 - replaySwitcher.useMock()        # Switch to mock
 `);
 }
-
-export const createReplaySwitcher = () => ReplayServiceSwitcher.getInstance();

@@ -1,34 +1,26 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { DriverInfoPanelProps } from './types';
+import { DriverInfoPanelProps, SectorPerformance } from './types';
 import { cn } from '@/lib/utils';
 import { useReplayStore } from '@/src/features/replay';
 import { DriverTimingService } from '@/src/features/replay';
+import { glassPanelStyle } from '../styles';
 import ReplayErrorHandler from '../../../services/ReplayErrorHandler';
 
-const getSectorColor = (performance: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none') => {
-  switch (performance) {
-    case 'fastest': return 'bg-purple-500';
-    case 'personal_best': return 'bg-green-500';
-    case 'normal': return 'bg-yellow-500';
-    case 'slow': return 'bg-gray-600';
-    case 'none': return 'bg-gray-300';
-    default: return 'bg-gray-300';
-  }
+const SECTOR_COLORS: Record<SectorPerformance, string> = {
+  fastest: 'bg-purple-500',
+  personal_best: 'bg-green-500',
+  normal: 'bg-yellow-500',
+  slow: 'bg-gray-600',
+  none: 'bg-gray-300',
 };
 
-interface SectorData {
-  sector1: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
-  sector2: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
-  sector3: 'fastest' | 'personal_best' | 'normal' | 'slow' | 'none';
-}
-
-const SectorDisplay: React.FC<{ sector: SectorData }> = ({ sector }) => (
+const SectorDisplay: React.FC<{ sector: { sector1: SectorPerformance; sector2: SectorPerformance; sector3: SectorPerformance } }> = ({ sector }) => (
   <div className="flex items-center gap-1">
-    <div className={cn("w-4 h-3 rounded-sm", getSectorColor(sector.sector1))} />
-    <div className={cn("w-4 h-3 rounded-sm", getSectorColor(sector.sector2))} />
-    <div className={cn("w-4 h-3 rounded-sm", getSectorColor(sector.sector3))} />
+    <div className={cn("w-4 h-3 rounded-sm", SECTOR_COLORS[sector.sector1])} />
+    <div className={cn("w-4 h-3 rounded-sm", SECTOR_COLORS[sector.sector2])} />
+    <div className={cn("w-4 h-3 rounded-sm", SECTOR_COLORS[sector.sector3])} />
   </div>
 );
 
@@ -100,23 +92,19 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
     }
   }, [isReplayMode, currentSession, currentLap, currentTime, setCurrentLap]);
 
-  const asyncUpdateWrapper = useCallback(() => {
-    updateDriverData();
-  }, [updateDriverData]);
-
   // 랩 변경 시 즉시 갱신 (lapTime/sector 경계 업데이트)
   useEffect(() => {
     if (isReplayMode && currentSession) {
-      asyncUpdateWrapper();
+      updateDriverData();
     }
-  }, [isReplayMode, currentSession?.sessionKey, currentLap, asyncUpdateWrapper]);
+  }, [isReplayMode, currentSession?.sessionKey, currentLap, updateDriverData]);
 
   // 2초마다 position/interval 갱신 (백엔드 프레임 단위와 일치)
   useEffect(() => {
     if (!isReplayMode || !currentSession) return;
-    const interval = setInterval(() => asyncUpdateWrapper(), 2000);
+    const interval = setInterval(updateDriverData, 2000);
     return () => clearInterval(interval);
-  }, [isReplayMode, currentSession?.sessionKey, asyncUpdateWrapper]);
+  }, [isReplayMode, currentSession?.sessionKey, updateDriverData]);
 
   // 세션이 변경될 때 초기 빈값 드라이버 데이터 로드
   useEffect(() => {
@@ -141,14 +129,7 @@ export const DriverInfoPanel: React.FC<DriverInfoPanelProps> = ({
     }}
     >
       <div className="relative rounded-3xl shadow-2xl p-1.5 transition-shadow duration-300 h-full flex flex-col"
-           style={{
-             backgroundColor: 'rgba(18, 18, 20, 0.65)',
-             backdropFilter: 'blur(20px) saturate(180%)',
-             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-             border: '1px solid rgba(255, 255, 255, 0.08)',
-             boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05)',
-             filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.3)) drop-shadow(0 15px 30px rgba(0,0,0,0.2))'
-           }}>
+           style={glassPanelStyle}>
       {/* Header */}
       <div className="px-6 py-4 border-b border-white/10 rounded-t-2xl">
         <div className="grid grid-cols-12 gap-6 text-xs text-gray-400 font-medium uppercase tracking-wider">
