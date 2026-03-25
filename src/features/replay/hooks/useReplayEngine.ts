@@ -14,8 +14,8 @@ interface UseReplayEngineReturn {
   setSpeed: (speed: number) => void;
   seekTo: (time: number) => void;
   cleanup: () => void;
-  isEngineReady: boolean;
-  engine: ReplayAnimationEngine | null;
+  getIsEngineReady: () => boolean;
+  getEngine: () => ReplayAnimationEngine | null;
 }
 
 export const useReplayEngine = (): UseReplayEngineReturn => {
@@ -131,7 +131,7 @@ export const useReplayEngine = (): UseReplayEngineReturn => {
     setSpeed,
     seekTo,
     cleanup,
-    isEngineReady: !!engineRef.current,
-    engine: engineRef.current
+    getIsEngineReady: () => !!engineRef.current,
+    getEngine: () => engineRef.current
   };
 };

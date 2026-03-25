@@ -256,15 +256,25 @@ export default function Home() {
 
 
   // 모멘텀 애니메이션
-  const momentumScroll = useCallback(() => {
-    if (!scrollRef.current) return;
+  const velocityRef = useRef(velocity);
+  const momentumScrollRef = useRef<() => void>(undefined);
 
-    if (Math.abs(velocity) > 0.1) {
-      scrollRef.current.scrollLeft += velocity;
-      setVelocity(velocity * 0.92); // 더 빠른 감속
-      animationRef.current = requestAnimationFrame(momentumScroll);
-    }
+  useEffect(() => {
+    velocityRef.current = velocity;
+    momentumScrollRef.current = () => {
+      if (!scrollRef.current) return;
+
+      if (Math.abs(velocityRef.current) > 0.1) {
+        scrollRef.current.scrollLeft += velocityRef.current;
+        setVelocity(velocityRef.current * 0.92); // 더 빠른 감속
+        animationRef.current = requestAnimationFrame(() => momentumScrollRef.current?.());
+      }
+    };
   }, [velocity]);
+
+  const momentumScroll = useCallback(() => {
+    momentumScrollRef.current?.();
+  }, []);
 
   // 드래그 스크롤 핸들러
   const handleMouseDown = useCallback((e: React.MouseEvent) => {

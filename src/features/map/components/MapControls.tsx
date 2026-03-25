@@ -51,13 +51,10 @@ export const MapControls: React.FC<MapControlsProps> = ({
   resetPanelStates,
   isReplayMode = false,
   setIsReplayMode,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDriverSelect: _,
   selectedDriverForTelemetry,
   // Accept but don't use these props to maintain compatibility
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map: __,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isCircuitView: ___
 }) => {
   const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);

@@ -357,6 +357,6 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     removeCircuitMarker,
     removeAllCircuitMarkers,
     updateCircuitMarker,
-    markers: markersRef.current,
+    getMarkers: () => markersRef.current,
   };
 };

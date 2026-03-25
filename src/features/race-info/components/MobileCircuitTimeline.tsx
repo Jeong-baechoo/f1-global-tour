@@ -77,7 +77,6 @@ export const MobileCircuitTimeline: React.FC<MobileCircuitTimelineProps> = ({
     });
 
     return nextRace || circuitsWithDates[0] || null;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [circuits]);
 
   // 모바일 체크 및 초기 다음 레이스 선택

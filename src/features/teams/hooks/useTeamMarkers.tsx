@@ -317,6 +317,6 @@ export const useTeamMarkers = (map: mapboxgl.Map | null) => {
     removeAllTeamMarkers,
     updateTeamMarker,
     flyToTeam,
-    markers: markersRef.current,
+    getMarkers: () => markersRef.current,
   };
 };
