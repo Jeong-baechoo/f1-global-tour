@@ -8,6 +8,17 @@ import { ReplaySessionData } from '../types';
 import { OpenF1MockDataService } from '@/src/features/replay/services/OpenF1MockDataService';
 import ReplayErrorHandler from '../services/ReplayErrorHandler';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const TEXT = {
+  title: { en: 'Select Session', ko: '세션 선택' },
+  raceOnly: { en: 'Now support Race Replay only', ko: '현재 레이스 리플레이만 지원' },
+  year: { en: 'Year', ko: '연도' },
+  country: { en: 'Country', ko: '국가' },
+  allCountries: { en: 'All Countries', ko: '전체 국가' },
+  loading: { en: 'Loading sessions...', ko: '세션 불러오는 중...' },
+  noSessions: { en: 'No sessions found', ko: '세션을 찾을 수 없습니다' },
+} as const;
 
 interface SessionSelectorProps {
   className?: string;
@@ -26,6 +37,8 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const { setCurrentSession, setDrivers } = useReplayActions();
+  const { language } = useLanguage();
+  const t = (key: keyof typeof TEXT) => TEXT[key][language];
 
   const availableYears = [2025, 2024, 2023];
 
@@ -135,14 +148,17 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
       {/* 헤더 */}
       <div className="flex items-center mb-4">
         <Calendar className="w-5 h-5 mr-2" />
-        <h3 className="text-lg font-semibold">Select Session</h3>
+        <h3 className="text-lg font-semibold">{t('title')}</h3>
+        <span className="ml-2 text-xs text-yellow-500/80 bg-yellow-500/10 px-2 py-0.5 rounded-full">
+          {t('raceOnly')}
+        </span>
       </div>
 
       {/* 필터 컨트롤 */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {/* 연도 선택 */}
         <div className="relative">
-          <label className="block text-sm text-gray-400 mb-1">Year</label>
+          <label className="block text-sm text-gray-400 mb-1">{t('year')}</label>
           <div className="relative">
             <select
               value={selectedYear}
@@ -163,7 +179,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
 
         {/* 국가 선택 */}
         <div className="relative">
-          <label className="block text-sm text-gray-400 mb-1">Country</label>
+          <label className="block text-sm text-gray-400 mb-1">{t('country')}</label>
           <div className="relative">
             <select
               value={selectedCountry}
@@ -173,7 +189,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
                          appearance-none cursor-pointer"
               disabled={isLoading}
             >
-              <option value="">All Countries</option>
+              <option value="">{t('allCountries')}</option>
               {availableCountries.map(country => (
                 <option key={country} value={country}>
                   {country}
@@ -189,7 +205,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {isLoading ? (
           <div className="text-center py-4 text-gray-400">
-            Loading sessions...
+            {t('loading')}
           </div>
         ) : error ? (
           <div className="text-center py-4 text-red-400">
@@ -197,7 +213,7 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
           </div>
         ) : filteredSessions.length === 0 ? (
           <div className="text-center py-4 text-gray-400">
-            No sessions found
+            {t('noSessions')}
           </div>
         ) : (
           filteredSessions.map(session => (
