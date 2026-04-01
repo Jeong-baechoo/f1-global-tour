@@ -382,7 +382,7 @@ class F1ApiService {
         'haas': 'haas',
         'racing-bulls': 'rb',  // 수정: racing-bulls -> rb
         'williams': 'williams',
-        'sauber': 'sauber'
+        'audi': 'sauber'
       };
 
       const apiTeamId = teamIdMapping[teamId];

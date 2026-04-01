@@ -17,15 +17,15 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
         image: "/drivers/max-verstappen.jpg"
       },
       {
-        name: "Yuki Tsunoda",
-        number: 22,
-        nationality: "Japanese",
-        image: "/drivers/yuki-tsunoda.jpg"
+        name: "Isack Hadjar",
+        number: 6,
+        nationality: "French",
+        image: "/drivers/isack-hadjar.jpg"
       }
     ],
     car2025: {
-      name: "RB21",
-      image: "/cars/rb21.jpg"
+      name: "RB22",
+      image: "/cars/RB22.png"
     }
   },
 
@@ -46,8 +46,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "SF-25",
-      image: "/cars/SF-25.jpg"
+      name: "SF-26",
+      image: "/cars/SF-26.png"
     }
   },
 
@@ -68,8 +68,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "W16",
-      image: "/cars/w16.jpg"
+      name: "W17",
+      image: "/cars/W17.png"
     }
   },
 
@@ -90,8 +90,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "MCL39",
-      image: "/cars/MCL39.jpg"
+      name: "MCL40",
+      image: "/cars/MCL40.png"
     }
   },
 
@@ -112,8 +112,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "AMR25",
-      image: "/cars/amr25.jpg"
+      name: "AMR26",
+      image: "/cars/AMR26.png"
     }
   },
 
@@ -134,8 +134,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "A525",
-      image: "/cars/a525.jpg"
+      name: "A526",
+      image: "/cars/A526.png"
     }
   },
 
@@ -156,8 +156,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "FW47",
-      image: "/cars/fw47.jpg"
+      name: "FW48",
+      image: "/cars/FW48.png"
     }
   },
 
@@ -165,10 +165,10 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
     teamId: 'racing-bulls',
     drivers2025: [
       {
-        name: "Isack Hadjar",
-        number: 6,
-        nationality: "French",
-        image: "/drivers/isack-hadjar.jpg"
+        name: "Arvid Lindblad",
+        number: 27,
+        nationality: "British",
+        image: "/drivers/arvid-lindblad.jpg"
       },
       {
         name: "Liam Lawson",
@@ -178,13 +178,13 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "VCARB02",
-      image: "/cars/vcarb02.jpg"
+      name: "VCARB 03",
+      image: "/cars/VCARB03.png"
     }
   },
 
-  'sauber': {
-    teamId: 'sauber',
+  'audi': {
+    teamId: 'audi',
     drivers2025: [
       {
         name: "Nico Hulkenberg",
@@ -200,8 +200,8 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "C45",
-      image: "/cars/c45.jpg"
+      name: "R26",
+      image: "/cars/AudiR26.png"
     }
   },
 
@@ -222,8 +222,30 @@ export const TEAM_DETAILS: Record<string, TeamDetails> = {
       }
     ],
     car2025: {
-      name: "VF-25",
-      image: "/cars/vf-25.jpg"
+      name: "VF-26",
+      image: "/cars/VF-26.png"
+    }
+  },
+
+  'cadillac': {
+    teamId: 'cadillac',
+    drivers2025: [
+      {
+        name: "Sergio Perez",
+        number: 11,
+        nationality: "Mexican",
+        image: "/drivers/sergio-perez.jpg"
+      },
+      {
+        name: "Valtteri Bottas",
+        number: 77,
+        nationality: "Finnish",
+        image: "/drivers/valtteri-bottas.jpg"
+      }
+    ],
+    car2025: {
+      name: "MAC-26",
+      image: "/cars/MAC-26.png"
     }
   }
 };
