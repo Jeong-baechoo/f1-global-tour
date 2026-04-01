@@ -16,6 +16,10 @@ export interface Circuit {
   raceDate2025: string | null; // ISO date string
   round: number | null;
   sprint?: boolean;
+  raceDate2026: string | null; // ISO date string
+  round2026: number | null;
+  sprint2026?: boolean;
+  cancelled2026?: boolean;
   totalDistance: number;
   elevation?: Elevation;
 }

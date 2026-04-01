@@ -11,7 +11,7 @@ import { f1ApiService, type F1ConstructorStanding } from '@/src/shared/services/
 // Nationality to country code mapping for flag icons
 // noinspection JSNonASCIINames
 const NATIONALITY_TO_CODE: Record<string, string> = {
-    // Current F1 2025 drivers
+    // Current F1 2026 drivers
     'Dutch': 'nl', 'Japanese': 'jp', 'Monégasque': 'mc', 'British': 'gb',
     'Italian': 'it', 'Australian': 'au', 'Spanish': 'es', 'Canadian': 'ca',
     'French': 'fr', 'Argentine': 'ar', 'Thai': 'th', 'New Zealand': 'nz',
@@ -27,13 +27,13 @@ const NATIONALITY_TO_CODE: Record<string, string> = {
 // Hardcoded season statistics (F1 API에서 제공하지 않는 데이터)
 const SEASON_STATS = {
     podiums: {
-        'mclaren': 12, 'ferrari': 4, 'red-bull': 5, 'mercedes': 3, 'sauber': 1, default: 2
+        'mclaren': 12, 'ferrari': 4, 'red-bull': 5, 'mercedes': 3, 'audi': 1, default: 2
     },
     poles: {
-        'mclaren': 4, 'ferrari': 2, 'red-bull': 2, 'mercedes': 1, 'sauber': 0, default: 1
+        'mclaren': 4, 'ferrari': 2, 'red-bull': 2, 'mercedes': 1, 'audi': 0, default: 1
     },
     fastestLaps: {
-        'mclaren': 5, 'ferrari': 1, 'red-bull': 3, 'mercedes': 2, 'sauber': 0, default: 1
+        'mclaren': 5, 'ferrari': 1, 'red-bull': 3, 'mercedes': 2, 'audi': 0, default: 1
     }
 } as const;
 
@@ -311,7 +311,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm uppercase tracking-[0.3em] text-white/60 font-bold">
-                                {language === 'ko' ? '2025 드라이버' : '2025 DRIVERS'}
+                                {language === 'ko' ? '2026 드라이버' : '2026 DRIVERS'}
                             </h3>
                             <div className="flex-1 h-px bg-gradient-to-r from-white/20 via-white/5 to-transparent ml-6" />
                         </div>
@@ -345,7 +345,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                                  style={{ backgroundColor: teamColor }} />
                             <div className="relative">
                                 <p className="text-sm uppercase tracking-[0.4em] text-white/50 font-semibold mb-2">
-                                    {language === 'ko' ? '2025 시즌 머신' : '2025 SEASON MACHINE'}
+                                    {language === 'ko' ? '2026 시즌 머신' : '2026 SEASON MACHINE'}
                                 </p>
                                 <h2 className={`font-black mb-2 tracking-[-0.02em] leading-[0.9] transform hover:scale-[1.01] transition-transform duration-300 ${
                                     (() => {
@@ -387,8 +387,8 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                             </h3>
                             <p className="text-base text-white/70 leading-relaxed">
                                 {language === 'ko' ?
-                                    `${data.car2025.name}은(는) ${getText(data.name, language)} 팀의 2025 시즌을 위한 최신 기술의 집약체입니다. 공기역학적 효율성과 파워 유닛의 성능을 극대화하는 데 초점을 맞추었습니다.` :
-                                    `The ${data.car2025.name} is the pinnacle of engineering for the ${getText(data.name, language)} team's 2025 campaign, focusing on aerodynamic efficiency and power unit performance.`
+                                    `${data.car2025.name}은(는) ${getText(data.name, language)} 팀의 2026 시즌을 위한 최신 기술의 집약체입니다. 공기역학적 효율성과 파워 유닛의 성능을 극대화하는 데 초점을 맞추었습니다.` :
+                                    `The ${data.car2025.name} is the pinnacle of engineering for the ${getText(data.name, language)} team's 2026 campaign, focusing on aerodynamic efficiency and power unit performance.`
                                 }
                             </p>
                         </div>
@@ -400,7 +400,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                         {/* Championship Title */}
                         <div className="space-y-3">
                             <p className="text-sm uppercase tracking-[0.4em] text-white/50 font-semibold">
-                                {language === 'ko' ? '2025 시즌 성과' : '2025 SEASON PERFORMANCE'}
+                                {language === 'ko' ? '2026 시즌 성과' : '2026 SEASON PERFORMANCE'}
                             </p>
                             <h2 className="text-4xl font-black tracking-tight leading-none text-white">
                                 {language === 'ko' ? '챔피언십' : 'Championship'}
@@ -470,7 +470,7 @@ export const TeamHQPanel: React.FC<TeamHQPanelProps> = ({ data }) => {
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
                                 <h3 className="text-lg font-bold text-white/90">
-                                    {language === 'ko' ? '2025 시즌 성과' : '2025 Season Performance'}
+                                    {language === 'ko' ? '2026 시즌 성과' : '2026 Season Performance'}
                                 </h3>
                                 <div className="flex-1 h-px bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
                             </div>

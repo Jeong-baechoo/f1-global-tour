@@ -8,11 +8,13 @@ export class DRSAnimationController {
   /**
    * Start DRS sequential signal animation
    */
-  static startAnimation(map: mapboxgl.Map, trackId: string): void {
-    // DRS가 비활성화되어 있으면 애니메이션 시작하지 않음
-    const { drsInfoEnabled } = useMapStore.getState();
-    if (!drsInfoEnabled) {
-      return;
+  static startAnimation(map: mapboxgl.Map, trackId: string, forceEnabled: boolean = false): void {
+    // forceEnabled가 true가 아닌 경우에만 스토어 상태 확인
+    if (!forceEnabled) {
+      const { drsInfoEnabled } = useMapStore.getState();
+      if (!drsInfoEnabled) {
+        return;
+      }
     }
     const startAnimation = () => {
       const startTime = performance.now();

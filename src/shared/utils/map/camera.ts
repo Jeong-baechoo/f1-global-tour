@@ -307,6 +307,13 @@ export const getCircuitCameraConfig = (circuitId: string): CameraConfig => {
         pitch: 60,
         bearing: 60,
       }
+    },
+    'madrid': {
+      zoom: 14,
+      pitch: 60,
+      bearing: 0,
+      speed: 1.2,
+      curve: 1
     }
   };
 

@@ -63,8 +63,9 @@ export class TeamService {
       'alpine': { primary: '#0090FF', secondary: '#FF87BC' },
       'williams': { primary: '#005AFF', secondary: '#000000' },
       'alphatauri': { primary: '#2B4562', secondary: '#FFFFFF' },
-      'sauber': { primary: '#52E252', secondary: '#000000' },
+      'audi': { primary: '#FF0000', secondary: '#000000' },
       'haas': { primary: '#FFFFFF', secondary: '#FF0000' },
+      'cadillac': { primary: '#FFFFFF', secondary: '#C0C0C0' },
     };
     
     return colorMap[teamId] || { primary: '#666666' };

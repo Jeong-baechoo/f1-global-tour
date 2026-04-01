@@ -31,6 +31,11 @@ interface MapProps {
   setDrsDetectionCount?: (count: number) => void;
   resetPanelStates?: () => void;
   setIsTrackAnimating?: (isAnimating: boolean) => void;
+  // 리플레이 모드 관련 props
+  isReplayMode?: boolean;
+  setIsReplayMode?: (isReplayMode: boolean) => void;
+  onDriverSelect?: (driverCode: string) => void;
+  selectedDriverForTelemetry?: string | null;
 }
 
 /**
@@ -169,6 +174,9 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
         resetView();
       }
     },
+    getMapboxMap: () => {
+      return map || null;
+    },
   }), [map, flyToLocation, flyToCircuit, flyToTeam, getCurrentBounds, getCurrentZoom, getCurrentCenter, resetView]);
 
   return (
@@ -179,6 +187,11 @@ const Map = React.memo(forwardRef<MapAPI, MapProps>((props, ref) => {
       currentCircuit={props.currentCircuit}
       drsZoneCount={props.drsZoneCount}
       drsDetectionCount={props.drsDetectionCount}
+      resetPanelStates={props.resetPanelStates}
+      isReplayMode={props.isReplayMode}
+      setIsReplayMode={props.setIsReplayMode}
+      onDriverSelect={props.onDriverSelect}
+      selectedDriverForTelemetry={props.selectedDriverForTelemetry}
     >
       <MapCanvas
         onLoad={handleMapLoad}

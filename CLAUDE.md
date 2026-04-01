@@ -13,7 +13,15 @@ npm run dev       # Start development server on http://localhost:3000
 npm run build     # Build for production
 npm run start     # Start production server
 npm run lint      # Run ESLint
+npm test          # Run Jest tests (if configured)
 ```
+
+### Testing Framework
+- **Jest** with Next.js integration for unit/integration testing
+- **@testing-library/react** for React component testing
+- Coverage thresholds: 80% lines, 70% functions/branches
+- Test path patterns configured for feature-based architecture
+- Mapbox GL mocking configured for map component testing
 
 ## Technology Stack
 
@@ -54,6 +62,7 @@ src/
 - **Teams** (`src/features/teams/`): Team markers, headquarters, driver profiles
 - **Circuits** (`src/features/circuits/`): Circuit markers, track rendering, DRS zones  
 - **Race Info** (`src/features/race-info/`): Interactive panels, countdown timers
+- **Replay** (`src/features/replay/`): F1 race replay system with real-time driver tracking
 
 #### Shared Architecture (`src/shared/`)
 - **Components**: UI components with LocalizedText, sheet dialogs
@@ -186,9 +195,10 @@ const marker = new mapboxgl.Marker(markerElement, {
 ### Current Development Status
 - **Production**: `master` branch (protected) 
 - **Development**: `develop` branch (active development)
-- **Current**: `feature/improve-logic` branch with UI improvements and track feature stabilization
+- **Current**: `replay` branch with replay system enhancements and track info features
 
 ### Recent Major Versions
+- **v0.7.0**: Replay system enhancements, track info toggle system, backend API design
 - **v0.6.0**: Architecture consolidation & cleanup with feature-based structure
 - **v0.5.0**: Team details with driver profiles, major restructuring, performance optimizations
 - **v0.4.0**: Architecture refactoring, Map component improvements, critical marker bug fixes
@@ -238,3 +248,100 @@ When encountering complex bugs with unexpected behavior (especially in React use
    - **Lesson**: Debug logs revealed the issue in 1 attempt vs 3 failed code changes
 
 **Remember**: When stuck on complex side effects, always add debug logs before modifying code. The console output often reveals the real issue immediately.
+
+## Replay System Architecture
+
+### Overview
+The replay system (`src/features/replay/`) recreates historical F1 races with real-time driver position tracking, timing data, and interactive controls. Built with a service-oriented architecture using multiple specialized managers.
+
+### Track Info System (v0.7.0+)
+Recent addition for enhanced track visualization:
+- **TrackInfoTogglePanel**: UI component for toggling sector and DRS zone visibility
+- **ReplayTrackInfoManager**: Centralized service for managing track information display
+- **Custom Event System**: Communication between UI and track rendering services
+- **Layer Management**: Proper Z-index ordering to ensure DRS zones appear above sectors
+
+### Core Services Architecture
+- **ReplayAnimationEngine**: Main orchestrator for animation loop and state management
+- **DriverMarkerManager**: Manages dynamic driver markers on the map with smooth animations
+- **CircuitTrackManager**: Handles circuit track rendering and visibility controls
+- **PositionCalculator**: Converts telemetry data to precise map coordinates
+- **TrackPositionService**: Calculates driver positions along circuit tracks using distance-based interpolation
+- **OpenF1MockDataService**: Generates realistic F1 timing data compatible with OpenF1 API format
+
+### Data Flow Pattern
+1. **Session Management**: `DriverTimingService` coordinates session state and lap progression
+2. **Real-time Updates**: `RealtimeUpdateService` provides 4-second interval updates
+3. **Position Calculation**: Telemetry data → track distance → lat/lng coordinates → marker positions
+4. **UI Synchronization**: Timing panels and driver info update automatically via Zustand store
+
+### Key Implementation Patterns
+
+#### Service Singleton Pattern
+```typescript
+// All services follow singleton pattern for consistent state
+const service = ServiceClass.getInstance();
+```
+
+#### Animation Loop Architecture
+- Uses `requestAnimationFrame` for 60fps smooth animations
+- Separates animation timing from data updates (4-second intervals)
+- Handles playback speed control and pause/resume states
+
+#### Mock Data Strategy
+Current implementation uses sophisticated mock data that:
+- Simulates realistic F1 race scenarios (Monaco GP with driver retirement, pit stops)
+- Follows OpenF1 API data structure for easy backend replacement
+- Includes sector performance, tire strategies, and timing intervals
+- **Backend Integration**: See `REPLAY_API_SPECIFICATION.md` for complete API requirements
+
+#### Driver Position Interpolation
+Uses advanced algorithms to:
+- Calculate precise positions along circuit tracks from telemetry distance data
+- Handle track coordinate gaps and discontinuities
+- Provide smooth animations between position updates
+- Support variable playback speeds (0.5x to 4x)
+
+### Critical Replay System Guidelines
+
+#### Timing Data Consistency
+- **Interval Calculation**: Must separate completed drivers from retired drivers
+- **Sector Performance**: Use 'none' state for retired drivers (requires extending TypeScript interfaces)
+- **DNF Handling**: Retired drivers show "DNF" instead of timing data and disappear after retirement lap
+
+#### Animation Performance
+- **Position Updates**: Batch marker position updates to prevent frame drops
+- **Memory Management**: Clean up animation frames and intervals on component unmount
+- **Track Rendering**: Use zoom-based visibility to optimize performance
+
+#### Data Synchronization
+- **Store Updates**: Coordinate between ReplayAnimationEngine and DriverTimingService
+- **Real-time Updates**: Maintain consistent 4-second interval matching OpenF1 API
+- **Session State**: Ensure lap progression and session changes are properly synchronized
+
+#### Layer Management (Critical for Track Visualization)
+- **Mapbox Layer Ordering**: Remove layers before removing sources to prevent "Source cannot be removed while layer is using it" errors
+- **Z-Index Management**: Use `map.moveLayer()` to ensure proper layer ordering (DRS zones above sectors)
+- **Initial State Handling**: Ensure toggle components start with correct default states (sectors/DRS disabled)
+
+### Replay System File Organization
+```
+src/features/replay/
+├── components/           # UI controls and panels
+│   └── ui/TrackInfoTogglePanel/  # Track info toggle controls (v0.7.0+)
+├── services/            # Core business logic and data management
+│   ├── ReplayTrackInfoManager.ts  # Track info display management (v0.7.0+)
+│   └── CircuitTrackManager.ts     # Circuit rendering with layer management fixes
+├── store/               # Zustand state management
+├── types/               # TypeScript definitions (includes openF1Types.ts)
+├── data/                # Mock data for development
+└── REPLAY_API_SPECIFICATION.md  # Backend API requirements (updated v0.7.0)
+```
+
+### Backend Integration Notes (v0.7.0)
+The project includes comprehensive backend design documentation:
+- **OpenF1 API Integration**: Complete specification for real F1 data integration
+- **NestJS + TypeScript + Redis**: Recommended backend technology stack
+- **Data Transformation**: Detailed mapping between OpenF1 API and frontend data models
+- **Caching Strategy**: Redis-based caching for performance optimization
+- **API Proxy Pattern**: Backend acts as intelligent proxy between OpenF1 API and frontend
