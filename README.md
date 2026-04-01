@@ -1,7 +1,7 @@
 # 🏎️ F1 Global Tour
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Next.js-15.5.14-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Mapbox-GL-4169E1?style=for-the-badge&logo=mapbox&logoColor=white" alt="Mapbox" />
   <img src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
@@ -28,6 +28,14 @@
 - **Detailed information panels** for teams and circuits
 - **2025 Driver profiles** with photos and information
 - **F1 Car images** for each team
+
+### 🎬 Race Replay System
+- **Real-time race replay** with driver position tracking on circuit maps
+- **Driver telemetry** visualization with backend API integration
+- **Interactive playback controls** (play/pause, speed 0.5x~4x)
+- **Timing panels** with sector performance, intervals, and pit stop data
+- **Track info toggles** for sector and DRS zone visualization
+- **DNF handling** with realistic driver retirement scenarios
 
 ### 📱 Responsive Design
 - **Mobile-optimized** interactive bottom sheet
@@ -81,13 +89,21 @@
 
 ```
 f1-global-tour/
-├── app/                    # Next.js app directory
-├── src/                    # Source code
+├── src/
+│   ├── app/                # Next.js App Router directory
 │   ├── features/           # Domain-specific features
 │   │   ├── map/           # Core map functionality
 │   │   ├── teams/         # Team-related features
 │   │   ├── circuits/      # Circuit-related features
-│   │   └── race-info/     # Race information panels
+│   │   ├── race-info/     # Race information panels
+│   │   └── replay/        # F1 race replay system
+│   │       ├── components/ # Replay UI controls and panels
+│   │       ├── services/   # Animation engine, track managers
+│   │       ├── store/      # Replay state management
+│   │       ├── hooks/      # Custom replay hooks
+│   │       ├── types/      # Replay type definitions
+│   │       ├── data/       # Mock data for development
+│   │       └── utils/      # Replay utilities
 │   └── shared/            # Shared utilities and components
 │       ├── components/    # Reusable UI components
 │       ├── constants/     # Application constants
@@ -95,12 +111,13 @@ f1-global-tour/
 │       └── utils/         # Shared utility functions
 ├── data/                  # F1 teams & circuits data
 │   ├── teams.json
-│   └── circuits.json
+│   ├── circuits.json
+│   └── circuits-geojson/  # Circuit track coordinates
 └── public/               # Static assets
     ├── team-logos/       # Team logo images
     ├── drivers/          # Driver profile photos
     ├── cars/            # F1 car images
-    └── data/circuits-geojson/  # Circuit track coordinates
+    └── data/circuits-geojson/  # Circuit track GeoJSON files
 ```
 
 ## 🎮 Usage
@@ -120,11 +137,19 @@ f1-global-tour/
 
 ## 🛠️ Technology Stack
 
-- **[Next.js 15](https://nextjs.org/)** - React framework with App Router
-- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Mapbox GL JS](https://www.mapbox.com/mapbox-gljs)** - 3D map rendering
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first styling
+- **[Next.js 15.5](https://nextjs.org/)** - React 19 framework with App Router
+- **[TypeScript 5](https://www.typescriptlang.org/)** - Strict mode type safety
+- **[Mapbox GL JS 3.13](https://www.mapbox.com/mapbox-gljs)** - 3D map rendering
+- **[Tailwind CSS 3.4](https://tailwindcss.com/)** - Utility-first styling
+- **[Zustand 5](https://zustand.docs.pmnd.rs/)** - Lightweight state management
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible UI components
+- **[Axios](https://axios-http.com/)** - HTTP client for backend API
 - **[Lucide Icons](https://lucide.dev/)** - Beautiful icons
+
+### Backend
+- **[f1-global-tour-backend](https://github.com/hh-0704/f1-global-tour-backend)** - NestJS + TypeScript + Redis backend server
+  - OpenF1 API proxy and data transformation
+  - Driver telemetry, flag info, and race data provider
 
 ## 🎨 Key Components
 
@@ -192,8 +217,21 @@ npm run lint         # Run ESLint
 
 ### Recent Updates
 ```
+🏎️ v0.8.0 - Replay System Refinement & Maintenance
+├─ eslint-config-next v16 migration and lint error fixes
+├─ Next.js 15.3.4 → 15.5.14 security vulnerability update
+├─ Full code review and refactoring of replay module
+└─ Driver telemetry backend integration and driver selection bug fix
+
+🏎️ v0.7.0 - Race Replay System & Track Info
+├─ F1 race replay system (real-time driver tracking)
+├─ Track info toggle system (sector, DRS zone visualization)
+├─ Flag info panel backend integration
+├─ 2026 season calendar added
+├─ Replay track rendering stability improvements
+└─ Backend API design and OpenF1 integration spec
+
 🏎️ v0.6.0 - Architecture Consolidation & Cleanup
-├─ 57d214a refactor: 사용하지 않는 파일 정리 및 아키텍처 통합
 ├─ Feature-based architecture fully implemented
 ├─ Removed unused animation presets and utilities
 └─ Improved code organization and maintainability
@@ -201,41 +239,31 @@ npm run lint         # Run ESLint
 🏎️ v0.5.0 - Team Details & Project Restructuring
 ├─ Team detail features with driver profiles and car images
 ├─ Major project structure reorganization
-├─ Performance optimizations with local assets
 └─ 🚀 Streamlined marker system implementation
 
-🏎️ v0.4.1 - Circuit Marker Visibility
-├─ f54d566 fix: TypeScript any 타입 에러 수정
-├─ e8a9fa0 fix: Symbol Layer 타입 에러 수정
-├─ e2c3542 fix: 서킷 마커 드래그 후 점프 문제 해결
-└─ 83398de fix: 서킷 마커 줌 레벨별 가시성 제어 개선
-
 🏎️ v0.4.0 - Major Architecture Refactoring
-├─ c8569b5 refactor: Map 컴포넌트 구조 개선 및 성능 최적화
-├─ d018da2 chore: v0.4.0 버전 업데이트
+├─ Map component restructuring and performance optimization
+├─ Circuit marker visibility controls
 └─ 🎯 Fixed critical marker disappearing bug!
 
 🏎️ v0.3.0 - Performance & Code Quality
-├─ ec04f5b fix: 명시적 타입으로 변경 및 불필요한 변수 제거
-├─ 308ae77 fix: 모바일 바텀시트 헤더 배경 투명 처리
-├─ a2f322f style: 버튼 배경색 블러 효과 통일
-└─ 74ccbd5 fix: any 타입을 명시적 타입으로 변경
+├─ TypeScript strict mode improvements
+├─ Mobile UX refinements (bottom sheet, blur effects)
+└─ Performance optimizations
 
 🗺️ v0.2.0 - Circuit Integration
-├─ 94b0f47 feat: f1-circuits geojson 데이터 통합
-├─ 4b7c1bd refactor: map 컴포넌트 구조 개선 및 모듈화
-└─ c4240be feat: f1 2024 시즌 데이터 및 서킷 마커 추가
+├─ F1 circuits GeoJSON data integration
+└─ Map component modularization
 
 🚀 v0.1.0 - Initial Release
-├─ f36582d feat: f1 월드 투어 지도 ui 구현
-├─ c2b7ec1 chore: 프로젝트 설정 및 의존성 업데이트
-└─ 286d107 Initial commit from Create Next App
+└─ 3D globe with F1 team headquarters
 ```
 
 ### Version Milestones
+- **v0.8.0** - Replay refinement, Next.js 15.5.14 update, ESLint v16 migration
+- **v0.7.0** - Race replay system, track info toggles, backend API design
 - **v0.6.0** - Architecture consolidation, cleanup, feature-based structure
 - **v0.5.0** - Team details with drivers/cars, project restructuring, local assets
-- **v0.4.1** - Circuit marker visibility controls, bug fixes
 - **v0.4.0** - Architecture refactoring, performance optimization, marker bug fix
 - **v0.3.0** - Enhanced performance, TypeScript improvements, mobile UX refinements
 - **v0.2.0** - Full circuit data integration, component modularization
@@ -247,7 +275,8 @@ We follow a structured Git flow for development:
 
 ### Main Branches
 - **`master`** - Production-ready code (protected)
-- **`develop`** - Active development branch (default)
+- **`develop`** - Active development branch
+- **`replay`** - Replay system development (current)
 
 ### Branch Types
 - **`feature/*`** - New features (`feature/team-stats`)
@@ -263,28 +292,28 @@ We follow a structured Git flow for development:
 
 ### Development Guide for Team
 ```bash
-# 1. 최신 develop 브랜치 가져오기
+# 1. Pull latest develop branch
 git checkout develop
 git pull origin develop
 
-# 2. 기능 브랜치 생성
+# 2. Create feature branch
 git checkout -b feature/your-feature
 
-# 3. 작업 후 커밋 (아래 형식 참고)
-git commit -m "feat: 새로운 기능 추가"
+# 3. Commit your changes
+git commit -m "feat: add new feature"
 
-# 4. develop에 PR 생성
+# 4. Push and create PR to develop
 git push origin feature/your-feature
 ```
 
 ### Commit Message Format
-- `feat:` 새로운 기능
-- `fix:` 버그 수정
-- `docs:` 문서 수정
-- `style:` 코드 스타일 변경
-- `refactor:` 코드 리팩토링
-- `test:` 테스트 추가/수정
-- `chore:` 빌드, 설정 변경
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation updates
+- `style:` Code style changes
+- `refactor:` Code refactoring
+- `test:` Test additions/modifications
+- `chore:` Build/config changes
 
 ## 📄 License
 
