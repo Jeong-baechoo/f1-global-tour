@@ -66,16 +66,49 @@ export const getSpeedTrapData = async (circuitId: string): Promise<SpeedTrapInfo
   }
 };
 
-// DRS 정보 토글 상태를 저장하는 전역 변수
-let drsInfoEnabled = false;
+// DRS 정보 상태 관리 클래스
+class DRSStateManager {
+  private static instance: DRSStateManager;
+  private drsInfoEnabled = false;
+  private eventListenerAdded = false;
 
-// DRS 토글 상태를 업데이트하는 리스너
-window.addEventListener('toggleDRSZones', ((event: CustomEvent) => {
-  drsInfoEnabled = event.detail.enabled;
-}) as EventListener);
+  static getInstance(): DRSStateManager {
+    if (!DRSStateManager.instance) {
+      DRSStateManager.instance = new DRSStateManager();
+    }
+    return DRSStateManager.instance;
+  }
+
+  initialize(): void {
+    if (typeof window !== 'undefined' && !this.eventListenerAdded) {
+      window.addEventListener('track:toggleDRSZones', this.handleDRSToggle);
+      this.eventListenerAdded = true;
+    }
+  }
+
+  private handleDRSToggle = ((event: CustomEvent) => {
+    this.drsInfoEnabled = event.detail.enabled;
+  }) as EventListener;
+
+  isDRSEnabled(): boolean {
+    return this.drsInfoEnabled;
+  }
+
+  cleanup(): void {
+    if (typeof window !== 'undefined' && this.eventListenerAdded) {
+      window.removeEventListener('track:toggleDRSZones', this.handleDRSToggle);
+      this.eventListenerAdded = false;
+    }
+  }
+}
+
+const drsStateManager = DRSStateManager.getInstance();
 
 // DRS Detection과 Speed Trap 마커들을 애니메이션 완료 후 표시하는 함수
 export const showDRSAndSpeedTrapMarkers = (map?: mapboxgl.Map) => {
+  // Initialize DRS state manager if not done yet
+  drsStateManager.initialize();
+  
   // Check zoom level before showing markers
   if (map) {
     const currentZoom = map.getZoom();
@@ -85,7 +118,7 @@ export const showDRSAndSpeedTrapMarkers = (map?: mapboxgl.Map) => {
   }
   
   // DRS 정보가 활성화되어 있을 때만 마커 표시
-  if (drsInfoEnabled) {
+  if (drsStateManager.isDRSEnabled() && typeof window !== 'undefined') {
     // DRS Detection 마커 표시
     window.dispatchEvent(new CustomEvent('toggleDRSDetectionMarkers', { 
       detail: { enabled: true } 
@@ -158,13 +191,17 @@ export const addSectorMarkersProgressively = async ({
     toggleVisibility(enabled);
   };
   
-  window.addEventListener('showSectorMarker', showEventHandler as EventListener);
-  window.addEventListener('toggleSectorMarkers', toggleEventHandler as EventListener);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('showSectorMarker', showEventHandler as EventListener);
+    window.addEventListener('toggleSectorMarkers', toggleEventHandler as EventListener);
+  }
 
   return () => {
-    // 이벤트 리스너 제거
-    window.removeEventListener('showSectorMarker', showEventHandler as EventListener);
-    window.removeEventListener('toggleSectorMarkers', toggleEventHandler as EventListener);
+    // 이벤트 리스너 제거 (클라이언트에서만)
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('showSectorMarker', showEventHandler as EventListener);
+      window.removeEventListener('toggleSectorMarkers', toggleEventHandler as EventListener);
+    }
     // 마커 제거
     markers.forEach(({ marker }) => marker.remove());
   };
@@ -664,10 +701,14 @@ export const addDRSDetectionMarkers = async ({ map, circuitId }: SectorMarkerMan
     toggleVisibility(enabled);
   };
   
-  window.addEventListener('toggleDRSDetectionMarkers', eventHandler as EventListener);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('toggleDRSDetectionMarkers', eventHandler as EventListener);
+  }
 
   return () => {
-    window.removeEventListener('toggleDRSDetectionMarkers', eventHandler as EventListener);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('toggleDRSDetectionMarkers', eventHandler as EventListener);
+    }
     markers.forEach(({ marker }) => marker.remove());
   };
 };
@@ -710,10 +751,14 @@ export const addSpeedTrapMarkers = async ({ map, circuitId }: SectorMarkerManage
     toggleVisibility(enabled);
   };
   
-  window.addEventListener('toggleSpeedTrapMarkers', eventHandler as EventListener);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('toggleSpeedTrapMarkers', eventHandler as EventListener);
+  }
 
   return () => {
-    window.removeEventListener('toggleSpeedTrapMarkers', eventHandler as EventListener);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('toggleSpeedTrapMarkers', eventHandler as EventListener);
+    }
     markers.forEach(({ marker }) => marker.remove());
   };
 };

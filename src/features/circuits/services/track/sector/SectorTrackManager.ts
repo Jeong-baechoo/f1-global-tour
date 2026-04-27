@@ -13,12 +13,15 @@ export class SectorTrackManager {
   static async applySectorColors(
     map: mapboxgl.Map,
     trackId: string,
-    circuitId: string
+    circuitId: string,
+    forceEnabled: boolean = false
   ): Promise<boolean> {
-    // 섹터 정보가 비활성화되어 있으면 적용하지 않음
-    const { sectorInfoEnabled } = useMapStore.getState();
-    if (!sectorInfoEnabled) {
-      return false;
+    // forceEnabled가 true가 아닌 경우에만 스토어 상태 확인
+    if (!forceEnabled) {
+      const { sectorInfoEnabled } = useMapStore.getState();
+      if (!sectorInfoEnabled) {
+        return false;
+      }
     }
     try {
       // Get sector data
@@ -201,12 +204,17 @@ export class SectorTrackManager {
    * Toggle sector track colors visibility
    */
   static toggleSectorColors(trackId: string, enabled: boolean, map: mapboxgl.Map): void {
-    const savedLayers = trackStateManager.findSectorLayer(trackId);
-    
-    if (savedLayers) {
+    try {
+      if (!map || !map.getLayer) {
+        return;
+      }
+
+      const savedLayers = trackStateManager.findSectorLayer(trackId);
+      
+      if (savedLayers) {
       // Hide/show sector layers
       savedLayers.sectorLayers.forEach(layerId => {
-        if (map.getLayer(layerId)) {
+        if (map && map.getLayer && map.getLayer(layerId)) {
           map.setLayoutProperty(layerId, 'visibility', enabled ? 'visible' : 'none');
         }
       });
@@ -224,12 +232,18 @@ export class SectorTrackManager {
     } else if (enabled) {
       // 섹터 레이어가 없지만 켜려고 할 때, 다시 생성
       const circuitId = trackId.replace('-track', '');
-      this.applySectorColors(map, trackId, circuitId).catch(console.error);
+      this.applySectorColors(map, trackId, circuitId, true).catch(console.error);
     } else {
       // Try to find and restore original track
       const originalData = trackStateManager.findOriginalTrackData(trackId);
       if (originalData && map.getSource(trackId)) {
         (map.getSource(trackId) as mapboxgl.GeoJSONSource).setData(originalData.originalData);
+      }
+    }
+    } catch (error) {
+      // Silently handle map errors during page transitions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Sector track error:', error);
       }
     }
   }

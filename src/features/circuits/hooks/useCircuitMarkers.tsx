@@ -284,11 +284,23 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     onMarkerClick?: (circuit: Circuit) => void,
     language: Language = 'en'
   ) => {
-    // Find next race circuit
+    // Find next race circuit using the same logic as F1ApiService
     const today = new Date();
+    const year = today.getFullYear();
+    const getRaceDate = (c: Circuit) => year >= 2026 ? c.raceDate2026 : c.raceDate2025;
+
+    const isRaceCompleted = (circuit: Circuit): boolean => {
+      const raceDate = getRaceDate(circuit);
+      if (!raceDate) return false;
+      const raceDateObj = new Date(raceDate);
+      const switchTime = new Date(raceDateObj.getTime() + (14 * 60 * 60 * 1000));
+      return today >= switchTime;
+    };
+
     const nextRaceCircuit = circuits
-      .filter(c => c.raceDate2025)
-      .find(c => new Date(c.raceDate2025!) > today) || circuits[0];
+      .filter(c => getRaceDate(c))
+      .sort((a, b) => new Date(getRaceDate(a)!).getTime() - new Date(getRaceDate(b)!).getTime())
+      .find(c => !isRaceCompleted(c)) || circuits[0];
     
     circuits.forEach(circuit => {
       const isNextRace = circuit.id === nextRaceCircuit?.id;
@@ -345,6 +357,6 @@ export const useCircuitMarkers = (map: mapboxgl.Map | null) => {
     removeCircuitMarker,
     removeAllCircuitMarkers,
     updateCircuitMarker,
-    markers: markersRef.current,
+    getMarkers: () => markersRef.current,
   };
 };

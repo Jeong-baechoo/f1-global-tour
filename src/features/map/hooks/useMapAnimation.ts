@@ -56,6 +56,7 @@ export const useMapAnimation = ({
   }, [map, setUserInteracting]);
 
   // FlyTo 서킷
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const flyToCircuit = useCallback((circuitId: string, gentle: boolean = false) => {
     if (!map.current) return;
 
@@ -127,11 +128,13 @@ export const useMapAnimation = ({
   ]);
 
   // FlyTo 팀
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const flyToTeam = useCallback((teamId: string) => {
     if (!map.current) return;
 
     const team = teamsData.teams.find(t => t.id === teamId);
     if (!team) return;
+
 
     setUserInteracting(true);
     const mobile = typeof window !== 'undefined' && window.innerWidth < 640;
@@ -149,9 +152,11 @@ export const useMapAnimation = ({
       : teamConfig?.desktop 
       ? { ...DEFAULT_TEAM_FLYTO, ...teamConfig.desktop }
       : DEFAULT_TEAM_FLYTO;
+    
+    const finalCenter = 'center' in config && config.center ? config.center : teamHQ;
       
     map.current.flyTo({
-      center: 'center' in config && config.center ? config.center : teamHQ,
+      center: finalCenter,
       zoom: config.zoom,
       pitch: config.pitch,
       bearing: config.bearing,
@@ -169,6 +174,7 @@ export const useMapAnimation = ({
   }, [map, setUserInteracting, globeSpinner]);
 
   // 뷰 리셋
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const resetView = useCallback(() => {
     if (!map.current) return;
 

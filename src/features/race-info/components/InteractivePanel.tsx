@@ -148,7 +148,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
           style={{
             width: isMinimized ? '320px' : '420px',
             height: isMinimized ? '102px' : undefined,
-            zIndex: 9999,
+            zIndex: 30,
             pointerEvents: 'auto',
             right: '20px',
             top: isMinimized ? 'auto' : '60px',
@@ -279,7 +279,7 @@ export const InteractivePanel: React.FC<InteractivePanelProps> = ({
           ref={sheetRef}
           className="fixed inset-x-0 bottom-0 bg-[#0A0A0A]/80 backdrop-blur-xl border-t border-[#FF1801]/20 rounded-t-2xl shadow-2xl flex flex-col"
           style={{
-            zIndex: 9999,
+            zIndex: 30,
             height: sheetState === 'peek' ? `${SHEET_HEIGHTS.peek}px` :
                     sheetState === 'half' ? `${SHEET_HEIGHTS.half}vh` :
                     sheetState === 'full' ? `${SHEET_HEIGHTS.full}vh` : '0',

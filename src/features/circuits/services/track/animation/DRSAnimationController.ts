@@ -8,22 +8,29 @@ export class DRSAnimationController {
   /**
    * Start DRS sequential signal animation
    */
-  static startAnimation(map: mapboxgl.Map, trackId: string): void {
-    // DRS가 비활성화되어 있으면 애니메이션 시작하지 않음
-    const { drsInfoEnabled } = useMapStore.getState();
-    if (!drsInfoEnabled) {
-      return;
+  static startAnimation(map: mapboxgl.Map, trackId: string, forceEnabled: boolean = false): void {
+    // forceEnabled가 true가 아닌 경우에만 스토어 상태 확인
+    if (!forceEnabled) {
+      const { drsInfoEnabled } = useMapStore.getState();
+      if (!drsInfoEnabled) {
+        return;
+      }
     }
     const startAnimation = () => {
       const startTime = performance.now();
 
       const animate = () => {
-        const animationInfo = trackStateManager.getDRSAnimation(trackId);
+        try {
+          const animationInfo = trackStateManager.getDRSAnimation(trackId);
 
-        // Stop if animation is disabled
-        if (!animationInfo || !animationInfo.isActive) {
-          return;
-        }
+          // Stop if animation is disabled
+          if (!animationInfo || !animationInfo.isActive) {
+            return;
+          }
+
+          if (!map || !map.getLayer) {
+            return;
+          }
 
         const elapsed = performance.now() - startTime;
         const totalProgress = (elapsed / this.animationDuration) % 1;
@@ -36,13 +43,17 @@ export class DRSAnimationController {
           const drsId = `${trackId}-drs-${drsIndex}`;
           const layerId = `${drsId}-symbols`;
 
-          if (!map.getLayer(layerId)) {
+          if (!map || !map.getLayer || !map.getLayer(layerId)) {
             break; // No more DRS zones
           }
 
           // foundLayers++; // Not used
 
           // Update symbol layer icon-image with expression
+          if (!map || !map.setLayoutProperty) {
+            break;
+          }
+          
           map.setLayoutProperty(layerId, 'icon-image', [
             'case',
             ['<',
@@ -81,9 +92,15 @@ export class DRSAnimationController {
           drsIndex++;
         }
 
-        const currentAnimationInfo = trackStateManager.getDRSAnimation(trackId);
-        if (currentAnimationInfo && currentAnimationInfo.isActive) {
-          currentAnimationInfo.animationId = requestAnimationFrame(animate);
+          const currentAnimationInfo = trackStateManager.getDRSAnimation(trackId);
+          if (currentAnimationInfo && currentAnimationInfo.isActive) {
+            currentAnimationInfo.animationId = requestAnimationFrame(animate);
+          }
+        } catch (error) {
+          // Silently handle map errors during page transitions
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('DRS animation error:', error);
+          }
         }
       };
 
