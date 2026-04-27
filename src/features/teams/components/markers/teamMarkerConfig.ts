@@ -57,15 +57,15 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
         image: "/drivers/max-verstappen.jpg"
       },
       {
-        name: "Yuki Tsunoda",
-        number: 22,
-        nationality: "Japanese",
-        image: "/drivers/yuki-tsunoda.jpg"
+        name: "Isack Hadjar",
+        number: 6,
+        nationality: "French",
+        image: "/drivers/isack-hadjar.jpg"
       }
     ],
     car2025: {
-      name: "RB21",
-      image: "/cars/rb21.jpg"
+      name: "RB22",
+      image: "/cars/RB22.png"
     }
   },
 
@@ -94,8 +94,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "SF-25",
-      image: "/cars/SF-25.jpg"
+      name: "SF-26",
+      image: "/cars/SF-26.png"
     }
   },
 
@@ -127,8 +127,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "W16",
-      image: "/cars/w16.jpg"
+      name: "W17",
+      image: "/cars/W17.png"
     },
   },
 
@@ -159,8 +159,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "MCL39",
-      image: "/cars/MCL39.jpg"
+      name: "MCL40",
+      image: "/cars/MCL40.png"
     }
   },
 
@@ -189,8 +189,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "AMR25",
-      image: "/cars/amr25.jpg"
+      name: "AMR26",
+      image: "/cars/AMR26.png"
     }
   },
 
@@ -219,8 +219,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "A525",
-      image: "/cars/a525.jpg"
+      name: "A526",
+      image: "/cars/A526.png"
     },
   },
 
@@ -249,8 +249,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "FW47",
-      image: "/cars/fw47.jpg"
+      name: "FW48",
+      image: "/cars/FW48.png"
     },
   },
 
@@ -266,10 +266,10 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
     },
     drivers2025: [
       {
-        name: "Isack Hadjar",
-        number: 6,
-        nationality: "French",
-        image: "/drivers/isack-hadjar.jpg"
+        name: "Arvid Lindblad",
+        number: 27,
+        nationality: "British",
+        image: "/drivers/arvid-lindblad.jpg"
       },
       {
         name: "Liam Lawson",
@@ -279,20 +279,22 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "VCARB02",
-      image: "/cars/vcarb02.jpg"
+      name: "VCARB 03",
+      image: "/cars/VCARB03.png"
     },
   },
 
-  'sauber': {
-    teamId: 'sauber',
+  'audi': {
+    teamId: 'audi',
     style: {
-      className: 'sauber-marker',
-      logoUrl: '/team-logos/2023_Stake_F1_Team_Kick_Sauber_logo.png',
-      backgroundColor: '#52E252',
-      borderColor: '#32A332',
-      shadowColor: 'rgba(82,226,82,0.4)',
-      shadowColorHover: 'rgba(82,226,82,0.6)',
+      className: 'audi-marker',
+      logoUrl: '/team-logos/audiF1.png',
+      backgroundColor: '#000000',
+      borderColor: '#333333',
+      shadowColor: 'rgba(0,0,0,0.4)',
+      shadowColorHover: 'rgba(0,0,0,0.6)',
+      backgroundSize: '70%',
+      backgroundPosition: 'center',
     },
     drivers2025: [
       {
@@ -309,8 +311,8 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "C45",
-      image: "/cars/c45.jpg"
+      name: "R26",
+      image: "/cars/AudiR26.png"
     },
   },
 
@@ -321,7 +323,7 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       '#B6BABD',
       '#8a8e91',
       'rgba(182,186,189,0.4)',
-      { 
+      {
         className: 'haas-marker',
         backgroundSize: '90%',
         backgroundPosition: 'center'
@@ -342,8 +344,41 @@ export const TEAM_MARKER_CONFIGS: Record<string, TeamMarkerConfig> = {
       }
     ],
     car2025: {
-      name: "VF-25",
-      image: "/cars/vf-25.jpg"
+      name: "VF-26",
+      image: "/cars/VF-26.png"
+    },
+  },
+
+  'cadillac': {
+    teamId: 'cadillac',
+    style: createDefaultTeamStyle(
+      '/team-logos/cadillacF1.png',
+      '#FFFFFF',
+      '#C0C0C0',
+      'rgba(192,192,192,0.4)',
+      {
+        className: 'cadillac-marker',
+        backgroundSize: '80%',
+        backgroundPosition: 'center'
+      }
+    ),
+    drivers2025: [
+      {
+        name: "Sergio Perez",
+        number: 11,
+        nationality: "Mexican",
+        image: "/drivers/sergio-perez.jpg"
+      },
+      {
+        name: "Valtteri Bottas",
+        number: 77,
+        nationality: "Finnish",
+        image: "/drivers/valtteri-bottas.jpg"
+      }
+    ],
+    car2025: {
+      name: "MAC-26",
+      image: "/cars/MAC-26.png"
     },
   }
 };

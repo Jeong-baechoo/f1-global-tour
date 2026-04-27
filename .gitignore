@@ -43,3 +43,7 @@ next-env.d.ts
 # IDE
 .idea/
 *.iml
+
+# Backend Docker (별도 관리)
+docker-backend/
+backend/

@@ -498,17 +498,20 @@ export class ElevationTrackManager {
       map.setLayoutProperty(topLayerId, 'visibility', enabled ? 'visible' : 'none');
     }
 
-    // 레이어가 없지만 켜려고 할 때, 다시 그려줌
+    // 레이어가 없지만 켜려고 할 때, elevation이 활성화된 경우에만 다시 그려줌
     if (enabled && (!hasExtrusionLayer || !hasTopLayer)) {
-      const originalTrackData = trackStateManager.findOriginalTrackData(trackId);
-      
-      if (originalTrackData && 
-          originalTrackData.originalData && 
-          originalTrackData.originalData.geometry && 
-          originalTrackData.originalData.geometry.coordinates &&
-          Array.isArray(originalTrackData.originalData.geometry.coordinates) &&
-          originalTrackData.originalData.geometry.coordinates.length > 0) {
-        this.draw3DElevationTrack(map, trackId, originalTrackData.originalData.geometry.coordinates).catch(console.error);
+      const { elevationEnabled } = useMapStore.getState();
+      if (elevationEnabled) {
+        const originalTrackData = trackStateManager.findOriginalTrackData(trackId);
+        
+        if (originalTrackData && 
+            originalTrackData.originalData && 
+            originalTrackData.originalData.geometry && 
+            originalTrackData.originalData.geometry.coordinates &&
+            Array.isArray(originalTrackData.originalData.geometry.coordinates) &&
+            originalTrackData.originalData.geometry.coordinates.length > 0) {
+          this.draw3DElevationTrack(map, trackId, originalTrackData.originalData.geometry.coordinates).catch(console.error);
+        }
       }
     }
     } catch (error) {
@@ -526,7 +529,11 @@ export class ElevationTrackManager {
     trackId: string,
     map: mapboxgl.Map
   ): void {
-    this.toggle3DElevationTrack(map, trackId, true);
+    // elevation이 활성화된 경우에만 표시
+    const { elevationEnabled } = useMapStore.getState();
+    if (elevationEnabled) {
+      this.toggle3DElevationTrack(map, trackId, true);
+    }
   }
 
   /**

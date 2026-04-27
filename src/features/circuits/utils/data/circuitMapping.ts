@@ -26,6 +26,9 @@ export const CIRCUIT_ID_MAPPING: { [key: string]: string } = {
   'qatar': 'qa-2004',          // 23. 카타르 GP - 로사일
   'abu-dhabi': 'ae-2009',      // 24. 아부다비 GP
   
+  // 2026 신규 서킷
+  'madrid': 'es-2026',         // 마드리드 GP - 마드링
+
   // 추가 서킷 (데모용)
   'nurburgring': 'de-1927'     // 뉘르부르크링
 };
@@ -37,4 +40,13 @@ export const F1_2025_CIRCUITS = [
   'austria', 'britain', 'belgium', 'hungary', 'netherlands',
   'italy', 'azerbaijan', 'singapore', 'usa', 'mexico',
   'brazil', 'las-vegas', 'qatar', 'abu-dhabi'
+];
+
+// 2026 시즌 서킷 ID 목록
+export const F1_2026_CIRCUITS = [
+  'australia', 'china', 'japan', 'miami', 'canada',
+  'monaco', 'spain', 'austria', 'britain', 'belgium',
+  'hungary', 'netherlands', 'italy', 'madrid', 'azerbaijan',
+  'singapore', 'usa', 'mexico', 'brazil', 'las-vegas',
+  'qatar', 'abu-dhabi'
 ];

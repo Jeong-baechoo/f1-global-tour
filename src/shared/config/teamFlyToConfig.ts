@@ -77,7 +77,7 @@ export const TEAM_FLYTO_CONFIGS: TeamFlyToConfigs = {
       ...DEFAULT_TEAM_FLYTO
     }
   },
-  'sauber': {
+  'audi': {
     desktop: {
       ...DEFAULT_TEAM_FLYTO
     }

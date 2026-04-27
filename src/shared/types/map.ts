@@ -11,4 +11,5 @@ export interface MapAPI {
   getCurrentZoom: () => number;
   getCurrentCenter: () => [number, number] | null;
   resetView: () => void;
+  getMapboxMap: () => mapboxgl.Map | null;
 }

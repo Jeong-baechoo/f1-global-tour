@@ -85,7 +85,8 @@ const CIRCUIT_GEOJSON_MAPPING: { [key: string]: string } = {
   'saudi-arabia': 'sa-2021',
   'singapore': 'sg-2008',
   'spain': 'es-1991',
-  'usa': 'us-2012'
+  'usa': 'us-2012',
+  'madrid': 'es-2026'
 };
 
 // 특정 서킷의 트랙 데이터 가져오기

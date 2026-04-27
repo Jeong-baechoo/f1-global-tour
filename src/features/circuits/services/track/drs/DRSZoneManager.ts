@@ -243,7 +243,7 @@ export class DRSZoneManager {
           .then(() => {
             // DRS 존이 다시 그려진 후 애니메이션 시작
             setTimeout(() => {
-              DRSAnimationController.startAnimation(map, trackId);
+              DRSAnimationController.startAnimation(map, trackId, true);
             }, UI_TIMING.LANGUAGE_CHANGE_DELAY);
           })
           .catch(console.error);

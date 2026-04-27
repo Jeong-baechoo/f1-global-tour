@@ -1,0 +1,254 @@
+'use client';
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Calendar, ChevronDown, Clock, MapPin } from 'lucide-react';
+import { useReplayActions } from '@/src/features/replay';
+import { replayDataService } from '../services';
+import { ReplaySessionData } from '../types';
+import { OpenF1MockDataService } from '@/src/features/replay/services/OpenF1MockDataService';
+import ReplayErrorHandler from '../services/ReplayErrorHandler';
+import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const TEXT = {
+  title: { en: 'Select Session', ko: '세션 선택' },
+  raceOnly: { en: 'Now support Race Replay only', ko: '현재 레이스 리플레이만 지원' },
+  year: { en: 'Year', ko: '연도' },
+  country: { en: 'Country', ko: '국가' },
+  allCountries: { en: 'All Countries', ko: '전체 국가' },
+  loading: { en: 'Loading sessions...', ko: '세션 불러오는 중...' },
+  noSessions: { en: 'No sessions found', ko: '세션을 찾을 수 없습니다' },
+} as const;
+
+interface SessionSelectorProps {
+  className?: string;
+  onSessionSelectAction?: (session: ReplaySessionData) => void;
+}
+
+export const SessionSelector: React.FC<SessionSelectorProps> = ({ 
+  className, 
+  onSessionSelectAction 
+}) => {
+  const [sessions, setSessions] = useState<ReplaySessionData[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(2024);
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [selectedSession, setSelectedSession] = useState<ReplaySessionData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { setCurrentSession, setDrivers } = useReplayActions();
+  const { language } = useLanguage();
+  const t = (key: keyof typeof TEXT) => TEXT[key][language];
+
+  const availableYears = [2025, 2024, 2023];
+
+  // 세션 데이터 로드
+  const loadSessions = useCallback(async (year: number, country?: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await replayDataService.getCachedSessions(year, country);
+      
+      if (response.success) {
+        setSessions(response.data);
+      } else {
+        const errorMessage = response.error?.message || 'Failed to load sessions';
+        const error = new Error(errorMessage);
+        ReplayErrorHandler.handleDataFetchError(error, { year, country });
+        setError(errorMessage);
+        setSessions([]);
+      }
+    } catch (error) {
+      const replayError = ReplayErrorHandler.handleDataFetchError(
+        error instanceof Error ? error : new Error('Unknown error occurred'),
+        { year, country, operation: 'loadSessions' }
+      );
+      setError(replayError.userFriendlyMessage);
+      setSessions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // 연도 변경 시 세션 로드
+  useEffect(() => {
+    loadSessions(selectedYear, selectedCountry || undefined);
+  }, [selectedYear, selectedCountry, loadSessions]);
+
+  const handleYearChange = useCallback((year: number) => {
+    setSelectedYear(year);
+    setSelectedCountry(''); // 연도 변경 시 국가 필터 초기화
+  }, []);
+
+
+  const handleSessionSelect = useCallback(async (session: ReplaySessionData) => {
+    setSelectedSession(session); // 선택된 세션 상태 업데이트
+    setCurrentSession(session);
+    
+    // OpenF1MockDataService에 세션 타입 업데이트
+    const openF1Service = OpenF1MockDataService.getInstance();
+    const sessionType = session.sessionType.toUpperCase() as 'RACE' | 'QUALIFYING' | 'PRACTICE';
+    const SESSION_MINUTES: Record<string, number> = { QUALIFYING: 18, PRACTICE: 90 };
+    openF1Service.setSessionType(sessionType, SESSION_MINUTES[sessionType]);
+    
+    // 세션 선택 시 자동으로 드라이버 데이터 로드
+    try {
+      const driversResponse = await replayDataService.getDrivers(session.sessionKey);
+      
+      if (driversResponse.success) {
+        // Store에 드라이버 데이터 저장
+        setDrivers(driversResponse.data);
+      } else {
+        const errorMessage = driversResponse.error?.message || 'Failed to load drivers';
+        const error = new Error(errorMessage);
+        ReplayErrorHandler.handleDriverDataError(error, { 
+          sessionKey: session.sessionKey, 
+          sessionName: session.sessionName 
+        });
+      }
+    } catch (error) {
+      ReplayErrorHandler.handleDriverDataError(
+        error instanceof Error ? error : new Error('Unknown error occurred'),
+        { 
+          sessionKey: session.sessionKey, 
+          sessionName: session.sessionName,
+          operation: 'loadDrivers'
+        }
+      );
+    }
+    
+    onSessionSelectAction?.(session);
+  }, [setCurrentSession, setDrivers, onSessionSelectAction]);
+
+  // 국가 목록 추출
+  const availableCountries = useMemo(() => {
+      return [...new Set(sessions.map(s => s.countryName))].sort();
+  }, [sessions]);
+
+  const filteredSessions = useMemo(() => {
+    return sessions.filter(session => 
+      !selectedCountry || session.countryName === selectedCountry
+    );
+  }, [sessions, selectedCountry]);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  return (
+    <div className={cn(
+      "bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white",
+      "border border-white/10",
+      className
+    )}>
+      {/* 헤더 */}
+      <div className="flex items-center mb-4">
+        <Calendar className="w-5 h-5 mr-2" />
+        <h3 className="text-lg font-semibold">{t('title')}</h3>
+        <span className="ml-2 text-xs text-yellow-500/80 bg-yellow-500/10 px-2 py-0.5 rounded-full">
+          {t('raceOnly')}
+        </span>
+      </div>
+
+      {/* 필터 컨트롤 */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {/* 연도 선택 */}
+        <div className="relative">
+          <label className="block text-sm text-gray-400 mb-1">{t('year')}</label>
+          <div className="relative">
+            <select
+              value={selectedYear}
+              onChange={(e) => handleYearChange(parseInt(e.target.value))}
+              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2
+                         focus:outline-none focus:ring-2 focus:ring-red-600
+                         appearance-none cursor-pointer"
+            >
+              {availableYears.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* 국가 선택 */}
+        <div className="relative">
+          <label className="block text-sm text-gray-400 mb-1">{t('country')}</label>
+          <div className="relative">
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2
+                         focus:outline-none focus:ring-2 focus:ring-red-600
+                         appearance-none cursor-pointer"
+              disabled={isLoading}
+            >
+              <option value="">{t('allCountries')}</option>
+              {availableCountries.map(country => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* 세션 목록 */}
+      <div className="space-y-2 max-h-64 overflow-y-auto">
+        {isLoading ? (
+          <div className="text-center py-4 text-gray-400">
+            {t('loading')}
+          </div>
+        ) : error ? (
+          <div className="text-center py-4 text-red-400">
+            {error}
+          </div>
+        ) : filteredSessions.length === 0 ? (
+          <div className="text-center py-4 text-gray-400">
+            {t('noSessions')}
+          </div>
+        ) : (
+          filteredSessions.map(session => (
+            <div
+              key={session.sessionKey}
+              onClick={() => handleSessionSelect(session)}
+              className={cn(
+                "p-3 rounded border cursor-pointer transition-all",
+                selectedSession?.sessionKey === session.sessionKey
+                  ? "border-red-600 bg-red-600/10" // 선택된 상태
+                  : "border-gray-700 hover:border-gray-600 hover:bg-white/5" // 기본 상태
+              )}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-medium">{session.sessionName}</div>
+                <div className="text-sm text-gray-400">
+                  {formatDate(session.dateStart)}
+                </div>
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-400">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span>{session.circuitShortName}</span>
+                <span className="mx-2">•</span>
+                <span>{session.countryName}</span>
+              </div>
+              
+              <div className="flex items-center text-xs text-gray-500 mt-1">
+                <Clock className="w-3 h-3 mr-1" />
+                <span>{session.sessionType}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};

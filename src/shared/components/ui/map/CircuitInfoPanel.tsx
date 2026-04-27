@@ -43,7 +43,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
   // 접힌 상태에서는 작은 버튼만 표시
   if (isCollapsed) {
     return (
-      <div className="fixed right-[10px] top-20 sm:left-4 sm:top-1/4 sm:transform sm:-translate-y-1/2 transition-all duration-300 ease-in-out z-50">
+      <div className="fixed right-[10px] top-20 sm:left-4 sm:top-1/4 sm:transform sm:-translate-y-1/2 transition-all duration-300 ease-in-out z-30">
         <button
           onClick={() => {
             // 모바일에서는 바텀시트 열기, 데스크톱에서는 기존 동작
@@ -71,7 +71,7 @@ const CircuitInfoPanel: React.FC<CircuitInfoPanelProps> = ({
 
   return (
     <>
-      <div className={`fixed right-[10px] top-20 sm:left-4 sm:top-1/4 sm:transform sm:-translate-y-1/2 transition-all duration-300 ease-in-out z-50 ${
+      <div className={`fixed right-[10px] top-20 sm:left-4 sm:top-1/4 sm:transform sm:-translate-y-1/2 transition-all duration-300 ease-in-out z-30 ${
         isExpanded ? 'w-80 sm:w-80' : 'w-[29px] sm:w-12'
       }`}>
       {/* 토글 버튼 - 더 눈에 띄게 */}

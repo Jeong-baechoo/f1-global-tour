@@ -15,6 +15,8 @@ import { getText } from '@/utils/i18n';
 import type { PanelData, NextRaceData } from '@/src/features/race-info/types';
 import type { Circuit } from '@/src/features/circuits/types';
 import { UI_TIMING } from '@/src/shared/constants';
+import { ExitReplayButton } from '@/src/features/replay/components/ExitReplayButton';
+import { DriverInfoPanel } from '@/src/features/replay/components/ui';
 
 // Dynamic imports for better code splitting
 const Map = dynamic(
@@ -39,6 +41,20 @@ const Map = dynamic(
   }
 );
 
+// 현재 시즌의 레이스 날짜를 반환하는 헬퍼
+function getSeasonRaceDate(circuit: { raceDate2025: string | null; raceDate2026?: string | null }): string | null {
+  const year = new Date().getFullYear();
+  if (year >= 2026) return circuit.raceDate2026 ?? null;
+  return circuit.raceDate2025;
+}
+
+// 현재 시즌 취소 여부 반환
+function isCancelledInSeason(circuit: { cancelled2026?: boolean }): boolean {
+  const year = new Date().getFullYear();
+  if (year >= 2026) return circuit.cancelled2026 === true;
+  return false;
+}
+
 export default function Home() {
   const { language, setLanguage } = useLanguage();
   const [panelOpen, setPanelOpen] = useState(true); // 초기값을 true로 변경하여 패널이 처음부터 열리도록 함
@@ -51,7 +67,11 @@ export default function Home() {
   const [languageChangedFlag, setLanguageChangedFlag] = useState(false);
   const [nextRaceCircuitId, setNextRaceCircuitId] = useState<string | null>(null);
 
-  
+  // 리플레이 모드 상태
+  const [isReplayMode, setIsReplayMode] = useState(false);
+  const [selectedDriverForTelemetry, setSelectedDriverForTelemetry] = useState<string | null>(null);
+
+
   // Circuit 관련 상태
   const [isCircuitView, setIsCircuitView] = useState(false);
   const [currentCircuit, setCurrentCircuit] = useState<Circuit | null>(null);
@@ -180,7 +200,7 @@ export default function Home() {
       length: circuit.length,
       corners: circuit.corners,
       laps: circuit.laps,
-      raceDate: circuit.raceDate2025 || undefined,
+      raceDate: getSeasonRaceDate(circuit) || undefined,
       lapRecord: circuit.lapRecord ? {
         time: circuit.lapRecord.time,
         driver: circuit.lapRecord.driver,
@@ -215,14 +235,14 @@ export default function Home() {
       length: circuit.length,
       corners: circuit.corners,
       laps: circuit.laps,
-      raceDate: circuit.raceDate2025 || undefined,
+      raceDate: getSeasonRaceDate(circuit) || undefined,
       lapRecord: circuit.lapRecord ? {
         time: circuit.lapRecord.time,
         driver: circuit.lapRecord.driver,
         year: circuit.lapRecord.year.toString()
       } : undefined
     });
-    
+
     setPanelOpen(true);
     
     // 맵에서 서킷으로 이동
@@ -236,15 +256,25 @@ export default function Home() {
 
 
   // 모멘텀 애니메이션
-  const momentumScroll = useCallback(() => {
-    if (!scrollRef.current) return;
+  const velocityRef = useRef(velocity);
+  const momentumScrollRef = useRef<() => void>(undefined);
 
-    if (Math.abs(velocity) > 0.1) {
-      scrollRef.current.scrollLeft += velocity;
-      setVelocity(velocity * 0.92); // 더 빠른 감속
-      animationRef.current = requestAnimationFrame(momentumScroll);
-    }
+  useEffect(() => {
+    velocityRef.current = velocity;
+    momentumScrollRef.current = () => {
+      if (!scrollRef.current) return;
+
+      if (Math.abs(velocityRef.current) > 0.1) {
+        scrollRef.current.scrollLeft += velocityRef.current;
+        setVelocity(velocityRef.current * 0.92); // 더 빠른 감속
+        animationRef.current = requestAnimationFrame(() => momentumScrollRef.current?.());
+      }
+    };
   }, [velocity]);
+
+  const momentumScroll = useCallback(() => {
+    momentumScrollRef.current?.();
+  }, []);
 
   // 드래그 스크롤 핸들러
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -345,15 +375,15 @@ export default function Home() {
   // Next Race 관련 헬퍼 함수들
   const findMatchingCircuit = useCallback((apiCircuit: { circuitName?: string; city?: string } | undefined): Circuit | null => {
     if (!apiCircuit) return null;
-    
+
     const apiCircuitName = apiCircuit.circuitName?.toLowerCase() || '';
     const apiCity = apiCircuit.city?.toLowerCase() || '';
-    
+
     return circuitsData.circuits.find(circuit => {
       const circuitName = circuit.name.en.toLowerCase();
       const cityName = circuit.location.city.en.toLowerCase();
-      
-      return circuitName.includes(apiCircuitName) || 
+
+      return circuitName.includes(apiCircuitName) ||
              apiCircuitName.includes(circuitName) ||
              cityName.includes(apiCity) ||
              apiCity.includes(cityName);
@@ -363,7 +393,7 @@ export default function Home() {
   const createNextRacePanelData = useCallback((circuit: Circuit, raceData: F1RaceData): NextRaceData => {
     const raceDate = f1ApiService.formatRaceDateTime(raceData.schedule || {});
     const schedule = f1ApiService.convertScheduleToNextRaceFormat(raceData.schedule || {});
-    
+
     return {
       grandPrix: circuit.grandPrix,
       name: circuit.name,
@@ -438,11 +468,11 @@ export default function Home() {
       setNextRaceCircuitId(matchingCircuit.id);
       setPanelModule('next-race');
       setPanelData(createNextRacePanelData(matchingCircuit, nextRaceData));
-      
+
       // 패널 열기
       setPanelOpen(true);
       setPanelMinimized(false);
-      
+
       // 지도를 해당 서킷으로 이동
       if (mapRef.current && matchingCircuit.id) {
         mapRef.current.flyToCircuit(matchingCircuit.id);
@@ -474,15 +504,32 @@ export default function Home() {
         setDrsZoneCount={setDrsZoneCount}
         setDrsDetectionCount={setDrsDetectionCount}
         resetPanelStates={() => {
-          setPanelOpen(false);
-          // 사용자가 명시적으로 닫을 때만 최소화 상태 리셋
-          // setPanelMinimized(false);
+          // 리플레이 버튼을 누를 때 패널을 완전히 닫지 않고 최소화 상태로만 변경
+          if (panelOpen && !panelMinimized) {
+            setPanelMinimized(true);
+          }
         }}
         setIsTrackAnimating={setIsTrackAnimating}
+        isReplayMode={isReplayMode}
+        setIsReplayMode={setIsReplayMode}
+        onDriverSelect={setSelectedDriverForTelemetry}
+        selectedDriverForTelemetry={selectedDriverForTelemetry}
       />
 
-      {/* 모바일 상단 그라데이션 배경 */}
-      <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/60 via-black/30 to-transparent z-5 sm:hidden"></div>
+      {/* 리플레이 나가기 버튼 */}
+      <ExitReplayButton 
+        mapRef={mapRef} 
+        setIsReplayMode={setIsReplayMode}
+      />
+
+      {/* 리플레이 모드 전용 UI - 드라이버 인포 패널 */}
+      {isReplayMode && (
+        <DriverInfoPanel
+          isReplayMode={isReplayMode}
+          drivers={[]} // 드라이버 패널이 자체적으로 데이터를 관리하도록 변경
+          onDriverSelect={setSelectedDriverForTelemetry}
+        />
+      )}
 
       {/* F1 로고 - 모바일 */}
       <div className="absolute top-0 left-7 z-10 sm:hidden">
@@ -517,21 +564,25 @@ export default function Home() {
       </div>
 
 
-      {/* 넥스트 레이스 버튼 - 데스크탑 */}
-      <div className="hidden sm:block absolute bottom-48 left-6 z-30">
+      {/* 넥스트 레이스 버튼 - 데스크탑 - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
+      <div className="hidden sm:block absolute bottom-72 left-6 z-30">
         <NextRaceButton
           onClickAction={handleOpenNextRace}
           isActive={panelModule === 'next-race' && panelOpen}
         />
       </div>
+      )}
 
-      {/* 넥스트 레이스 버튼 - 모바일 */}
+      {/* 넥스트 레이스 버튼 - 모바일 - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <div className="block sm:hidden absolute bottom-72 right-4 z-30 scale-90">
         <NextRaceButton
           onClickAction={handleOpenNextRace}
           isActive={panelModule === 'next-race' && panelOpen}
         />
       </div>
+      )}
 
       {/* 언어 선택 버튼 - 데스크탑 */}
       <div className="hidden sm:block absolute bottom-32 left-6 z-10">
@@ -541,7 +592,8 @@ export default function Home() {
         />
       </div>
 
-      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 */}
+      {/* 하단 서킷 타임라인 바 - 플로팅 디자인 - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <div 
         className="fixed bottom-6 z-50 transition-all duration-300 ease-out hidden sm:block"
         style={{
@@ -623,7 +675,7 @@ export default function Home() {
                     length: circuit.length,
                     corners: circuit.corners,
                     laps: circuit.laps,
-                    raceDate: circuit.raceDate2025 || undefined,
+                    raceDate: getSeasonRaceDate(circuit) || undefined,
                     totalDistance: circuit.totalDistance,
                     lapRecord: circuit.lapRecord ? {
                       time: circuit.lapRecord.time,
@@ -637,9 +689,9 @@ export default function Home() {
               >
                 {/* 날짜 표시 */}
                 <span className="text-[#C0C0C0]/80 text-xs font-medium mb-1 group-hover:text-white/90 transition-colors">
-                  {circuit.raceDate2025 ? (() => {
+                  {isCancelledInSeason(circuit) ? 'CANCELLED' : getSeasonRaceDate(circuit) ? (() => {
                     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-                    const date = new Date(circuit.raceDate2025 + 'T00:00:00Z');
+                    const date = new Date(getSeasonRaceDate(circuit)! + 'T00:00:00Z');
                     return `${months[date.getUTCMonth()]} ${date.getUTCDate()}`;
                   })() : 'TBD'}
                 </span>
@@ -657,11 +709,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+      )}
 
       </main>
 
 
-      {/* Interactive Panel - Outside of main to avoid overflow clipping */}
+      {/* Interactive Panel - Outside of main to avoid overflow clipping - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <InteractivePanel
         isOpen={panelOpen}
         onCloseAction={() => {
@@ -674,8 +728,10 @@ export default function Home() {
         data={panelData}
         onExploreCircuit={handleExploreCircuit}
       />
+      )}
 
-      {/* Mobile Circuit Timeline - Race calendar */}
+      {/* Mobile Circuit Timeline - Fixed above bottom sheet - 리플레이 모드에서 숨김 */}
+      {!isReplayMode && (
       <MobileCircuitTimeline
         circuits={circuitsData.circuits}
         onSelectCircuitAction={handleMobileCircuitSelect}
@@ -692,6 +748,7 @@ export default function Home() {
         }}
         hasUserInteracted={hasUserInteracted}
       />
+      )}
     </>
   );
 }

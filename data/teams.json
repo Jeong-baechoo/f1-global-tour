@@ -369,14 +369,14 @@
       }
     },
     {
-      "id": "sauber",
+      "id": "audi",
       "name": {
-        "en": "Sauber",
-        "ko": "자우버"
+        "en": "Audi",
+        "ko": "아우디"
       },
-      "fullName": "Stake F1 Team KICK Sauber",
+      "fullName": "Audi F1 Team",
       "colors": {
-        "primary": "#52E252",
+        "primary": "#FF0000",
         "secondary": "#000000"
       },
       "headquarters": {
@@ -392,11 +392,11 @@
         "lng": 8.817248199241021
       },
       "teamPrincipal": {
-        "en": "Alessandro Alunni Bravi",
-        "ko": "알레산드로 알루니 브라비"
+        "en": "Mattia Binotto",
+        "ko": "마티아 비노토"
       },
       "foundingYear": 1993,
-      "description": "The Swiss-based Sauber team, now operating as Stake F1 Team KICK Sauber, will become the Audi factory team from 2026. Known for developing young talent and Swiss precision engineering.",
+      "description": "Formerly Sauber, the team has been rebranded as Audi F1 Team for the 2026 season. Backed by the Volkswagen Group, Audi brings German automotive engineering excellence to Formula 1.",
       "championships2025": {
         "totalPoints": 35,
         "raceResults": [
@@ -458,6 +458,40 @@
           { "race": "Saudi Arabia", "points": 4 },
           { "race": "Bahrain", "points": 6 }
         ]
+      }
+    },
+    {
+      "id": "cadillac",
+      "name": {
+        "en": "Cadillac",
+        "ko": "캐딜락"
+      },
+      "fullName": "TWG Global Racing / Cadillac F1 Team",
+      "colors": {
+        "primary": "#FFFFFF",
+        "secondary": "#C0C0C0"
+      },
+      "headquarters": {
+        "city": {
+          "en": "Indianapolis",
+          "ko": "인디애나폴리스"
+        },
+        "country": {
+          "en": "United States",
+          "ko": "미국"
+        },
+        "lat": 39.931,
+        "lng": -86.036
+      },
+      "teamPrincipal": {
+        "en": "Graeme Lowdon",
+        "ko": "그레이엄 로던"
+      },
+      "foundingYear": 2026,
+      "description": "The 11th team on the F1 grid, Cadillac enters as a General Motors works entry powered by Ferrari engines, with plans to develop their own power unit in the future.",
+      "championships2025": {
+        "totalPoints": 0,
+        "raceResults": []
       }
     }
   ]
