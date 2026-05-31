@@ -38,6 +38,15 @@ class ReplayPocController {
     azerbaijan: '/data/replay-poc/azerbaijan-9598.json',
     qatar: '/data/replay-poc/qatar-9655.json',
     italy: '/data/replay-poc/italy-9590.json',
+    hungary: '/data/replay-poc/hungary-9566.json',
+    netherlands: '/data/replay-poc/netherlands-9582.json',
+    austria: '/data/replay-poc/austria-9550.json',
+    canada: '/data/replay-poc/canada-9531.json',
+    'las-vegas': '/data/replay-poc/las-vegas-9644.json',
+    china: '/data/replay-poc/china-9673.json',
+    australia: '/data/replay-poc/australia-9488.json',
+    imola: '/data/replay-poc/imola-9515.json',
+    britain: '/data/replay-poc/britain-9558.json',
   };
 
   /** 사용 가능한 PoC 트랙 목록 출력 */
