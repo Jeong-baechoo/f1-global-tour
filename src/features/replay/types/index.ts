@@ -85,6 +85,23 @@ export interface QuadraticCoefficients {
   lat: [number, number, number, number, number, number];
 }
 
+// 트랙별 TPS(Thin-Plate Spline) 국소 비선형 변환 계수.
+// 검증된 base 어파인 위에 '잔차'만 RBF로 보정한다 (특정 코너의 뱅킹/far-corner 왜곡 대응).
+//   lng = (a*x+b*y+e) + res_lng(xn,yn),  lat = (c*x+d*y+f) + res_lat(xn,yn)
+//   xn=(x-cx)/s, yn=(y-cy)/s
+//   res = α[0] + α[1]*xn + α[2]*yn + Σ w_i·U(r_i),  U(r)=r²·ln r,  r_i=|(xn,yn)-control_i|
+export interface TpsResidual {
+  a: [number, number, number]; // 잔차의 어파인 항 [1, xn, yn]
+  w: number[];                 // control_i 별 RBF 가중치 (controls와 같은 길이)
+}
+export interface TpsCoefficients {
+  affine: AffineCoefficients;          // base 변환
+  norm: { cx: number; cy: number; s: number }; // RBF 수치안정용 정규화
+  controls: [number, number][];        // 정규화 좌표계 제어점
+  lng: TpsResidual;
+  lat: TpsResidual;
+}
+
 // 트랙 진행률 계산 관련
 export interface TrackProgress {
   lapNumber: number;
