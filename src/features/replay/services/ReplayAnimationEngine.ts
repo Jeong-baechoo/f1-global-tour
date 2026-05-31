@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { trackPositionService } from '@/src/features/replay';
 import { replayDataService } from './index';
-import { DriverPosition, ReplayDriverData, ReplayLapData, ReplaySessionData } from '../types';
+import { DriverPosition, DriverLocationSample, ReplayDriverData, ReplayLapData, ReplaySessionData } from '../types';
 import { DriverMarkerManager } from './DriverMarkerManager';
 import { CircuitTrackManager } from './CircuitTrackManager';
 import { PositionCalculator } from './PositionCalculator';
@@ -23,6 +23,10 @@ export class ReplayAnimationEngine {
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
   private circuitId = '';
+
+  // location(x,y) 기반 PoC 모드
+  private useLocationMode = false;
+  private locationDuration = 0;
   
   // 관리자 클래스들
   private markerManager: DriverMarkerManager;
@@ -55,6 +59,45 @@ export class ReplayAnimationEngine {
     }
   }
 
+
+  /**
+   * [PoC] OpenF1 location 시계열로 리플레이를 로드한다 (백엔드 비의존).
+   * 랩 데이터 없이 실제 좌표 기반으로 마커를 움직여 변환 정확도를 검증하는 경로.
+   */
+  async loadReplayDataFromLocation(
+    circuitId: string,
+    drivers: ReplayDriverData[],
+    locationByDriver: Map<number, DriverLocationSample[]>
+  ): Promise<boolean> {
+    this.cleanupPreviousData();
+
+    this.useLocationMode = true;
+    this.circuitId = circuitId;
+    this.driversData = drivers;
+    this.lapsData = [];
+
+    // 총 재생 시간 = 모든 드라이버 샘플 중 최대 t
+    let maxT = 0;
+    locationByDriver.forEach(samples => {
+      if (samples.length) maxT = Math.max(maxT, samples[samples.length - 1].t);
+    });
+    this.locationDuration = maxT;
+
+    this.positionCalculator.setLocationData(circuitId, locationByDriver, drivers);
+
+    await trackPositionService.loadCircuitData(circuitId);
+    this.createDriverMarkers();
+
+    try {
+      await this.trackManager.drawCircuitTrack(circuitId);
+    } catch (error) {
+      console.error('Failed to draw circuit track:', error);
+    }
+
+    this.setupZoomListener();
+    this.updateDriverPositions(0);
+    return true;
+  }
 
   private async loadOpenF1Data(session: ReplaySessionData): Promise<boolean> {
     const response = await replayDataService.getFullRaceData(session.sessionKey);
@@ -278,6 +321,7 @@ export class ReplayAnimationEngine {
   }
 
   getTotalDuration(): number {
+    if (this.useLocationMode) return this.locationDuration;
     if (this.lapsData.length === 0) return 0;
     return Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
   }
@@ -302,12 +346,14 @@ export class ReplayAnimationEngine {
     
     this.markerManager.clearMarkers();
     this.trackManager.clearCircuitTrack();
-    
+
     this.driversData = [];
     this.lapsData = [];
     this.currentTime = 0;
     this.startTime = 0;
     this.isPlaying = false;
+    this.useLocationMode = false;
+    this.locationDuration = 0;
   }
 
   cleanup(): void {

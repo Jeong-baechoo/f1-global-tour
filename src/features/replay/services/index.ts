@@ -17,3 +17,4 @@ export { PositionCalculator } from './PositionCalculator';
 
 // 유틸리티 및 디버깅 도구
 export { ReplayServiceSwitcher } from '../utils/ReplayServiceSwitcher';
+export { ReplayPocController } from '../utils/ReplayPocController';

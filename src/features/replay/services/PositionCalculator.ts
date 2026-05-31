@@ -1,10 +1,15 @@
 import { trackPositionService } from '@/src/features/replay';
-import { DriverPosition, ReplayDriverData, ReplayLapData } from '../types';
+import { DriverPosition, DriverLocationSample, ReplayDriverData, ReplayLapData } from '../types';
+import { LocationCoordinateService } from './LocationCoordinateService';
 
 export class PositionCalculator {
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
   private circuitId = '';
+
+  // location(x,y) 기반 위치 계산용 데이터 (있으면 등속 추정보다 우선)
+  private locationData: Map<number, DriverLocationSample[]> = new Map();
+  private useLocation = false;
 
   setData(
     driversData: ReplayDriverData[],
@@ -16,9 +21,71 @@ export class PositionCalculator {
     this.circuitId = circuitId;
   }
 
+  /** OpenF1 location 시계열을 주입한다. 주입되면 calculate가 location 보간 경로를 사용한다. */
+  setLocationData(
+    circuitId: string,
+    locationByDriver: Map<number, DriverLocationSample[]>,
+    driversData?: ReplayDriverData[]
+  ): void {
+    this.circuitId = circuitId;
+    this.locationData = locationByDriver;
+    if (driversData) this.driversData = driversData;
+    this.useLocation = LocationCoordinateService.hasCalibration(circuitId) && locationByDriver.size > 0;
+  }
+
   calculateDriverPosition(driverNumber: number, currentTime: number): DriverPosition | null {
-    // 랩 데이터 기반 계산
+    // location 데이터가 있으면 실제 좌표 기반 시간 보간 (정확), 없으면 랩 시간 기반 등속 추정 (폴백)
+    if (this.useLocation) {
+      return this.calculatePositionFromLocation(driverNumber, currentTime);
+    }
     return this.calculatePositionFromLapData(driverNumber, currentTime);
+  }
+
+  private calculatePositionFromLocation(driverNumber: number, currentTime: number): DriverPosition | null {
+    const samples = this.locationData.get(driverNumber);
+    if (!samples || samples.length === 0) return null;
+
+    // 범위 밖 처리: 시작 전이면 첫 점, 데이터 종료 후면 마커 숨김(null)
+    if (currentTime <= samples[0].t) {
+      return this.makeLocationPosition(driverNumber, samples[0].x, samples[0].y);
+    }
+    const last = samples[samples.length - 1];
+    if (currentTime >= last.t) {
+      return null;
+    }
+
+    // 이진 탐색: currentTime 직후 샘플 인덱스 hi
+    let lo = 0, hi = samples.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (samples[mid].t < currentTime) lo = mid + 1;
+      else hi = mid;
+    }
+    const s1 = samples[hi];
+    const s0 = samples[hi - 1];
+
+    // 시간 기준 선형 보간
+    const span = s1.t - s0.t;
+    const r = span > 0 ? (currentTime - s0.t) / span : 0;
+    const x = s0.x + (s1.x - s0.x) * r;
+    const y = s0.y + (s1.y - s0.y) * r;
+
+    return this.makeLocationPosition(driverNumber, x, y);
+  }
+
+  private makeLocationPosition(driverNumber: number, x: number, y: number): DriverPosition | null {
+    const coords = LocationCoordinateService.toLngLat(this.circuitId, x, y);
+    if (!coords) return null;
+    return {
+      driverNumber,
+      coordinates: coords,
+      longitude: coords[0],
+      latitude: coords[1],
+      currentLap: 0,
+      lapProgress: 0,
+      lapTime: null,
+      position: 0,
+    };
   }
 
   calculateAllDriverPositions(currentTime: number): DriverPosition[] {
@@ -131,5 +198,7 @@ export class PositionCalculator {
     this.driversData = [];
     this.lapsData = [];
     this.circuitId = '';
+    this.locationData = new Map();
+    this.useLocation = false;
   }
 }

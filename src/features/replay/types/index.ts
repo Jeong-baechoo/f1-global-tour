@@ -65,6 +65,26 @@ export interface DriverPosition {
   position: number; // 현재 순위
 }
 
+// 드라이버 location 시계열 샘플 (OpenF1 x,y 기반)
+export interface DriverLocationSample {
+  t: number; // 레이스 시작 기준 상대 시간 (초)
+  x: number; // OpenF1 로컬 좌표
+  y: number;
+}
+
+// 트랙별 어파인 변환 계수 (x,y -> lng,lat)
+export interface AffineCoefficients {
+  a: number; b: number; e: number; // lng = a*x + b*y + e
+  c: number; d: number; f: number; // lat = c*x + d*y + f
+}
+
+// 트랙별 2차 다항식 변환 계수 (어파인으로 안 잡히는 비선형 왜곡 보정).
+// value = [x, y, x², y², xy, 1] 계수 순서
+export interface QuadraticCoefficients {
+  lng: [number, number, number, number, number, number];
+  lat: [number, number, number, number, number, number];
+}
+
 // 트랙 진행률 계산 관련
 export interface TrackProgress {
   lapNumber: number;
