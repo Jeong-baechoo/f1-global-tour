@@ -296,7 +296,7 @@ belgium을 PoC로 실제 앱에서 보니 정적 이미지(verify)보다 훨씬 
 | 트랙 | 문제 코너 | 중앙 | 90% | 비고 |
 |---|---|---|---|---|
 | italy | T1·Parabolica·중간코너 | 7.9→1.1m | 35→7m | Parabolica·중간코너 보정 + **T1은 진행률 도로스냅**(아래) |
-| monaco | 항구/시케인 구간 | 3.9→3.2m | 20→9m | base affine은 기존 계수와 동일 |
+| monaco | 유턴 헤어핀·S/F·여러 코너 | 3.9→1.3m | 20→6m | 헤어핀(43%)·28%·하단(88%)·S/F(마지막코너+pit straight) 도로스냅. Sainte Dévote 1곳 잔존 |
 | netherlands | Tarzan·T3 헤어핀 | 5.0→2.3m | 31→8m | Tarzan 보정 + **T3 Hugenholtzbocht 진행률 도로스냅**(27→13m) |
 
 - **quad base 무용 확인**: italy quad/affine 둘 다 Parabolica max ~92m 동일 → quad는 그 코너에 이점 없음. → italy/netherlands는 **2차(QUADRATIC) 제거하고 TPS로 이전**.
@@ -306,6 +306,11 @@ belgium을 PoC로 실제 앱에서 보니 정적 이미지(verify)보다 훨씬 
   - 캘리브 `snap_zones=[(lng,lat,radius_m)]` (italy T1 `(9.2820,45.6249,150m)`, netherlands T3 Hugenholtzbocht `(4.5417,52.3884,150m)`, 27→13m).
   - **⚠ 인필드서 트랙이 자기 자신과 가까운 경우(netherlands T3)**: 스냅존 반경 안에 그 코너 패스 외 다른 트랙 구간도 들어와 엉뚱하게 끌려감(인공물). 해결: `progress_snap_targets`는 **존 중심 에이펙스를 포함하는 연속 구간만** 진행률 매핑하고, 스냅 잔차는 **그 통과구간 제어점(랩 위치=nearest src idx가 구간 내)에만** 적용.
   - **교훈: GeoJSON 의심 금지(3번째로 틀림). 마커가 도로를 벗어나면 좌표워핑(nearest)보다 '진행률 도로스냅'이 정답 — 도로 위 + 타이밍 보존. 단 인필드 겹침은 패스구간 한정 필요.**
+  - **monaco: 유턴 헤어핀(43%)·28%·하단 스위밍풀(88%)·S/F(마지막코너+pit straight) 도로스냅(90% 20→6m).**
+  - **`progress_snap_targets` 견고화(중요)**: ① 랩경계(S/F) 횡단 위해 `at_s`에 `%total` wrap. ② **에이펙스 폴백**: 평행도로(monaco S/F)서 pit straight 출발경로가 ~30m 치우쳐 `proj_s(이탈점)`이 엉뚱한 반대편 도로(접근, 92%)를 집어 전부 붕괴 → 진입·이탈 투영이 에이펙스 기준 전진순서(`sA≤s_apex≤sB`)를 깨면 **에이펙스 호길이 매핑으로 폴백**. 헤어핀(레이싱라인<중심선 길이)은 투영이 정상이라 entry/exit 유지(폴백시 67m 점프 회피).
+  - **✅ monaco S/F = 런타임 진행률 스냅으로 해결(RoadSnapService)**: pit straight↔접근도로가 ~30m 평행이라 **TPS(매끄러운 변환)로는 원리적으로 분리 불가**(가까운 두 입력→먼 두 출력 불가). 마커가 출발선 지나 진행률이 4%↔77%로 튐("후반부 갔다가 초반부"). → location **시간 순서**로 전진 제약 투영해 드라이버별 진행률을 1회 계산(평행도로는 진행률이 멀어 절대 안 샘), 지정 진행률 구간(monaco `[0.95,0.13]` wrap)에선 그 진행률 위치의 feat0 점에 마커 배치(경계 블렌드). 결과: S/F 오실레이션 제거, 도로까지 max 24→14m, Sainte Dévote도 같이 해결.
+    - 구현: `services/RoadSnapService.ts`(신규) + `PositionCalculator`가 location 주입 시 `prepare`, 매 프레임 `snap`. monaco TPS는 다시 3존(헤어핀·28%·88%)으로.
+    - 잔여: 데이터 시작 직후(t~5s) lock-on 1회. 정상 랩엔 영향 없음.
 - **트레이드오프(문서 명시대로)**: 문제 코너에서 마커를 실제 레이싱 라인 → 중심선 쪽으로 당김. 단 임계값 게이트로 **정확한 구간은 보존**(naive 전체 스냅보다 우수).
 - 산출물(임시): `/tmp/tps_calibrate.py`(캘리브), `/tmp/tps_*.png`(시각 검증), 계수 → `src/features/replay/data/tpsCoefficients.ts`.
 

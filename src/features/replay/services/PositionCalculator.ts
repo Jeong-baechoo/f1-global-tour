@@ -1,6 +1,7 @@
 import { trackPositionService } from '@/src/features/replay';
 import { DriverPosition, DriverLocationSample, ReplayDriverData, ReplayLapData } from '../types';
 import { LocationCoordinateService } from './LocationCoordinateService';
+import { RoadSnapService } from './RoadSnapService';
 
 export class PositionCalculator {
   private driversData: ReplayDriverData[] = [];
@@ -10,6 +11,8 @@ export class PositionCalculator {
   // location(x,y) 기반 위치 계산용 데이터 (있으면 등속 추정보다 우선)
   private locationData: Map<number, DriverLocationSample[]> = new Map();
   private useLocation = false;
+  // 평행 도로 구간(monaco S/F 등) 런타임 진행률 스냅
+  private roadSnap = new RoadSnapService();
 
   setData(
     driversData: ReplayDriverData[],
@@ -31,6 +34,8 @@ export class PositionCalculator {
     this.locationData = locationByDriver;
     if (driversData) this.driversData = driversData;
     this.useLocation = LocationCoordinateService.hasCalibration(circuitId) && locationByDriver.size > 0;
+    // 평행 도로 구간 진행률 사전계산(비동기). 준비 전엔 스냅이 fallback 반환.
+    if (this.useLocation) void this.roadSnap.prepare(circuitId, locationByDriver);
   }
 
   calculateDriverPosition(driverNumber: number, currentTime: number): DriverPosition | null {
@@ -47,7 +52,7 @@ export class PositionCalculator {
 
     // 범위 밖 처리: 시작 전이면 첫 점, 데이터 종료 후면 마커 숨김(null)
     if (currentTime <= samples[0].t) {
-      return this.makeLocationPosition(driverNumber, samples[0].x, samples[0].y);
+      return this.makeLocationPosition(driverNumber, samples[0].x, samples[0].y, currentTime);
     }
     const last = samples[samples.length - 1];
     if (currentTime >= last.t) {
@@ -70,17 +75,19 @@ export class PositionCalculator {
     const x = s0.x + (s1.x - s0.x) * r;
     const y = s0.y + (s1.y - s0.y) * r;
 
-    return this.makeLocationPosition(driverNumber, x, y);
+    return this.makeLocationPosition(driverNumber, x, y, currentTime);
   }
 
-  private makeLocationPosition(driverNumber: number, x: number, y: number): DriverPosition | null {
+  private makeLocationPosition(driverNumber: number, x: number, y: number, currentTime: number): DriverPosition | null {
     const coords = LocationCoordinateService.toLngLat(this.circuitId, x, y);
     if (!coords) return null;
+    // 평행 도로 구간이면 진행률 기반 도로 스냅으로 옆 도로 이탈 방지
+    const snapped = this.roadSnap.snap(driverNumber, currentTime, coords);
     return {
       driverNumber,
-      coordinates: coords,
-      longitude: coords[0],
-      latitude: coords[1],
+      coordinates: snapped,
+      longitude: snapped[0],
+      latitude: snapped[1],
       currentLap: 0,
       lapProgress: 0,
       lapTime: null,
@@ -200,5 +207,6 @@ export class PositionCalculator {
     this.circuitId = '';
     this.locationData = new Map();
     this.useLocation = false;
+    this.roadSnap.clear();
   }
 }
