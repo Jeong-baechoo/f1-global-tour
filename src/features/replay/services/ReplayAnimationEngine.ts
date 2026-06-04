@@ -357,11 +357,12 @@ export class ReplayAnimationEngine {
 
   getTotalDuration(): number {
     if (this.useLocationMode) return this.locationDuration;
-    const lapDuration = this.lapsData.length === 0
-      ? 0
-      : Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
-    // 백엔드 positions가 있으면 그 최대 t와 lap 기반 중 큰 값 (동일 0점이라 일관)
-    return Math.max(this.backendPositionsDuration, lapDuration);
+    // 백엔드 positions가 활성이면 그 구간을 기준으로 한다. lap 기반이 더 길면 데이터 끝
+    // 이후 calcFromBackend가 null을 반환해 마커가 먼저 사라지므로, 재생 구간과 마커
+    // 존재 구간을 일치시킨다.
+    if (this.backendPositionsDuration > 0) return this.backendPositionsDuration;
+    if (this.lapsData.length === 0) return 0;
+    return Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
   }
 
   getCurrentTime(): number {
@@ -393,6 +394,10 @@ export class ReplayAnimationEngine {
     this.useLocationMode = false;
     this.locationDuration = 0;
     this.backendPositionsDuration = 0;
+
+    // 세션 전환 시 이전 backendPositions/locationData 잔류 방지
+    // (안 비우면 새 세션 초반에 이전 트랙 좌표로 마커가 렌더됨)
+    this.positionCalculator.clear();
   }
 
   cleanup(): void {

@@ -61,7 +61,7 @@ export interface RaceFlagsResponse {
 
 export class BackendReplayApiService {
   private static instance: BackendReplayApiService;
-  private readonly baseUrl = 'http://localhost:4000/api/v1';
+  private readonly baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:4000/api/v1';
 
   private frames: DriverDisplayFrame[] = [];
   private raceFlagsData: RaceFlagsResponse | null = null;
@@ -151,9 +151,14 @@ export class BackendReplayApiService {
   async loadPositions(
     sessionKey: number,
   ): Promise<{ circuitId: string; byDriver: Map<number, DriverPositionSample[]> }> {
+    // 동일 세션이면 캐시 재사용 (setSession이 세션 전환 시 positions를 비움)
+    if (this.positions.size > 0 && this.sessionKey === sessionKey) {
+      return { circuitId: this.circuitIdFromPositions, byDriver: this.positions };
+    }
+    // 백엔드 오프라인 시 세션 시작이 길게 멈추지 않도록 짧은 타임아웃 후 폴백
     const response = await axios.get(
       `${this.baseUrl}/sessions/${sessionKey}/positions`,
-      { timeout: 30000 },
+      { timeout: 5000 },
     );
     if (!response.data.success) throw new Error('positions API returned success: false');
 

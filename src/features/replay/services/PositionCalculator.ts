@@ -92,6 +92,8 @@ export class PositionCalculator {
     );
   }
 
+  // currentLap/lapProgress/position은 0 placeholder. 백엔드 좌표 경로는 마커 좌표만 사용하고
+  // 순위·랩 정보는 DriverTimingService(별도 경로)가 제공한다. 향후 UI가 이 필드를 소비하게 되면 채울 것.
   private makeBackendPos(driverNumber: number, lng: number, lat: number): DriverPosition {
     return {
       driverNumber,

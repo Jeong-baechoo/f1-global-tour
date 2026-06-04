@@ -18,9 +18,9 @@ export class LocationCoordinateService {
   private static readonly TPS: Record<string, TpsCoefficients> = TPS_COEFFICIENTS;
 
   // 2차 다항식 트랙 (어파인으로 부족한 경우). 어파인보다 우선.
-  private static readonly QUADRATIC: Record<string, QuadraticCoefficients> = {
-    // (italy/netherlands는 TPS로 이전됨)
-  };
+  // 확장 예비: 현재 등록된 트랙 없음(italy/netherlands는 TPS로 이전됨). 어파인으로는 안 잡히지만
+  // TPS까지는 불필요한 트랙이 나오면 여기에 추가한다. toLngLat의 2차 분기/applyQuad는 그대로 유지.
+  private static readonly QUADRATIC: Record<string, QuadraticCoefficients> = {};
 
   // 트랙별 어파인 계수
   private static readonly COEFFICIENTS: Record<string, AffineCoefficients> = {
@@ -142,6 +142,9 @@ export class LocationCoordinateService {
 
   /** OpenF1 (x, y) -> [lng, lat]. 우선순위 TPS > 2차 > 어파인. 계수 없으면 null. */
   static toLngLat(circuitId: string, x: number, y: number): [number, number] | null {
+    // 손상된 좌표(NaN/Infinity) 방어 — 어파인/TPS 결과가 NaN이 되어 Mapbox 마커가 오동작함
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+
     const tps = LocationCoordinateService.TPS[circuitId];
     if (tps) return LocationCoordinateService.applyTps(tps, x, y);
 
