@@ -78,7 +78,16 @@
       "Read(//mnt/d/spring-study/f1-global-tour-backend/**)",
       "Read(//mnt/d/spring-study/**)",
       "Bash(npm run start:dev:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(xargs -n1 basename)",
+      "Bash(echo \"tsc: $?\")",
+      "Bash(echo \"remaining-exit:$?\")",
+      "Bash(npm test *)",
+      "Bash(npx jest *)",
+      "Bash(npx tsx *)",
+      "Bash(head -746 src/modules/sessions/sessions.service.spec.ts)",
+      "Bash(mv /tmp/sess_spec.ts src/modules/sessions/sessions.service.spec.ts)",
+      "Bash(npm run *)"
     ],
     "deny": []
   }

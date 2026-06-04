@@ -65,11 +65,18 @@ export interface DriverPosition {
   position: number; // 현재 순위
 }
 
-// 드라이버 location 시계열 샘플 (OpenF1 x,y 기반)
+// 드라이버 location 시계열 샘플 (OpenF1 x,y 기반) — mock/PoC 전용
 export interface DriverLocationSample {
   t: number; // 레이스 시작 기준 상대 시간 (초)
   x: number; // OpenF1 로컬 좌표
   y: number;
+}
+
+// 백엔드가 보내는 렌더 직전 좌표 시계열 (변환·스냅 완료됨 → 프론트는 시간 보간만)
+export interface DriverPositionSample {
+  t: number; // 레이스 시작 기준 상대 시간 (초)
+  lng: number;
+  lat: number;
 }
 
 // 트랙별 어파인 변환 계수 (x,y -> lng,lat)

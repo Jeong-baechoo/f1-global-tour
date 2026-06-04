@@ -1,5 +1,5 @@
 import { trackPositionService } from '@/src/features/replay';
-import { DriverPosition, DriverLocationSample, ReplayDriverData, ReplayLapData } from '../types';
+import { DriverPosition, DriverLocationSample, DriverPositionSample, ReplayDriverData, ReplayLapData } from '../types';
 import { LocationCoordinateService } from './LocationCoordinateService';
 import { RoadSnapService } from './RoadSnapService';
 
@@ -8,10 +8,14 @@ export class PositionCalculator {
   private lapsData: ReplayLapData[] = [];
   private circuitId = '';
 
-  // location(x,y) 기반 위치 계산용 데이터 (있으면 등속 추정보다 우선)
+  // 백엔드 {t,lng,lat} 시계열 (변환·스냅 완료 → 시간 보간만). 최우선 경로.
+  private backendPositions: Map<number, DriverPositionSample[]> = new Map();
+  private useBackendPositions = false;
+
+  // location(x,y) 기반 위치 계산용 데이터 (mock/PoC 전용, 등속 추정보다 우선)
   private locationData: Map<number, DriverLocationSample[]> = new Map();
   private useLocation = false;
-  // 평행 도로 구간(monaco S/F 등) 런타임 진행률 스냅
+  // 평행 도로 구간(monaco S/F 등) 런타임 진행률 스냅 (mock/PoC 전용)
   private roadSnap = new RoadSnapService();
 
   setData(
@@ -24,7 +28,22 @@ export class PositionCalculator {
     this.circuitId = circuitId;
   }
 
-  /** OpenF1 location 시계열을 주입한다. 주입되면 calculate가 location 보간 경로를 사용한다. */
+  /**
+   * 백엔드 {t,lng,lat} 시계열을 주입한다. 주입되면 calculate가 변환/스냅 없이 시간 보간만 한다.
+   * (프로덕션 경로 — 좌표 변환·도로스냅은 백엔드가 이미 처리.)
+   */
+  setBackendPositions(
+    circuitId: string,
+    byDriver: Map<number, DriverPositionSample[]>,
+    drivers?: ReplayDriverData[]
+  ): void {
+    this.circuitId = circuitId;
+    this.backendPositions = byDriver;
+    if (drivers) this.driversData = drivers;
+    this.useBackendPositions = byDriver.size > 0;
+  }
+
+  /** OpenF1 location 시계열을 주입한다 (mock/PoC 전용). */
   setLocationData(
     circuitId: string,
     locationByDriver: Map<number, DriverLocationSample[]>,
@@ -39,11 +58,51 @@ export class PositionCalculator {
   }
 
   calculateDriverPosition(driverNumber: number, currentTime: number): DriverPosition | null {
-    // location 데이터가 있으면 실제 좌표 기반 시간 보간 (정확), 없으면 랩 시간 기반 등속 추정 (폴백)
+    // 우선순위: 백엔드 좌표(프로덕션) > location PoC(mock) > 랩 등속 추정(폴백)
+    if (this.useBackendPositions) {
+      return this.calcFromBackend(driverNumber, currentTime);
+    }
     if (this.useLocation) {
       return this.calculatePositionFromLocation(driverNumber, currentTime);
     }
     return this.calculatePositionFromLapData(driverNumber, currentTime);
+  }
+
+  /** 백엔드 {t,lng,lat} 이진탐색 + 선형보간 (변환/스냅 호출 없음 — 백엔드가 이미 처리). */
+  private calcFromBackend(driverNumber: number, currentTime: number): DriverPosition | null {
+    const s = this.backendPositions.get(driverNumber);
+    if (!s || s.length === 0) return null;
+
+    // 범위 밖: 시작 전이면 첫 점, 데이터 종료 후면 마커 숨김(null)
+    if (currentTime <= s[0].t) return this.makeBackendPos(driverNumber, s[0].lng, s[0].lat);
+    if (currentTime >= s[s.length - 1].t) return null;
+
+    let lo = 0, hi = s.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (s[mid].t < currentTime) lo = mid + 1;
+      else hi = mid;
+    }
+    const a = s[hi - 1], b = s[hi];
+    const r = (currentTime - a.t) / (b.t - a.t || 1);
+    return this.makeBackendPos(
+      driverNumber,
+      a.lng + (b.lng - a.lng) * r,
+      a.lat + (b.lat - a.lat) * r
+    );
+  }
+
+  private makeBackendPos(driverNumber: number, lng: number, lat: number): DriverPosition {
+    return {
+      driverNumber,
+      coordinates: [lng, lat],
+      longitude: lng,
+      latitude: lat,
+      currentLap: 0,
+      lapProgress: 0,
+      lapTime: null,
+      position: 0,
+    };
   }
 
   private calculatePositionFromLocation(driverNumber: number, currentTime: number): DriverPosition | null {
@@ -205,6 +264,8 @@ export class PositionCalculator {
     this.driversData = [];
     this.lapsData = [];
     this.circuitId = '';
+    this.backendPositions = new Map();
+    this.useBackendPositions = false;
     this.locationData = new Map();
     this.useLocation = false;
     this.roadSnap.clear();

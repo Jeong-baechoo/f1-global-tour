@@ -5,6 +5,7 @@ import { DriverPosition, DriverLocationSample, ReplayDriverData, ReplayLapData, 
 import { DriverMarkerManager } from './DriverMarkerManager';
 import { CircuitTrackManager } from './CircuitTrackManager';
 import { PositionCalculator } from './PositionCalculator';
+import { BackendReplayApiService } from './BackendReplayApiService';
 import { TrackEventBus } from '@/src/features/circuits/services/track/events/TrackEventBus';
 
 
@@ -27,6 +28,9 @@ export class ReplayAnimationEngine {
   // location(x,y) 기반 PoC 모드
   private useLocationMode = false;
   private locationDuration = 0;
+
+  // 백엔드 positions 모드 (프로덕션): {t,lng,lat} 시계열 최대 t
+  private backendPositionsDuration = 0;
   
   // 관리자 클래스들
   private markerManager: DriverMarkerManager;
@@ -115,7 +119,38 @@ export class ReplayAnimationEngine {
     this.driversData = response.data.drivers.filter(driver => driversWithLaps.has(driver.driverNumber));
 
     await this.initializeReplay();
+
+    // 백엔드 positions 주입: 성공하면 랩 등속 추정 대신 실좌표 보간으로 전환 (실패 시 폴백 유지)
+    await this.tryLoadBackendPositions(session.sessionKey);
     return true;
+  }
+
+  /**
+   * 백엔드 {t,lng,lat} 시계열을 로드해 PositionCalculator에 주입한다.
+   * 변환·도로스냅은 백엔드가 끝낸 상태 → 프론트는 시간 보간만. 실패하면 랩 기반 폴백 유지.
+   */
+  private async tryLoadBackendPositions(sessionKey: number): Promise<void> {
+    try {
+      const backend = BackendReplayApiService.getInstance();
+      const { circuitId, byDriver } = await backend.loadPositions(sessionKey);
+      if (byDriver.size === 0) return;
+
+      this.positionCalculator.setBackendPositions(circuitId, byDriver, this.driversData);
+
+      // 총 재생 시간 = positions 최대 t (lap 기반과 같은 0점이라 일관)
+      let maxT = 0;
+      byDriver.forEach(samples => {
+        if (samples.length) maxT = Math.max(maxT, samples[samples.length - 1].t);
+      });
+      this.backendPositionsDuration = maxT;
+
+      // 초기 위치를 백엔드 좌표로 즉시 갱신
+      this.updateDriverPositions(this.currentTime);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[ReplayAnimationEngine] 백엔드 positions 미사용(랩 기반 폴백):', error);
+      }
+    }
   }
 
   private async initializeReplay(): Promise<void> {
@@ -322,8 +357,11 @@ export class ReplayAnimationEngine {
 
   getTotalDuration(): number {
     if (this.useLocationMode) return this.locationDuration;
-    if (this.lapsData.length === 0) return 0;
-    return Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
+    const lapDuration = this.lapsData.length === 0
+      ? 0
+      : Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
+    // 백엔드 positions가 있으면 그 최대 t와 lap 기반 중 큰 값 (동일 0점이라 일관)
+    return Math.max(this.backendPositionsDuration, lapDuration);
   }
 
   getCurrentTime(): number {
@@ -354,6 +392,7 @@ export class ReplayAnimationEngine {
     this.isPlaying = false;
     this.useLocationMode = false;
     this.locationDuration = 0;
+    this.backendPositionsDuration = 0;
   }
 
   cleanup(): void {
