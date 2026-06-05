@@ -188,23 +188,24 @@ export class ReplayAnimationEngine {
       'Spa-Francorchamps': 'belgium',
       'Interlagos': 'brazil',
       'Albert Park': 'australia',
-      'Bahrain': 'bahrain',
+      'Melbourne': 'australia', // OpenF1은 호주 GP를 'Melbourne'으로 표기 (circuit_short_name)
+      'Sakhir': 'bahrain',
       'Imola': 'imola',
       'Miami': 'miami',
-      'Barcelona': 'spain',
-      'Red Bull Ring': 'austria',
+      'Catalunya': 'spain',
+      'Spielberg': 'austria',
       'Hungaroring': 'hungary',
       'Zandvoort': 'netherlands',
       'Baku': 'azerbaijan',
-      'Marina Bay': 'singapore',
+      'Singapore': 'singapore',
       'Austin': 'usa',
       'Mexico City': 'mexico',
       'Las Vegas': 'las-vegas',
-      'Losail': 'qatar',
-      'Yas Marina': 'abu-dhabi',
+      'Lusail': 'qatar',
+      'Yas Marina Circuit': 'abu-dhabi',
       'Jeddah': 'saudi-arabia',
       'Shanghai': 'china',
-      'Gilles Villeneuve': 'canada'
+      'Montreal': 'canada'
     };
 
     return mapping[circuitShortName] || circuitShortName.toLowerCase().replace(/\s+/g, '-');
