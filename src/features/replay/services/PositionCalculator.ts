@@ -58,14 +58,17 @@ export class PositionCalculator {
   }
 
   calculateDriverPosition(driverNumber: number, currentTime: number): DriverPosition | null {
-    // 우선순위: 백엔드 좌표(프로덕션) > location PoC(mock) > 랩 등속 추정(폴백)
+    // 위치는 실제 좌표(백엔드 positions, 또는 location PoC)만 사용한다.
+    // 랩 등속 보간(calculatePositionFromLapData)은 부정확하고 시간축이 백엔드 race-time과
+    // 어긋나므로 폴백에서 비활성화한다. 좌표 데이터가 없으면 마커를 그리지 않는다(null).
+    // (등속 보간 메서드는 참고/복구용으로 아래에 그대로 보존)
     if (this.useBackendPositions) {
       return this.calcFromBackend(driverNumber, currentTime);
     }
     if (this.useLocation) {
       return this.calculatePositionFromLocation(driverNumber, currentTime);
     }
-    return this.calculatePositionFromLapData(driverNumber, currentTime);
+    return null;
   }
 
   /** 백엔드 {t,lng,lat} 이진탐색 + 선형보간 (변환/스냅 호출 없음 — 백엔드가 이미 처리). */
@@ -169,6 +172,8 @@ export class PositionCalculator {
     return driverPositions;
   }
 
+  // [비활성화] 랩 등속 보간. calculateDriverPosition에서 더 이상 호출하지 않는다.
+  // (좌표 기반으로 전환 — 시간축 어긋남/부정확으로 폴백 제외. 복구·참고용으로 코드만 보존)
   private calculatePositionFromLapData(driverNumber: number, currentTime: number): DriverPosition | null {
     const driverLaps = this.lapsData.filter(lap => lap.driverNumber === driverNumber);
 
