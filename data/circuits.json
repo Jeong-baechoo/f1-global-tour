@@ -156,7 +156,7 @@
       "corners": 15,
       "totalDistance": 308.484,
       "raceDate2026": null,
-      "round2026": null,
+      "round2026": 4,
       "cancelled2026": true
     },
     {
@@ -196,7 +196,7 @@
       "corners": 27,
       "totalDistance": 308.7,
       "raceDate2026": null,
-      "round2026": null,
+      "round2026": 5,
       "cancelled2026": true
     },
     {
@@ -237,7 +237,7 @@
       "corners": 19,
       "totalDistance": 308.484,
       "raceDate2026": "2026-05-01",
-      "round2026": 4,
+      "round2026": 6,
       "sprint2026": true
     },
     {
@@ -277,7 +277,7 @@
       "corners": 19,
       "totalDistance": 260.286,
       "raceDate2026": "2026-06-05",
-      "round2026": 6
+      "round2026": 8
     },
     {
       "id": "spain",
@@ -316,7 +316,7 @@
       "corners": 16,
       "totalDistance": 307.362,
       "raceDate2026": "2026-06-12",
-      "round2026": 7
+      "round2026": 9
     },
     {
       "id": "canada",
@@ -355,7 +355,7 @@
       "corners": 14,
       "totalDistance": 305.27,
       "raceDate2026": "2026-05-22",
-      "round2026": 5,
+      "round2026": 7,
       "sprint2026": true
     },
     {
@@ -395,7 +395,7 @@
       "corners": 10,
       "totalDistance": 306.578,
       "raceDate2026": "2026-06-26",
-      "round2026": 8
+      "round2026": 10
     },
     {
       "id": "britain",
@@ -434,7 +434,7 @@
       "corners": 18,
       "totalDistance": 306.332,
       "raceDate2026": "2026-07-03",
-      "round2026": 9,
+      "round2026": 11,
       "sprint2026": true
     },
     {
@@ -475,7 +475,7 @@
       "corners": 19,
       "totalDistance": 308.176,
       "raceDate2026": "2026-07-17",
-      "round2026": 10
+      "round2026": 12
     },
     {
       "id": "hungary",
@@ -514,7 +514,7 @@
       "corners": 14,
       "totalDistance": 306.67,
       "raceDate2026": "2026-07-24",
-      "round2026": 11
+      "round2026": 13
     },
     {
       "id": "netherlands",
@@ -553,7 +553,7 @@
       "corners": 14,
       "totalDistance": 306.648,
       "raceDate2026": "2026-08-21",
-      "round2026": 12,
+      "round2026": 14,
       "sprint2026": true
     },
     {
@@ -593,7 +593,7 @@
       "corners": 11,
       "totalDistance": 307.029,
       "raceDate2026": "2026-09-04",
-      "round2026": 13
+      "round2026": 15
     },
     {
       "id": "azerbaijan",
@@ -632,7 +632,7 @@
       "corners": 20,
       "totalDistance": 306.153,
       "raceDate2026": "2026-09-24",
-      "round2026": 15
+      "round2026": 17
     },
     {
       "id": "singapore",
@@ -671,7 +671,7 @@
       "corners": 19,
       "totalDistance": 306.28,
       "raceDate2026": "2026-10-09",
-      "round2026": 16,
+      "round2026": 18,
       "sprint2026": true
     },
     {
@@ -712,7 +712,7 @@
       "corners": 20,
       "totalDistance": 308.728,
       "raceDate2026": "2026-10-23",
-      "round2026": 17
+      "round2026": 19
     },
     {
       "id": "mexico",
@@ -751,7 +751,7 @@
       "corners": 17,
       "totalDistance": 305.584,
       "raceDate2026": "2026-10-30",
-      "round2026": 18
+      "round2026": 20
     },
     {
       "id": "brazil",
@@ -791,7 +791,7 @@
       "corners": 15,
       "totalDistance": 305.939,
       "raceDate2026": "2026-11-06",
-      "round2026": 19
+      "round2026": 21
     },
     {
       "id": "las-vegas",
@@ -830,7 +830,7 @@
       "corners": 17,
       "totalDistance": 310.05,
       "raceDate2026": "2026-11-19",
-      "round2026": 20
+      "round2026": 22
     },
     {
       "id": "qatar",
@@ -870,7 +870,7 @@
       "corners": 16,
       "totalDistance": 306.66,
       "raceDate2026": "2026-11-27",
-      "round2026": 21
+      "round2026": 23
     },
     {
       "id": "abu-dhabi",
@@ -909,7 +909,7 @@
       "corners": 16,
       "totalDistance": 306.298,
       "raceDate2026": "2026-12-04",
-      "round2026": 22
+      "round2026": 24
     },
     {
       "id": "madrid",
@@ -948,7 +948,7 @@
       "corners": 20,
       "totalDistance": 300.85,
       "raceDate2026": "2026-09-11",
-      "round2026": 14
+      "round2026": 16
     },
     {
       "id": "nurburgring",
