@@ -1,10 +1,11 @@
 import mapboxgl from 'mapbox-gl';
 import { trackPositionService } from '@/src/features/replay';
 import { replayDataService } from './index';
-import { DriverPosition, ReplayDriverData, ReplayLapData, ReplaySessionData } from '../types';
+import { DriverPosition, DriverLocationSample, ReplayDriverData, ReplayLapData, ReplaySessionData } from '../types';
 import { DriverMarkerManager } from './DriverMarkerManager';
 import { CircuitTrackManager } from './CircuitTrackManager';
 import { PositionCalculator } from './PositionCalculator';
+import { BackendReplayApiService } from './BackendReplayApiService';
 import { TrackEventBus } from '@/src/features/circuits/services/track/events/TrackEventBus';
 
 
@@ -23,6 +24,13 @@ export class ReplayAnimationEngine {
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
   private circuitId = '';
+
+  // location(x,y) 기반 PoC 모드
+  private useLocationMode = false;
+  private locationDuration = 0;
+
+  // 백엔드 positions 모드 (프로덕션): {t,lng,lat} 시계열 최대 t
+  private backendPositionsDuration = 0;
   
   // 관리자 클래스들
   private markerManager: DriverMarkerManager;
@@ -56,6 +64,45 @@ export class ReplayAnimationEngine {
   }
 
 
+  /**
+   * [PoC] OpenF1 location 시계열로 리플레이를 로드한다 (백엔드 비의존).
+   * 랩 데이터 없이 실제 좌표 기반으로 마커를 움직여 변환 정확도를 검증하는 경로.
+   */
+  async loadReplayDataFromLocation(
+    circuitId: string,
+    drivers: ReplayDriverData[],
+    locationByDriver: Map<number, DriverLocationSample[]>
+  ): Promise<boolean> {
+    this.cleanupPreviousData();
+
+    this.useLocationMode = true;
+    this.circuitId = circuitId;
+    this.driversData = drivers;
+    this.lapsData = [];
+
+    // 총 재생 시간 = 모든 드라이버 샘플 중 최대 t
+    let maxT = 0;
+    locationByDriver.forEach(samples => {
+      if (samples.length) maxT = Math.max(maxT, samples[samples.length - 1].t);
+    });
+    this.locationDuration = maxT;
+
+    this.positionCalculator.setLocationData(circuitId, locationByDriver, drivers);
+
+    await trackPositionService.loadCircuitData(circuitId);
+    this.createDriverMarkers();
+
+    try {
+      await this.trackManager.drawCircuitTrack(circuitId);
+    } catch (error) {
+      console.error('Failed to draw circuit track:', error);
+    }
+
+    this.setupZoomListener();
+    this.updateDriverPositions(0);
+    return true;
+  }
+
   private async loadOpenF1Data(session: ReplaySessionData): Promise<boolean> {
     const response = await replayDataService.getFullRaceData(session.sessionKey);
     
@@ -72,7 +119,38 @@ export class ReplayAnimationEngine {
     this.driversData = response.data.drivers.filter(driver => driversWithLaps.has(driver.driverNumber));
 
     await this.initializeReplay();
+
+    // 백엔드 positions 주입: 성공하면 랩 등속 추정 대신 실좌표 보간으로 전환 (실패 시 폴백 유지)
+    await this.tryLoadBackendPositions(session.sessionKey);
     return true;
+  }
+
+  /**
+   * 백엔드 {t,lng,lat} 시계열을 로드해 PositionCalculator에 주입한다.
+   * 변환·도로스냅은 백엔드가 끝낸 상태 → 프론트는 시간 보간만. 실패하면 랩 기반 폴백 유지.
+   */
+  private async tryLoadBackendPositions(sessionKey: number): Promise<void> {
+    try {
+      const backend = BackendReplayApiService.getInstance();
+      const { circuitId, byDriver } = await backend.loadPositions(sessionKey);
+      if (byDriver.size === 0) return;
+
+      this.positionCalculator.setBackendPositions(circuitId, byDriver, this.driversData);
+
+      // 총 재생 시간 = positions 최대 t (lap 기반과 같은 0점이라 일관)
+      let maxT = 0;
+      byDriver.forEach(samples => {
+        if (samples.length) maxT = Math.max(maxT, samples[samples.length - 1].t);
+      });
+      this.backendPositionsDuration = maxT;
+
+      // 초기 위치를 백엔드 좌표로 즉시 갱신
+      this.updateDriverPositions(this.currentTime);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[ReplayAnimationEngine] 백엔드 positions 미사용(랩 기반 폴백):', error);
+      }
+    }
   }
 
   private async initializeReplay(): Promise<void> {
@@ -110,23 +188,24 @@ export class ReplayAnimationEngine {
       'Spa-Francorchamps': 'belgium',
       'Interlagos': 'brazil',
       'Albert Park': 'australia',
-      'Bahrain': 'bahrain',
+      'Melbourne': 'australia', // OpenF1은 호주 GP를 'Melbourne'으로 표기 (circuit_short_name)
+      'Sakhir': 'bahrain',
       'Imola': 'imola',
       'Miami': 'miami',
-      'Barcelona': 'spain',
-      'Red Bull Ring': 'austria',
+      'Catalunya': 'spain',
+      'Spielberg': 'austria',
       'Hungaroring': 'hungary',
       'Zandvoort': 'netherlands',
       'Baku': 'azerbaijan',
-      'Marina Bay': 'singapore',
+      'Singapore': 'singapore',
       'Austin': 'usa',
       'Mexico City': 'mexico',
       'Las Vegas': 'las-vegas',
-      'Losail': 'qatar',
-      'Yas Marina': 'abu-dhabi',
+      'Lusail': 'qatar',
+      'Yas Marina Circuit': 'abu-dhabi',
       'Jeddah': 'saudi-arabia',
       'Shanghai': 'china',
-      'Gilles Villeneuve': 'canada'
+      'Montreal': 'canada'
     };
 
     return mapping[circuitShortName] || circuitShortName.toLowerCase().replace(/\s+/g, '-');
@@ -278,6 +357,11 @@ export class ReplayAnimationEngine {
   }
 
   getTotalDuration(): number {
+    if (this.useLocationMode) return this.locationDuration;
+    // 백엔드 positions가 활성이면 그 구간을 기준으로 한다. lap 기반이 더 길면 데이터 끝
+    // 이후 calcFromBackend가 null을 반환해 마커가 먼저 사라지므로, 재생 구간과 마커
+    // 존재 구간을 일치시킨다.
+    if (this.backendPositionsDuration > 0) return this.backendPositionsDuration;
     if (this.lapsData.length === 0) return 0;
     return Math.max(...this.lapsData.map(l => l.lapStartTime + l.lapDuration));
   }
@@ -302,12 +386,19 @@ export class ReplayAnimationEngine {
     
     this.markerManager.clearMarkers();
     this.trackManager.clearCircuitTrack();
-    
+
     this.driversData = [];
     this.lapsData = [];
     this.currentTime = 0;
     this.startTime = 0;
     this.isPlaying = false;
+    this.useLocationMode = false;
+    this.locationDuration = 0;
+    this.backendPositionsDuration = 0;
+
+    // 세션 전환 시 이전 backendPositions/locationData 잔류 방지
+    // (안 비우면 새 세션 초반에 이전 트랙 좌표로 마커가 렌더됨)
+    this.positionCalculator.clear();
   }
 
   cleanup(): void {

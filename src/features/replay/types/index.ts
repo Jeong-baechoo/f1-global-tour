@@ -65,6 +65,50 @@ export interface DriverPosition {
   position: number; // 현재 순위
 }
 
+// 드라이버 location 시계열 샘플 (OpenF1 x,y 기반) — mock/PoC 전용
+export interface DriverLocationSample {
+  t: number; // 레이스 시작 기준 상대 시간 (초)
+  x: number; // OpenF1 로컬 좌표
+  y: number;
+}
+
+// 백엔드가 보내는 렌더 직전 좌표 시계열 (변환·스냅 완료됨 → 프론트는 시간 보간만)
+export interface DriverPositionSample {
+  t: number; // 레이스 시작 기준 상대 시간 (초)
+  lng: number;
+  lat: number;
+}
+
+// 트랙별 어파인 변환 계수 (x,y -> lng,lat)
+export interface AffineCoefficients {
+  a: number; b: number; e: number; // lng = a*x + b*y + e
+  c: number; d: number; f: number; // lat = c*x + d*y + f
+}
+
+// 트랙별 2차 다항식 변환 계수 (어파인으로 안 잡히는 비선형 왜곡 보정).
+// value = [x, y, x², y², xy, 1] 계수 순서
+export interface QuadraticCoefficients {
+  lng: [number, number, number, number, number, number];
+  lat: [number, number, number, number, number, number];
+}
+
+// 트랙별 TPS(Thin-Plate Spline) 국소 비선형 변환 계수.
+// 검증된 base 어파인 위에 '잔차'만 RBF로 보정한다 (특정 코너의 뱅킹/far-corner 왜곡 대응).
+//   lng = (a*x+b*y+e) + res_lng(xn,yn),  lat = (c*x+d*y+f) + res_lat(xn,yn)
+//   xn=(x-cx)/s, yn=(y-cy)/s
+//   res = α[0] + α[1]*xn + α[2]*yn + Σ w_i·U(r_i),  U(r)=r²·ln r,  r_i=|(xn,yn)-control_i|
+export interface TpsResidual {
+  a: [number, number, number]; // 잔차의 어파인 항 [1, xn, yn]
+  w: number[];                 // control_i 별 RBF 가중치 (controls와 같은 길이)
+}
+export interface TpsCoefficients {
+  affine: AffineCoefficients;          // base 변환
+  norm: { cx: number; cy: number; s: number }; // RBF 수치안정용 정규화
+  controls: [number, number][];        // 정규화 좌표계 제어점
+  lng: TpsResidual;
+  lat: TpsResidual;
+}
+
 // 트랙 진행률 계산 관련
 export interface TrackProgress {
   lapNumber: number;

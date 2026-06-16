@@ -55,6 +55,29 @@ function isCancelledInSeason(circuit: { cancelled2026?: boolean }): boolean {
   return false;
 }
 
+// 현재 시즌의 라운드(개최 순서) 번호 반환
+function getSeasonRound(circuit: { round: number | null; round2026?: number | null }): number | null {
+  const year = new Date().getFullYear();
+  if (year >= 2026) return circuit.round2026 ?? null;
+  return circuit.round ?? null;
+}
+
+// 현재 시즌 일정만 추려 개최 순서(round)대로 정렬한다.
+// 해당 시즌에 라운드가 없는 트랙(다른 시즌 전용/미포함)은 제외한다.
+function getSortedSeasonCircuits<
+  T extends {
+    round: number | null;
+    round2026?: number | null;
+    raceDate2025: string | null;
+    raceDate2026?: string | null;
+    cancelled2026?: boolean;
+  }
+>(circuits: T[]): T[] {
+  return circuits
+    .filter(c => getSeasonRound(c) != null && (getSeasonRaceDate(c) || isCancelledInSeason(c)))
+    .sort((a, b) => (getSeasonRound(a) ?? 0) - (getSeasonRound(b) ?? 0));
+}
+
 export default function Home() {
   const { language, setLanguage } = useLanguage();
   const [panelOpen, setPanelOpen] = useState(true); // 초기값을 true로 변경하여 패널이 처음부터 열리도록 함
@@ -647,7 +670,7 @@ export default function Home() {
             }}
           >
             <div className="flex items-center gap-8 px-12 py-3 whitespace-nowrap">
-              {circuitsData.circuits.map((circuit) => (
+              {getSortedSeasonCircuits(circuitsData.circuits).map((circuit) => (
               <div
                 key={circuit.id}
                 data-circuit-id={circuit.id}

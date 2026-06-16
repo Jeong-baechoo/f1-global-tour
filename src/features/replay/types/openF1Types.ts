@@ -45,6 +45,17 @@ export interface OpenF1Driver {
   meeting_key: number;
 }
 
+// OpenF1 /location 엔드포인트: 차량 실제 위치 (트랙별 로컬 직교 좌표, 단위 ≈ 0.1m)
+export interface OpenF1Location {
+  date: string;
+  driver_number: number;
+  x: number;
+  y: number;
+  z: number;
+  session_key: number;
+  meeting_key: number;
+}
+
 export interface OpenF1Session {
   circuit_key: number;
   circuit_short_name: string;

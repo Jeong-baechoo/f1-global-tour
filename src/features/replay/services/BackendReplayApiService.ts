@@ -1,4 +1,12 @@
 import axios from 'axios';
+import { DriverPositionSample } from '../types';
+
+// 백엔드 positions 응답 (GET /sessions/:sk/positions)
+interface PositionsResponse {
+  sessionKey: number;
+  circuitId: string;
+  drivers: Record<string, { samples: DriverPositionSample[] }>;
+}
 
 interface DriverDisplayRow {
   position: number;
@@ -53,13 +61,17 @@ export interface RaceFlagsResponse {
 
 export class BackendReplayApiService {
   private static instance: BackendReplayApiService;
-  private readonly baseUrl = 'http://localhost:4000/api/v1';
+  private readonly baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:4000/api/v1';
 
   private frames: DriverDisplayFrame[] = [];
   private raceFlagsData: RaceFlagsResponse | null = null;
   private sessionKey: number = 0;
   private isLoading: boolean = false;
   private isAvailable: boolean = true;
+
+  // 드라이버별 {t,lng,lat} 시계열 (변환·스냅 완료, 프론트는 보간만)
+  private positions: Map<number, DriverPositionSample[]> = new Map();
+  private circuitIdFromPositions = '';
 
   // 드라이버별 텔레메트리 캐시
   private telemetryCache: Map<number, TelemetryFrame[]> = new Map();
@@ -79,6 +91,8 @@ export class BackendReplayApiService {
     this.raceFlagsData = null;
     this.telemetryCache.clear();
     this.telemetryLoading.clear();
+    this.positions = new Map();
+    this.circuitIdFromPositions = '';
     this.loadAllDriverTimings(sessionKey).catch((err) => {
       console.warn('[BackendReplayApiService] Failed to load driver timings:', err);
       this.isAvailable = false;
@@ -130,12 +144,46 @@ export class BackendReplayApiService {
     return this.raceFlagsData;
   }
 
+  /**
+   * 드라이버별 {t,lng,lat} 좌표 시계열을 백엔드에서 로드한다.
+   * 좌표 변환·도로스냅·다운샘플은 백엔드가 끝낸 상태 → 프론트는 시간 보간만.
+   */
+  async loadPositions(
+    sessionKey: number,
+  ): Promise<{ circuitId: string; byDriver: Map<number, DriverPositionSample[]> }> {
+    // 동일 세션이면 캐시 재사용 (setSession이 세션 전환 시 positions를 비움)
+    if (this.positions.size > 0 && this.sessionKey === sessionKey) {
+      return { circuitId: this.circuitIdFromPositions, byDriver: this.positions };
+    }
+    // 백엔드 오프라인 시 세션 시작이 길게 멈추지 않도록 짧은 타임아웃 후 폴백
+    const response = await axios.get(
+      `${this.baseUrl}/sessions/${sessionKey}/positions`,
+      { timeout: 5000 },
+    );
+    if (!response.data.success) throw new Error('positions API returned success: false');
+
+    const data = response.data.data as PositionsResponse;
+    const byDriver = new Map<number, DriverPositionSample[]>();
+    for (const [num, value] of Object.entries(data.drivers)) {
+      byDriver.set(Number(num), value.samples);
+    }
+    this.positions = byDriver;
+    this.circuitIdFromPositions = data.circuitId;
+    return { circuitId: data.circuitId, byDriver };
+  }
+
+  hasPositions(): boolean {
+    return this.positions.size > 0;
+  }
+
   cleanup(): void {
     this.frames = [];
     this.raceFlagsData = null;
     this.isLoading = false;
     this.telemetryCache.clear();
     this.telemetryLoading.clear();
+    this.positions = new Map();
+    this.circuitIdFromPositions = '';
   }
 
   /**

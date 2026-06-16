@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import {
   ReplaySessionData,
   ReplayDriverData,
@@ -45,6 +45,52 @@ interface BackendLap {
 export class ReplayDataService {
   private backendApiUrl = 'http://localhost:4000/api/v1';
 
+  /**
+   * 콜드 스타트 대응 GET. DB에 없는 세션을 처음 재생하면 백엔드가 OpenF1 데이터를
+   * 받아 저장하는 동안 503(또는 502/504/타임아웃)을 반환할 수 있다. 이는 영구 실패가
+   * 아니라 "준비 중"이므로, 지수 백오프로 재시도해 준비 완료를 기다린다.
+   * (4xx 등 영구 오류는 즉시 던진다.)
+   */
+  private async getWithRetry(
+    url: string,
+    config: AxiosRequestConfig,
+    opts: { retries?: number; baseDelayMs?: number; maxDelayMs?: number } = {}
+  ): Promise<AxiosResponse> {
+    const { retries = 8, baseDelayMs = 1500, maxDelayMs = 8000 } = opts;
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await axios.get(url, config);
+      } catch (error) {
+        lastError = error;
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        const isTransient =
+          status === 503 || status === 502 || status === 504 ||
+          (axios.isAxiosError(error) && error.code === 'ECONNABORTED') || // 요청 타임아웃
+          (axios.isAxiosError(error) && !error.response);                 // 네트워크 단절
+        if (!isTransient || attempt === retries) break;
+
+        // 서버가 Retry-After를 주면 우선, 없으면 지수 백오프
+        const retryAfter = axios.isAxiosError(error)
+          ? Number(error.response?.headers?.['retry-after'])
+          : NaN;
+        const delay = Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : Math.min(maxDelayMs, baseDelayMs * Math.pow(1.5, attempt));
+
+        if (process.env.NODE_ENV === 'development') {
+          console.info(
+            `[ReplayDataService] 백엔드 준비 대기(콜드 스타트 추정) — ` +
+            `재시도 ${attempt + 1}/${retries}, ${Math.round(delay)}ms 후, status=${status ?? 'network'}`
+          );
+        }
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    throw lastError;
+  }
+
   async getSessions(year: number, countryName?: string): Promise<ApiResponse<ReplaySessionData[]>> {
     if (checkShouldForceMockData()) {
       return { data: [], success: false, error: { code: 'MOCK_DISABLED', message: 'Mock data is disabled' } };
@@ -60,7 +106,7 @@ export class ReplayDataService {
       params.append('country', countryName);
     }
 
-    const response = await axios.get(`${this.backendApiUrl}/sessions?${params.toString()}`, {
+    const response = await this.getWithRetry(`${this.backendApiUrl}/sessions?${params.toString()}`, {
       timeout: 30000,
       headers: {
         'Accept': 'application/json',
@@ -86,7 +132,7 @@ export class ReplayDataService {
       return { data: [], success: false, error: { code: 'MOCK_DISABLED', message: 'Mock data is disabled' } };
     }
 
-    const response = await axios.get(`${this.backendApiUrl}/sessions/${sessionKey}/drivers`, {
+    const response = await this.getWithRetry(`${this.backendApiUrl}/sessions/${sessionKey}/drivers`, {
       timeout: 30000,
       headers: {
         'Accept': 'application/json',
@@ -120,7 +166,7 @@ export class ReplayDataService {
     }
 
     const endpoint = `/laps/session/${sessionKey}${params.toString() ? `?${params.toString()}` : ''}`;
-    const response = await axios.get(`${this.backendApiUrl}${endpoint}`, {
+    const response = await this.getWithRetry(`${this.backendApiUrl}${endpoint}`, {
       timeout: 30000,
       headers: {
         'Accept': 'application/json',

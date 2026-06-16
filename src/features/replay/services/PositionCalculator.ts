@@ -1,10 +1,22 @@
 import { trackPositionService } from '@/src/features/replay';
-import { DriverPosition, ReplayDriverData, ReplayLapData } from '../types';
+import { DriverPosition, DriverLocationSample, DriverPositionSample, ReplayDriverData, ReplayLapData } from '../types';
+import { LocationCoordinateService } from './LocationCoordinateService';
+import { RoadSnapService } from './RoadSnapService';
 
 export class PositionCalculator {
   private driversData: ReplayDriverData[] = [];
   private lapsData: ReplayLapData[] = [];
   private circuitId = '';
+
+  // 백엔드 {t,lng,lat} 시계열 (변환·스냅 완료 → 시간 보간만). 최우선 경로.
+  private backendPositions: Map<number, DriverPositionSample[]> = new Map();
+  private useBackendPositions = false;
+
+  // location(x,y) 기반 위치 계산용 데이터 (mock/PoC 전용, 등속 추정보다 우선)
+  private locationData: Map<number, DriverLocationSample[]> = new Map();
+  private useLocation = false;
+  // 평행 도로 구간(monaco S/F 등) 런타임 진행률 스냅 (mock/PoC 전용)
+  private roadSnap = new RoadSnapService();
 
   setData(
     driversData: ReplayDriverData[],
@@ -16,9 +28,135 @@ export class PositionCalculator {
     this.circuitId = circuitId;
   }
 
+  /**
+   * 백엔드 {t,lng,lat} 시계열을 주입한다. 주입되면 calculate가 변환/스냅 없이 시간 보간만 한다.
+   * (프로덕션 경로 — 좌표 변환·도로스냅은 백엔드가 이미 처리.)
+   */
+  setBackendPositions(
+    circuitId: string,
+    byDriver: Map<number, DriverPositionSample[]>,
+    drivers?: ReplayDriverData[]
+  ): void {
+    this.circuitId = circuitId;
+    this.backendPositions = byDriver;
+    if (drivers) this.driversData = drivers;
+    this.useBackendPositions = byDriver.size > 0;
+  }
+
+  /** OpenF1 location 시계열을 주입한다 (mock/PoC 전용). */
+  setLocationData(
+    circuitId: string,
+    locationByDriver: Map<number, DriverLocationSample[]>,
+    driversData?: ReplayDriverData[]
+  ): void {
+    this.circuitId = circuitId;
+    this.locationData = locationByDriver;
+    if (driversData) this.driversData = driversData;
+    this.useLocation = LocationCoordinateService.hasCalibration(circuitId) && locationByDriver.size > 0;
+    // 평행 도로 구간 진행률 사전계산(비동기). 준비 전엔 스냅이 fallback 반환.
+    if (this.useLocation) void this.roadSnap.prepare(circuitId, locationByDriver);
+  }
+
   calculateDriverPosition(driverNumber: number, currentTime: number): DriverPosition | null {
-    // 랩 데이터 기반 계산
-    return this.calculatePositionFromLapData(driverNumber, currentTime);
+    // 위치는 실제 좌표(백엔드 positions, 또는 location PoC)만 사용한다.
+    // 랩 등속 보간(calculatePositionFromLapData)은 부정확하고 시간축이 백엔드 race-time과
+    // 어긋나므로 폴백에서 비활성화한다. 좌표 데이터가 없으면 마커를 그리지 않는다(null).
+    // (등속 보간 메서드는 참고/복구용으로 아래에 그대로 보존)
+    if (this.useBackendPositions) {
+      return this.calcFromBackend(driverNumber, currentTime);
+    }
+    if (this.useLocation) {
+      return this.calculatePositionFromLocation(driverNumber, currentTime);
+    }
+    return null;
+  }
+
+  /** 백엔드 {t,lng,lat} 이진탐색 + 선형보간 (변환/스냅 호출 없음 — 백엔드가 이미 처리). */
+  private calcFromBackend(driverNumber: number, currentTime: number): DriverPosition | null {
+    const s = this.backendPositions.get(driverNumber);
+    if (!s || s.length === 0) return null;
+
+    // 범위 밖: 시작 전이면 첫 점, 데이터 종료 후면 마커 숨김(null)
+    if (currentTime <= s[0].t) return this.makeBackendPos(driverNumber, s[0].lng, s[0].lat);
+    if (currentTime >= s[s.length - 1].t) return null;
+
+    let lo = 0, hi = s.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (s[mid].t < currentTime) lo = mid + 1;
+      else hi = mid;
+    }
+    const a = s[hi - 1], b = s[hi];
+    const r = (currentTime - a.t) / (b.t - a.t || 1);
+    return this.makeBackendPos(
+      driverNumber,
+      a.lng + (b.lng - a.lng) * r,
+      a.lat + (b.lat - a.lat) * r
+    );
+  }
+
+  // currentLap/lapProgress/position은 0 placeholder. 백엔드 좌표 경로는 마커 좌표만 사용하고
+  // 순위·랩 정보는 DriverTimingService(별도 경로)가 제공한다. 향후 UI가 이 필드를 소비하게 되면 채울 것.
+  private makeBackendPos(driverNumber: number, lng: number, lat: number): DriverPosition {
+    return {
+      driverNumber,
+      coordinates: [lng, lat],
+      longitude: lng,
+      latitude: lat,
+      currentLap: 0,
+      lapProgress: 0,
+      lapTime: null,
+      position: 0,
+    };
+  }
+
+  private calculatePositionFromLocation(driverNumber: number, currentTime: number): DriverPosition | null {
+    const samples = this.locationData.get(driverNumber);
+    if (!samples || samples.length === 0) return null;
+
+    // 범위 밖 처리: 시작 전이면 첫 점, 데이터 종료 후면 마커 숨김(null)
+    if (currentTime <= samples[0].t) {
+      return this.makeLocationPosition(driverNumber, samples[0].x, samples[0].y, currentTime);
+    }
+    const last = samples[samples.length - 1];
+    if (currentTime >= last.t) {
+      return null;
+    }
+
+    // 이진 탐색: currentTime 직후 샘플 인덱스 hi
+    let lo = 0, hi = samples.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (samples[mid].t < currentTime) lo = mid + 1;
+      else hi = mid;
+    }
+    const s1 = samples[hi];
+    const s0 = samples[hi - 1];
+
+    // 시간 기준 선형 보간
+    const span = s1.t - s0.t;
+    const r = span > 0 ? (currentTime - s0.t) / span : 0;
+    const x = s0.x + (s1.x - s0.x) * r;
+    const y = s0.y + (s1.y - s0.y) * r;
+
+    return this.makeLocationPosition(driverNumber, x, y, currentTime);
+  }
+
+  private makeLocationPosition(driverNumber: number, x: number, y: number, currentTime: number): DriverPosition | null {
+    const coords = LocationCoordinateService.toLngLat(this.circuitId, x, y);
+    if (!coords) return null;
+    // 평행 도로 구간이면 진행률 기반 도로 스냅으로 옆 도로 이탈 방지
+    const snapped = this.roadSnap.snap(driverNumber, currentTime, coords);
+    return {
+      driverNumber,
+      coordinates: snapped,
+      longitude: snapped[0],
+      latitude: snapped[1],
+      currentLap: 0,
+      lapProgress: 0,
+      lapTime: null,
+      position: 0,
+    };
   }
 
   calculateAllDriverPositions(currentTime: number): DriverPosition[] {
@@ -34,6 +172,8 @@ export class PositionCalculator {
     return driverPositions;
   }
 
+  // [비활성화] 랩 등속 보간. calculateDriverPosition에서 더 이상 호출하지 않는다.
+  // (좌표 기반으로 전환 — 시간축 어긋남/부정확으로 폴백 제외. 복구·참고용으로 코드만 보존)
   private calculatePositionFromLapData(driverNumber: number, currentTime: number): DriverPosition | null {
     const driverLaps = this.lapsData.filter(lap => lap.driverNumber === driverNumber);
 
@@ -131,5 +271,10 @@ export class PositionCalculator {
     this.driversData = [];
     this.lapsData = [];
     this.circuitId = '';
+    this.backendPositions = new Map();
+    this.useBackendPositions = false;
+    this.locationData = new Map();
+    this.useLocation = false;
+    this.roadSnap.clear();
   }
 }

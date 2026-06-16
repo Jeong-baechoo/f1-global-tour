@@ -44,6 +44,9 @@ next-env.d.ts
 .idea/
 *.iml
 
+# Claude Code 로컬 설정 (개인 권한 허용 목록 — 추적 제외)
+.claude/settings.local.json
+
 # Backend Docker (별도 관리)
 docker-backend/
 backend/
