@@ -43,7 +43,7 @@ interface BackendLap {
 }
 
 export class ReplayDataService {
-  private backendApiUrl = 'http://localhost:4000/api/v1';
+  private backendApiUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:4000/api/v1';
 
   /**
    * 콜드 스타트 대응 GET. DB에 없는 세션을 처음 재생하면 백엔드가 OpenF1 데이터를
@@ -116,7 +116,10 @@ export class ReplayDataService {
 
     // 백엔드 API 응답 형식: { success: true, data: [...] }
     if (response.data.success) {
-      const sessions = this.transformBackendSessions(response.data.data);
+      // 리플레이는 레이스 세션만 지원한다. OpenF1에서 메인 Race와 Sprint는
+      // 모두 session_type === 'Race'이므로 둘 다 노출되고, Qualifying/Practice는 제외된다.
+      const sessions = this.transformBackendSessions(response.data.data)
+        .filter(session => session.sessionType?.toLowerCase() === 'race');
       return {
         data: sessions,
         success: true
